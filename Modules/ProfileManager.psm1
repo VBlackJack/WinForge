@@ -49,7 +49,7 @@ if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
 
 # Import Localization module for i18n support
 $script:LocalizationModulePath = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
-if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Get-LogString -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:LocalizationModulePath) {
         Import-Module -Name $script:LocalizationModulePath -Force
     }
@@ -252,12 +252,12 @@ function Get-ProfilePath {
     # Security: Validate profile name is safe (alphanumeric, dash, underscore only)
     # This prevents path traversal attacks
     if ($nameToValidate -notmatch '^[a-zA-Z0-9_-]+$') {
-        throw (Get-LocalizedString -Key 'profile.validation.invalid_name' -Parameters @{ Name = $ProfileName })
+        throw (Get-LogString -Key 'profile.validation.invalid_name' -Parameters @{ Name = $ProfileName })
     }
 
     # Security: Limit profile name length to prevent DoS
     if ($nameToValidate.Length -gt 64) {
-        throw (Get-LocalizedString -Key 'profile.validation.name_too_long')
+        throw (Get-LogString -Key 'profile.validation.name_too_long')
     }
 
     # Try to find in Profiles directory
@@ -274,14 +274,14 @@ function Get-ProfilePath {
 
     # Security: Verify resolved path stays within profiles directory
     if (-not $canonicalPath.StartsWith($canonicalBase, [StringComparison]::OrdinalIgnoreCase)) {
-        throw (Get-LocalizedString -Key 'profile.validation.path_traversal' -Parameters @{ Name = $ProfileName })
+        throw (Get-LogString -Key 'profile.validation.path_traversal' -Parameters @{ Name = $ProfileName })
     }
 
     if (Test-Path -Path $profilePath) {
         return $profilePath
     }
 
-    throw (Get-LocalizedString -Key 'profile.not_found' -Parameters @{ Name = "$ProfileName ($ProfilesDirectory)" })
+    throw (Get-LogString -Key 'profile.not_found' -Parameters @{ Name = "$ProfileName ($ProfilesDirectory)" })
 }
 
 function Import-ProfileJson {
@@ -313,7 +313,7 @@ function Import-ProfileJson {
     )
 
     if (-not (Test-Path -Path $Path)) {
-        throw (Get-LocalizedString -Key 'profile.not_found' -Parameters @{ Name = $Path })
+        throw (Get-LogString -Key 'profile.not_found' -Parameters @{ Name = $Path })
     }
 
     # Validate profile against schema before loading (security check)
@@ -322,7 +322,7 @@ function Import-ProfileJson {
             $validationResult = Test-DeploymentProfile -ProfilePath $Path
             if (-not $validationResult.IsValid) {
                 $errorMessages = $validationResult.Errors -join '; '
-                throw (Get-LocalizedString -Key 'profile.validation.schema_failed' -Parameters @{ Path = $Path; Errors = $errorMessages })
+                throw (Get-LogString -Key 'profile.validation.schema_failed' -Parameters @{ Path = $Path; Errors = $errorMessages })
             }
             Write-Verbose "Profile schema validation passed: $Path"
         } catch {
@@ -330,7 +330,7 @@ function Import-ProfileJson {
                 throw
             }
             # Log validation errors but continue if schema module has issues
-            Write-Status -Message (Get-LocalizedString -Key 'profile.validation.schema_skipped' -Parameters @{ Error = $_.Exception.Message }) -Level 'Warning'
+            Write-Status -Message (Get-LogString -Key 'profile.validation.schema_skipped' -Parameters @{ Error = $_.Exception.Message }) -Level 'Warning'
         }
     }
 
@@ -344,7 +344,7 @@ function Import-ProfileJson {
     }
 
     try {
-        Write-Status -Message (Get-LocalizedString -Key 'profile.loading' -Parameters @{ Name = $Path }) -Level 'Verbose'
+        Write-Status -Message (Get-LogString -Key 'profile.loading' -Parameters @{ Name = $Path }) -Level 'Verbose'
 
         $jsonContent = Get-Content -Path $Path -Raw -ErrorAction Stop
         $jsonObject = $jsonContent | ConvertFrom-Json -ErrorAction Stop
@@ -384,7 +384,7 @@ function Import-ProfileJson {
             }
         }
 
-        Write-Status -Message (Get-LocalizedString -Key 'profile.loaded' -Parameters @{ Name = "$($deploymentProfile.Name) v$($deploymentProfile.Version)"; AppCount = $deploymentProfile.Applications.Count }) -Level 'Success'
+        Write-Status -Message (Get-LogString -Key 'profile.loaded' -Parameters @{ Name = "$($deploymentProfile.Name) v$($deploymentProfile.Version)"; AppCount = $deploymentProfile.Applications.Count }) -Level 'Success'
 
         # Store in cache
         Set-CachedProfile -Path $Path -Profile $deploymentProfile
@@ -392,7 +392,7 @@ function Import-ProfileJson {
         return $deploymentProfile
 
     } catch {
-        Write-Status -Message (Get-LocalizedString -Key 'profile.load_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
+        Write-Status -Message (Get-LogString -Key 'profile.load_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
         throw
     }
 }
@@ -571,7 +571,7 @@ function Resolve-ProfileInheritance {
         $cyclePath += $InputProfile.Name
         $cycleString = $cyclePath -join ' -> '
 
-        $errorMsg = Get-LocalizedString -Key 'profile.inheritance.cycle_detected_compact' -Parameters @{ Cycle = $cycleString }
+        $errorMsg = Get-LogString -Key 'profile.inheritance.cycle_detected_compact' -Parameters @{ Cycle = $cycleString }
         Write-Status -Message $errorMsg -Level 'Error'
         throw [System.InvalidOperationException]::new($errorMsg)
     }
@@ -606,7 +606,7 @@ function Resolve-ProfileInheritance {
                 if ($_.Exception -is [System.InvalidOperationException]) {
                     throw
                 }
-                Write-Status -Message (Get-LocalizedString -Key 'profile.inheritance.parent_load_failed' -Parameters @{ Parent = $parentName; Error = $_.Exception.Message }) -Level 'Warning'
+                Write-Status -Message (Get-LogString -Key 'profile.inheritance.parent_load_failed' -Parameters @{ Parent = $parentName; Error = $_.Exception.Message }) -Level 'Warning'
             }
         }
     }
@@ -650,12 +650,12 @@ function Resolve-ApplicationReference {
         if ($script:UseAppDatabase) {
             $dbApp = Get-ApplicationById -AppId $AppReference
             if ($null -eq $dbApp) {
-                Write-Status -Message (Get-LocalizedString -Key 'profile.applications.not_found_in_db' -Parameters @{ AppId = $AppReference }) -Level 'Warning'
+                Write-Status -Message (Get-LogString -Key 'profile.applications.not_found_in_db' -Parameters @{ AppId = $AppReference }) -Level 'Warning'
                 return $null
             }
             return ConvertTo-ProfileApplication -App $dbApp
         } else {
-            Write-Status -Message (Get-LocalizedString -Key 'profile.applications.db_not_available' -Parameters @{ AppId = $AppReference }) -Level 'Warning'
+            Write-Status -Message (Get-LogString -Key 'profile.applications.db_not_available' -Parameters @{ AppId = $AppReference }) -Level 'Warning'
             return $null
         }
     }
@@ -665,7 +665,7 @@ function Resolve-ApplicationReference {
         if ($script:UseAppDatabase) {
             $dbApp = Get-ApplicationById -AppId $AppReference.AppId
             if ($null -eq $dbApp) {
-                Write-Status -Message (Get-LocalizedString -Key 'profile.applications.not_found_in_db' -Parameters @{ AppId = $AppReference.AppId }) -Level 'Warning'
+                Write-Status -Message (Get-LogString -Key 'profile.applications.not_found_in_db' -Parameters @{ AppId = $AppReference.AppId }) -Level 'Warning'
                 return $null
             }
 
@@ -689,7 +689,7 @@ function Resolve-ApplicationReference {
 
             return $app
         } else {
-            Write-Status -Message (Get-LocalizedString -Key 'profile.applications.db_not_available' -Parameters @{ AppId = $AppReference.AppId }) -Level 'Warning'
+            Write-Status -Message (Get-LogString -Key 'profile.applications.db_not_available' -Parameters @{ AppId = $AppReference.AppId }) -Level 'Warning'
             return $null
         }
     }
@@ -699,7 +699,7 @@ function Resolve-ApplicationReference {
         return $AppReference
     }
 
-    Write-Status -Message (Get-LocalizedString -Key 'profile.applications.unknown_format') -Level 'Warning'
+    Write-Status -Message (Get-LogString -Key 'profile.applications.unknown_format') -Level 'Warning'
     return $null
 }
 
@@ -891,19 +891,19 @@ function Get-DeploymentProfile {
         [string]$ProfilesDirectory
     )
 
-    Write-Status -Message (Get-LocalizedString -Key 'profile.loading' -Parameters @{ Name = $ProfileName }) -Level 'Info'
+    Write-Status -Message (Get-LogString -Key 'profile.loading' -Parameters @{ Name = $ProfileName }) -Level 'Info'
 
     try {
         # Get profile path
         $profilePath = Get-ProfilePath -ProfileName $ProfileName -ProfilesDirectory $ProfilesDirectory
 
         # Security: Runtime cycle detection before loading
-        Write-Status -Message (Get-LocalizedString -Key 'profile.inheritance.checking_cycles') -Level 'Verbose'
+        Write-Status -Message (Get-LogString -Key 'profile.inheritance.checking_cycles') -Level 'Verbose'
         $cycleCheck = Test-ProfileCycles -ProfileName $ProfileName -ProfilesDirectory $ProfilesDirectory
         if ($cycleCheck.HasCycles) {
             $cycleDetails = $cycleCheck.Cycles -join '; '
             throw [System.InvalidOperationException]::new(
-                (Get-LocalizedString -Key 'profile.inheritance.cycle_detected' -Parameters @{ ProfileName = $ProfileName; Details = $cycleDetails })
+                (Get-LogString -Key 'profile.inheritance.cycle_detected' -Parameters @{ ProfileName = $ProfileName; Details = $cycleDetails })
             )
         }
 
@@ -911,17 +911,17 @@ function Get-DeploymentProfile {
         $baseProfile = Import-ProfileJson -Path $profilePath
 
         # Resolve inheritance
-        Write-Status -Message (Get-LocalizedString -Key 'profile.inheritance.resolving_chain') -Level 'Info'
+        Write-Status -Message (Get-LogString -Key 'profile.inheritance.resolving_chain') -Level 'Info'
         $profileChain = Resolve-ProfileInheritance -InputProfile $baseProfile -ProfilesDirectory $ProfilesDirectory
 
-        Write-Status -Message (Get-LocalizedString -Key 'profile.inheritance.chain' -Parameters @{ Chain = ($profileChain.Name -join ' -> ') }) -Level 'Info'
+        Write-Status -Message (Get-LogString -Key 'profile.inheritance.chain' -Parameters @{ Chain = ($profileChain.Name -join ' -> ') }) -Level 'Info'
 
         # Merge applications
-        Write-Status -Message (Get-LocalizedString -Key 'profile.merge.applications') -Level 'Info'
+        Write-Status -Message (Get-LogString -Key 'profile.merge.applications') -Level 'Info'
         $mergedApplications = @(Merge-ProfileApplications -Profiles $profileChain)
 
         # Merge system configuration
-        Write-Status -Message (Get-LocalizedString -Key 'profile.merge.system_configuration') -Level 'Info'
+        Write-Status -Message (Get-LogString -Key 'profile.merge.system_configuration') -Level 'Info'
         $mergedConfig = Merge-ProfileSystemConfig -Profiles $profileChain
 
         # Create final profile
@@ -935,15 +935,15 @@ function Get-DeploymentProfile {
             ProfilePath = $profilePath
         }
 
-        Write-Status -Message (Get-LocalizedString -Key 'profile.loaded_successfully') -Level 'Success'
-        Write-Status -Message (Get-LocalizedString -Key 'profile.summary.total_applications' -Parameters @{ Count = $mergedApplications.Count }) -Level 'Info'
+        Write-Status -Message (Get-LogString -Key 'profile.loaded_successfully') -Level 'Success'
+        Write-Status -Message (Get-LogString -Key 'profile.summary.total_applications' -Parameters @{ Count = $mergedApplications.Count }) -Level 'Info'
         $configSectionCount = if ($mergedConfig) { $mergedConfig.Keys.Count } else { 0 }
-        Write-Status -Message (Get-LocalizedString -Key 'profile.summary.configuration_sections' -Parameters @{ Count = $configSectionCount }) -Level 'Info'
+        Write-Status -Message (Get-LogString -Key 'profile.summary.configuration_sections' -Parameters @{ Count = $configSectionCount }) -Level 'Info'
 
         return $finalProfile
 
     } catch {
-        Write-Status -Message (Get-LocalizedString -Key 'profile.load_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
+        Write-Status -Message (Get-LogString -Key 'profile.load_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
         throw
     }
 }
@@ -1250,14 +1250,14 @@ function Test-ProfileAppIds {
         }
 
         if ($result.InvalidAppIds.Count -gt 0) {
-            Write-Status -Message (Get-LocalizedString -Key 'profile.validation.invalid_appids' -Parameters @{ Count = $result.InvalidAppIds.Count; AppIds = ($result.InvalidAppIds -join ', ') }) -Level 'Warning'
+            Write-Status -Message (Get-LogString -Key 'profile.validation.invalid_appids' -Parameters @{ Count = $result.InvalidAppIds.Count; AppIds = ($result.InvalidAppIds -join ', ') }) -Level 'Warning'
         } else {
-            Write-Status -Message (Get-LocalizedString -Key 'profile.validation.all_appids_valid' -Parameters @{ Count = $result.TotalAppIds }) -Level 'Success'
+            Write-Status -Message (Get-LogString -Key 'profile.validation.all_appids_valid' -Parameters @{ Count = $result.TotalAppIds }) -Level 'Success'
         }
 
     } catch {
         $result.Valid = $false
-        $result.Errors += (Get-LocalizedString -Key 'profile.validation.failed' -Parameters @{ Error = $_.Exception.Message })
+        $result.Errors += (Get-LogString -Key 'profile.validation.failed' -Parameters @{ Error = $_.Exception.Message })
     }
 
     return $result
@@ -1306,7 +1306,7 @@ function Test-AllProfilesAppIds {
         $summary.TotalProfiles++
         $profileName = [System.IO.Path]::GetFileNameWithoutExtension($file.Name)
 
-        Write-Status -Message (Get-LocalizedString -Key 'profile.validation.validating_profile' -Parameters @{ Name = $profileName }) -Level 'Info'
+        Write-Status -Message (Get-LogString -Key 'profile.validation.validating_profile' -Parameters @{ Name = $profileName }) -Level 'Info'
         $result = Test-ProfileAppIds -ProfilePath $file.FullName
 
         $summary.Results[$profileName] = $result
@@ -1322,7 +1322,7 @@ function Test-AllProfilesAppIds {
     # Deduplicate invalid AppIds
     $summary.AllInvalidAppIds = $summary.AllInvalidAppIds | Select-Object -Unique
 
-    Write-Status -Message (Get-LocalizedString -Key 'profile.validation.complete' -Parameters @{ Valid = $summary.ValidProfiles; Total = $summary.TotalProfiles }) -Level $(if ($summary.InvalidProfiles -eq 0) { 'Success' } else { 'Warning' })
+    Write-Status -Message (Get-LogString -Key 'profile.validation.complete' -Parameters @{ Valid = $summary.ValidProfiles; Total = $summary.TotalProfiles }) -Level $(if ($summary.InvalidProfiles -eq 0) { 'Success' } else { 'Warning' })
 
     return $summary
 }

@@ -128,7 +128,7 @@ function Test-SourceHealth {
         if ($sources.Winget) {
             $healthResult.TotalSourceCount++
             if ($hasWinget) {
-                Write-Verbose (Get-LocalizedString -Key 'sourcehealth.checking_winget' -Parameters @{ PackageId = $sources.Winget })
+                Write-Verbose (Get-LogString -Key 'sourcehealth.checking_winget' -Parameters @{ PackageId = $sources.Winget })
                 $wingetResult = Test-WingetSource -PackageId $sources.Winget
                 $healthResult.Sources['Winget'] = $wingetResult
                 if ($wingetResult.Status -eq 'OK') {
@@ -143,7 +143,7 @@ function Test-SourceHealth {
         if ($sources.Chocolatey) {
             $healthResult.TotalSourceCount++
             if ($hasChoco) {
-                Write-Verbose (Get-LocalizedString -Key 'sourcehealth.checking_choco' -Parameters @{ PackageName = $sources.Chocolatey })
+                Write-Verbose (Get-LogString -Key 'sourcehealth.checking_choco' -Parameters @{ PackageName = $sources.Chocolatey })
                 $chocoResult = Test-ChocolateySource -PackageName $sources.Chocolatey
                 $healthResult.Sources['Chocolatey'] = $chocoResult
                 if ($chocoResult.Status -eq 'OK') {
@@ -158,7 +158,7 @@ function Test-SourceHealth {
         if ($sources.DirectUrl) {
             $healthResult.TotalSourceCount++
             if ($CheckDirectUrl) {
-                Write-Verbose (Get-LocalizedString -Key 'sourcehealth.checking_directurl' -Parameters @{ Url = $sources.DirectUrl })
+                Write-Verbose (Get-LogString -Key 'sourcehealth.checking_directurl' -Parameters @{ Url = $sources.DirectUrl })
                 $urlResult = Test-DirectUrlSource -Url $sources.DirectUrl
                 $healthResult.Sources['DirectUrl'] = $urlResult
                 if ($urlResult.Status -eq 'OK') {
@@ -218,7 +218,7 @@ function Repair-AppSources {
         # Check for dead DirectUrls
         if ($result.Sources.ContainsKey('DirectUrl') -and $result.Sources['DirectUrl'].Status -eq 'FAIL') {
             $report.DeadUrls += $result.AppName
-            Write-Verbose (Get-LocalizedString -Key 'sourcehealth.repair.flagged_dead_url' -Parameters @{ AppName = $result.AppName })
+            Write-Verbose (Get-LogString -Key 'sourcehealth.repair.flagged_dead_url' -Parameters @{ AppName = $result.AppName })
         }
 
         # Check for missing Chocolatey packages
@@ -234,7 +234,7 @@ function Repair-AppSources {
         # Update LastVerified for fully healthy apps
         if ($result.HealthySourceCount -eq $result.TotalSourceCount -and $result.TotalSourceCount -gt 0) {
             $report.VerifiedUpdated += $result.AppName
-            Write-Verbose (Get-LocalizedString -Key 'sourcehealth.repair.updated_verified' -Parameters @{ AppName = $result.AppName })
+            Write-Verbose (Get-LogString -Key 'sourcehealth.repair.updated_verified' -Parameters @{ AppName = $result.AppName })
         }
     }
 
@@ -242,7 +242,7 @@ function Repair-AppSources {
     if ($hasWingetIssues -and -not (Test-FeatureEnabled -FeatureName 'wingetForceOnHashMismatch')) {
         Set-FeatureOverride -FeatureName 'wingetForceOnHashMismatch' -Enabled $true
         $report.ForceEnabled = $true
-        Write-Verbose (Get-LocalizedString -Key 'sourcehealth.repair.enabled_force_flag')
+        Write-Verbose (Get-LogString -Key 'sourcehealth.repair.enabled_force_flag')
     }
 
     return $report
@@ -268,7 +268,7 @@ function Get-SourceHealthReport {
     )
 
     Write-Host ""
-    Write-Host (Get-LocalizedString -Key 'sourcehealth.title') -ForegroundColor Cyan
+    Write-Host (Get-LogString -Key 'sourcehealth.title') -ForegroundColor Cyan
     Write-Host ""
 
     $healthy = 0
@@ -320,13 +320,13 @@ function Get-SourceHealthReport {
     }
 
     Write-Host ""
-    Write-Host (Get-LocalizedString -Key 'sourcehealth.summary.total' -Parameters @{ Count = $Results.Count }) -ForegroundColor Cyan
-    Write-Host (Get-LocalizedString -Key 'sourcehealth.summary.healthy' -Parameters @{ Count = $healthy }) -ForegroundColor Green
+    Write-Host (Get-LogString -Key 'sourcehealth.summary.total' -Parameters @{ Count = $Results.Count }) -ForegroundColor Cyan
+    Write-Host (Get-LogString -Key 'sourcehealth.summary.healthy' -Parameters @{ Count = $healthy }) -ForegroundColor Green
     if ($degraded -gt 0) {
-        Write-Host (Get-LocalizedString -Key 'sourcehealth.summary.degraded' -Parameters @{ Count = $degraded }) -ForegroundColor Yellow
+        Write-Host (Get-LogString -Key 'sourcehealth.summary.degraded' -Parameters @{ Count = $degraded }) -ForegroundColor Yellow
     }
     if ($critical -gt 0) {
-        Write-Host (Get-LocalizedString -Key 'sourcehealth.summary.critical' -Parameters @{ Count = $critical }) -ForegroundColor Red
+        Write-Host (Get-LogString -Key 'sourcehealth.summary.critical' -Parameters @{ Count = $critical }) -ForegroundColor Red
     }
     Write-Host ""
 }
@@ -354,13 +354,13 @@ function Test-WingetSource {
         if ($output -match [regex]::Escape($PackageId)) {
             return @{
                 Status  = 'OK'
-                Message = Get-LocalizedString -Key 'sourcehealth.winget_ok' -Parameters @{ PackageId = $PackageId }
+                Message = Get-LogString -Key 'sourcehealth.winget_ok' -Parameters @{ PackageId = $PackageId }
             }
         }
 
         return @{
             Status  = 'FAIL'
-            Message = Get-LocalizedString -Key 'sourcehealth.winget_not_found' -Parameters @{ PackageId = $PackageId }
+            Message = Get-LogString -Key 'sourcehealth.winget_not_found' -Parameters @{ PackageId = $PackageId }
         }
     }
     catch {
@@ -392,13 +392,13 @@ function Test-ChocolateySource {
         if ($output -match [regex]::Escape($PackageName)) {
             return @{
                 Status  = 'OK'
-                Message = Get-LocalizedString -Key 'sourcehealth.choco_ok' -Parameters @{ PackageName = $PackageName }
+                Message = Get-LogString -Key 'sourcehealth.choco_ok' -Parameters @{ PackageName = $PackageName }
             }
         }
 
         return @{
             Status  = 'FAIL'
-            Message = Get-LocalizedString -Key 'sourcehealth.choco_not_found' -Parameters @{ PackageName = $PackageName }
+            Message = Get-LogString -Key 'sourcehealth.choco_not_found' -Parameters @{ PackageName = $PackageName }
         }
     }
     catch {
@@ -432,19 +432,19 @@ function Test-DirectUrlSource {
         if ($statusCode -ge 200 -and $statusCode -lt 400) {
             return @{
                 Status  = 'OK'
-                Message = Get-LocalizedString -Key 'sourcehealth.directurl_ok' -Parameters @{ Url = $Url }
+                Message = Get-LogString -Key 'sourcehealth.directurl_ok' -Parameters @{ Url = $Url }
             }
         }
 
         return @{
             Status  = 'FAIL'
-            Message = Get-LocalizedString -Key 'sourcehealth.directurl_unreachable' -Parameters @{ StatusCode = $statusCode; Url = $Url }
+            Message = Get-LogString -Key 'sourcehealth.directurl_unreachable' -Parameters @{ StatusCode = $statusCode; Url = $Url }
         }
     }
     catch {
         return @{
             Status  = 'FAIL'
-            Message = Get-LocalizedString -Key 'sourcehealth.directurl_error' -Parameters @{ Error = $_.Exception.Message }
+            Message = Get-LogString -Key 'sourcehealth.directurl_error' -Parameters @{ Error = $_.Exception.Message }
         }
     }
 }

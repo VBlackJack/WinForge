@@ -110,6 +110,26 @@ Describe 'Localization Module' {
         }
     }
 
+    Context 'Get-LogString' {
+        BeforeAll {
+            Initialize-Localization -Locale 'fr'
+        }
+
+        It 'Should resolve logged messages from English resources when UI locale is French' {
+            $localized = Get-LocalizedString -Key 'orchestrator.already_installed_no_update'
+            $logged = Get-LogString -Key 'orchestrator.already_installed_no_update'
+
+            $localized | Should -Not -Be $logged
+            $logged | Should -Be 'Already installed (no update available)'
+        }
+
+        It 'Should support interpolation with English resources' {
+            $logged = Get-LogString -Key 'orchestrator.already_installed' -Parameters @{ AppName = 'Chocolatey' }
+
+            $logged | Should -Be 'Already installed: Chocolatey'
+        }
+    }
+
     Context 'Get-AvailableLocales' {
         It 'Should return available locales' {
             $result = Get-AvailableLocales
@@ -148,6 +168,7 @@ Describe 'Localization Module' {
             $expectedFunctions = @(
                 'Initialize-Localization',
                 'Get-LocalizedString',
+                'Get-LogString',
                 'Get-CurrentLocale',
                 'Set-CurrentLocale',
                 'Get-AvailableLocales',

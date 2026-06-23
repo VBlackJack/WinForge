@@ -16,6 +16,7 @@
 
 using System.Globalization;
 using System.IO;
+using System.Text;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Media;
@@ -43,6 +44,7 @@ public partial class App : Application
 
     private static IRepositoryPathService? _bootstrapPathService;
     private static bool? _reducedMotionOverride;
+    private static readonly UTF8Encoding StartupLogEncoding = new(encoderShouldEmitUTF8Identifier: false);
 
     /// <summary>
     /// Gets the service provider for dependency injection.
@@ -332,7 +334,7 @@ public partial class App : Application
                 Directory.CreateDirectory(logDirectory);
             }
 
-            File.AppendAllText(logPath, $"[{DateTime.Now:HH:mm:ss}] {message}\n");
+            File.AppendAllText(logPath, $"[{DateTime.Now:HH:mm:ss}] {message}\n", StartupLogEncoding);
         }
         catch (Exception ex)
         {
@@ -352,8 +354,10 @@ public partial class App : Application
                 Directory.CreateDirectory(logDirectory);
             }
 
-            File.AppendAllText(logPath,
-                $"[{DateTime.Now:HH:mm:ss}] ERROR in {context}:\n{ex}\n\n");
+            File.AppendAllText(
+                logPath,
+                $"[{DateTime.Now:HH:mm:ss}] ERROR in {context}:\n{ex}\n\n",
+                StartupLogEncoding);
         }
         catch (Exception logEx)
         {

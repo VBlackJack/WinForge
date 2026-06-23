@@ -39,7 +39,7 @@ $script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
 
 # Import Localization module for i18n
 $script:LocalizationPath = Join-Path $script:ModuleRoot 'Localization.psm1'
-if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Get-LogString -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:LocalizationPath) {
         Import-Module -Name $script:LocalizationPath -Force
     }
@@ -143,7 +143,7 @@ function Test-ApiRequestBody {
         $result.IsValid = $true
     }
     catch {
-        $result.Errors = @((Get-LocalizedString -Key 'api.endpoints.request_body_validation_failed' -Parameters @{ Error = $_.Exception.Message }))
+        $result.Errors = @((Get-LogString -Key 'api.endpoints.request_body_validation_failed' -Parameters @{ Error = $_.Exception.Message }))
     }
 
     return $result
@@ -184,7 +184,7 @@ function Test-JsonFileValid {
 
     try {
         if (-not (Test-Path -Path $FilePath)) {
-            $result.ErrorMessage = (Get-LocalizedString -Key 'api.endpoints.file_not_found' -Parameters @{ FilePath = $FilePath })
+            $result.ErrorMessage = (Get-LogString -Key 'api.endpoints.file_not_found' -Parameters @{ FilePath = $FilePath })
             return $result
         }
 
@@ -205,7 +205,7 @@ function Test-JsonFileValid {
             if (Test-Path -Path $schemaPath) {
                 $schemaValidation = Test-JsonAgainstSchema -JsonContent $jsonContent -SchemaPath $schemaPath
                 if (-not $schemaValidation.IsValid) {
-                    $result.ErrorMessage = (Get-LocalizedString -Key 'api.endpoints.schema_validation_failed' -Parameters @{ Errors = ($schemaValidation.Errors -join '; ') })
+                    $result.ErrorMessage = (Get-LogString -Key 'api.endpoints.schema_validation_failed' -Parameters @{ Errors = ($schemaValidation.Errors -join '; ') })
                     return $result
                 }
             }
@@ -214,7 +214,7 @@ function Test-JsonFileValid {
         $result.IsValid = $true
     }
     catch {
-        $result.ErrorMessage = (Get-LocalizedString -Key 'api.endpoints.json_parsing_failed' -Parameters @{ Error = $_.Exception.Message })
+        $result.ErrorMessage = (Get-LogString -Key 'api.endpoints.json_parsing_failed' -Parameters @{ Error = $_.Exception.Message })
     }
 
     return $result
@@ -311,7 +311,7 @@ function Get-ProfilesHandler {
                 $profiles += @{
                     id = $file.BaseName
                     name = $file.BaseName
-                    error = (Get-LocalizedString -Key 'api.endpoints.profile_parse_failed' -Parameters @{ Error = $_.Exception.Message })
+                    error = (Get-LogString -Key 'api.endpoints.profile_parse_failed' -Parameters @{ Error = $_.Exception.Message })
                 }
             }
         }
@@ -385,7 +385,7 @@ function Get-ApplicationsHandler {
             }
         } catch {
             return @{
-                error = (Get-LocalizedString -Key 'api.endpoints.database_load_failed' -Parameters @{ Error = $_.Exception.Message })
+                error = (Get-LogString -Key 'api.endpoints.database_load_failed' -Parameters @{ Error = $_.Exception.Message })
             }
         }
     }
@@ -480,7 +480,7 @@ function Start-DeploymentHandler {
     if ($script:DeploymentState.Status -eq 'Running') {
         return @{
             success = $false
-            error = (Get-LocalizedString -Key 'api.endpoints.deployment_already_running')
+            error = (Get-LogString -Key 'api.endpoints.deployment_already_running')
             currentProfile = $script:DeploymentState.CurrentProfile
         }
     }
@@ -492,7 +492,7 @@ function Start-DeploymentHandler {
     if (-not $validationResult.IsValid) {
         return @{
             success = $false
-            error = (Get-LocalizedString -Key 'api.endpoints.request_validation_failed')
+            error = (Get-LogString -Key 'api.endpoints.request_validation_failed')
             validationErrors = $validationResult.Errors
         }
     }
@@ -500,7 +500,7 @@ function Start-DeploymentHandler {
     if (-not $body -or -not $body.profile) {
         return @{
             success = $false
-            error = (Get-LocalizedString -Key 'api.endpoints.profile_name_required')
+            error = (Get-LogString -Key 'api.endpoints.profile_name_required')
         }
     }
 
@@ -511,7 +511,7 @@ function Start-DeploymentHandler {
     if ($profileName -match '\.\.|[/\\]') {
         return @{
             success = $false
-            error = (Get-LocalizedString -Key 'api.endpoints.profile_name_invalid_chars')
+            error = (Get-LogString -Key 'api.endpoints.profile_name_invalid_chars')
         }
     }
 
@@ -519,7 +519,7 @@ function Start-DeploymentHandler {
     if ($profileName.Length -gt $script:MAX_PROFILE_NAME_LENGTH) {
         return @{
             success = $false
-            error = (Get-LocalizedString -Key 'api.endpoints.profile_name_too_long' -Parameters @{ MaxLength = $script:MAX_PROFILE_NAME_LENGTH })
+            error = (Get-LogString -Key 'api.endpoints.profile_name_too_long' -Parameters @{ MaxLength = $script:MAX_PROFILE_NAME_LENGTH })
         }
     }
 
@@ -532,14 +532,14 @@ function Start-DeploymentHandler {
     if (-not $canonicalPath.StartsWith($canonicalBase, [StringComparison]::OrdinalIgnoreCase)) {
         return @{
             success = $false
-            error = (Get-LocalizedString -Key 'api.endpoints.security_invalid_profile_path')
+            error = (Get-LogString -Key 'api.endpoints.security_invalid_profile_path')
         }
     }
 
     if (-not (Test-Path $profilePath)) {
         return @{
             success = $false
-            error = (Get-LocalizedString -Key 'api.endpoints.profile_not_found' -Parameters @{ ProfileName = $profileName })
+            error = (Get-LogString -Key 'api.endpoints.profile_not_found' -Parameters @{ ProfileName = $profileName })
         }
     }
 
@@ -556,7 +556,7 @@ function Start-DeploymentHandler {
 
     return @{
         success = $true
-        message = (Get-LocalizedString -Key 'api.endpoints.deployment_started' -Parameters @{ ProfileName = $profileName })
+        message = (Get-LogString -Key 'api.endpoints.deployment_started' -Parameters @{ ProfileName = $profileName })
         profile = $profileName
         testMode = $testMode
         startTime = $script:DeploymentState.StartTime.ToString('o')
@@ -592,7 +592,7 @@ function Start-RollbackHandler {
     if (-not $validationResult.IsValid) {
         return @{
             success = $false
-            error = (Get-LocalizedString -Key 'api.endpoints.request_validation_failed')
+            error = (Get-LogString -Key 'api.endpoints.request_validation_failed')
             validationErrors = $validationResult.Errors
         }
     }
@@ -611,7 +611,7 @@ function Start-RollbackHandler {
         if ($summary.TotalApps -eq 0) {
             return @{
                 success = $false
-                error = (Get-LocalizedString -Key 'api.endpoints.no_apps_to_rollback')
+                error = (Get-LogString -Key 'api.endpoints.no_apps_to_rollback')
             }
         }
 
@@ -628,7 +628,7 @@ function Start-RollbackHandler {
                 Write-Verbose "Rollback execution failed: $($_.Exception.Message)"
                 return @{
                     success = $false
-                    error = (Get-LocalizedString -Key 'api.error.internal_error')
+                    error = (Get-LogString -Key 'api.error.internal_error')
                     code = 'ROLLBACK_ERROR'
                 }
             }
@@ -636,7 +636,7 @@ function Start-RollbackHandler {
 
         return @{
             success = $true
-            message = (Get-LocalizedString -Key 'api.endpoints.rollback_summary_retrieved')
+            message = (Get-LogString -Key 'api.endpoints.rollback_summary_retrieved')
             summary = @{
                 sessionId = $summary.SessionId
                 totalApps = $summary.TotalApps
@@ -648,7 +648,7 @@ function Start-RollbackHandler {
 
     return @{
         success = $false
-        error = (Get-LocalizedString -Key 'api.endpoints.rollback_manager_unavailable')
+        error = (Get-LogString -Key 'api.endpoints.rollback_manager_unavailable')
     }
 }
 
@@ -730,7 +730,7 @@ function Get-CsrfTokenHandler {
 
     if (-not $apiKey) {
         return @{
-            error = (Get-LocalizedString -Key 'api.endpoints.csrf_api_key_required')
+            error = (Get-LogString -Key 'api.endpoints.csrf_api_key_required')
             code = 'UNAUTHORIZED'
         }
     }
@@ -788,7 +788,7 @@ function Register-DefaultEndpoints {
     Register-ApiEndpoint -Path '/api/cache/stats' -Method 'GET' -Handler ${function:Get-CacheStatsHandler} -Description 'Get cache statistics'
     Register-ApiEndpoint -Path '/api/csrf-token' -Method 'GET' -Handler ${function:Get-CsrfTokenHandler} -Description 'Get CSRF token for state-changing requests'
 
-    Write-Verbose (Get-LocalizedString -Key 'api.endpoints.default_endpoints_registered' -Parameters @{ Count = 8 })
+    Write-Verbose (Get-LogString -Key 'api.endpoints.default_endpoints_registered' -Parameters @{ Count = 8 })
 }
 
 function Update-DeploymentState {

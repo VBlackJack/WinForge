@@ -15,6 +15,7 @@
  */
 
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Text.Json;
@@ -30,6 +31,8 @@ namespace WinForge.GUI.Services.Implementations;
 /// </summary>
 public class ApplicationManagementServiceImpl : IApplicationManagementService
 {
+    private static readonly CultureInfo LogCulture = CultureInfo.GetCultureInfo("en");
+
     private readonly IRepositoryPathService _pathService;
     private readonly IPowerShellExecutionService _executionService;
     private readonly IApplicationCacheService _cacheService;
@@ -806,7 +809,7 @@ try {{
 
                 string errorMsg = string.IsNullOrEmpty(wingetId) && string.IsNullOrEmpty(chocoPackage)
                     ? (rejectedInvalidPackageId
-                        ? Resources.Resources.AppManagement_InvalidPackageId
+                        ? GetLogResource(nameof(Resources.Resources.AppManagement_InvalidPackageId))
                         : "No uninstall sources available for this application")
                     : "All uninstallation methods failed";
 
@@ -857,7 +860,7 @@ try {{
 
                 if (!PackageIdValidator.IsValidPackageId(wingetId))
                 {
-                    return UpdateCheckResult.Failed(Resources.Resources.AppManagement_CannotDetermineVersion);
+                    return UpdateCheckResult.Failed(GetLogResource(nameof(Resources.Resources.AppManagement_CannotDetermineVersion)));
                 }
 
                 string installedVersion = await GetInstalledVersionAsync(wingetId);
@@ -991,7 +994,7 @@ try {{
 
                 string errorMsg = string.IsNullOrEmpty(wingetId) && string.IsNullOrEmpty(chocoPackage)
                     ? (rejectedInvalidPackageId
-                        ? Resources.Resources.AppManagement_InvalidPackageId
+                        ? GetLogResource(nameof(Resources.Resources.AppManagement_InvalidPackageId))
                         : "No update sources available for this application")
                     : "All update methods failed";
 
@@ -1027,6 +1030,9 @@ try {{
         logBuilder.AppendLine($"Rejected invalid {sourceName} package id (failed safe-charset validation)");
         return true;
     }
+
+    private static string GetLogResource(string resourceName)
+        => Resources.Resources.ResourceManager.GetString(resourceName, LogCulture) ?? resourceName;
 
     /// <summary>
     /// Gets the installed version of a package using winget list.

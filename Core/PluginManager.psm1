@@ -42,7 +42,7 @@ $script:ConfigPath = Join-Path $script:RepositoryRoot 'Config\plugins-settings.j
 
 # Import Localization module for i18n
 $script:LocalizationPath = Join-Path $script:ModuleRoot 'Localization.psm1'
-if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Get-LogString -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:LocalizationPath) {
         Import-Module -Name $script:LocalizationPath -Force
     }
@@ -135,7 +135,7 @@ function Initialize-PluginManager {
             New-Item -Path $script:PluginsDir -ItemType Directory -Force | Out-Null
             Write-Verbose "Created plugins directory: $script:PluginsDir"
         } catch {
-            Write-Warning (Get-LocalizedString -Key 'plugins.directory_create_failed' -Parameters @{ Error = $_.Exception.Message })
+            Write-Warning (Get-LogString -Key 'plugins.directory_create_failed' -Parameters @{ Error = $_.Exception.Message })
         }
     }
 
@@ -152,7 +152,7 @@ function Initialize-PluginManager {
                 try {
                     Import-Plugin -Name $plugin.Name
                 } catch {
-                    Write-Warning (Get-LocalizedString -Key 'plugins.load_failed' -Parameters @{ Name = $plugin.Name; Error = $_.Exception.Message })
+                    Write-Warning (Get-LogString -Key 'plugins.load_failed' -Parameters @{ Name = $plugin.Name; Error = $_.Exception.Message })
                 }
             }
         }
@@ -308,7 +308,7 @@ function Import-Plugin {
 
     $config = Get-PluginConfig
     if (-not $config.Enabled) {
-        Write-Warning (Get-LocalizedString -Key 'plugins.disabled')
+        Write-Warning (Get-LogString -Key 'plugins.disabled')
         return
     }
 
@@ -322,12 +322,12 @@ function Import-Plugin {
     $plugin = Get-AvailablePlugins | Where-Object { $_.Name -eq $Name } | Select-Object -First 1
 
     if (-not $plugin) {
-        throw (Get-LocalizedString -Key 'plugins.not_found' -Parameters @{ Name = $Name })
+        throw (Get-LogString -Key 'plugins.not_found' -Parameters @{ Name = $Name })
     }
 
     # Validate manifest
     if (-not (Test-PluginManifest -ManifestPath $plugin.ManifestPath)) {
-        throw (Get-LocalizedString -Key 'plugins.invalid_manifest' -Parameters @{ Name = $Name })
+        throw (Get-LogString -Key 'plugins.invalid_manifest' -Parameters @{ Name = $Name })
     }
 
     # Load entry point module with path traversal protection
@@ -341,7 +341,7 @@ function Import-Plugin {
     if (Test-Path $canonicalEntryPath) {
         $resolvedEntryPath = (Get-Item -LiteralPath $canonicalEntryPath -Force).FullName
         if ($resolvedEntryPath -ne $canonicalEntryPath) {
-            Write-Status -Message (Get-LocalizedString -Key 'plugins.security.symlink_validation') -Level 'Verbose' -Category 'Plugin'
+            Write-Status -Message (Get-LogString -Key 'plugins.security.symlink_validation') -Level 'Verbose' -Category 'Plugin'
             $canonicalEntryPath = $resolvedEntryPath
         }
     }
@@ -349,14 +349,14 @@ function Import-Plugin {
     # Ensure plugin directory path ends with separator for proper prefix matching
     $canonicalPluginPathWithSep = $canonicalPluginPath + [System.IO.Path]::DirectorySeparatorChar
     if (-not $canonicalEntryPath.StartsWith($canonicalPluginPathWithSep, [StringComparison]::OrdinalIgnoreCase)) {
-        throw (Get-LocalizedString -Key 'plugins.security.path_traversal' -Parameters @{ EntryPoint = $plugin.EntryPoint })
+        throw (Get-LogString -Key 'plugins.security.path_traversal' -Parameters @{ EntryPoint = $plugin.EntryPoint })
     }
 
     if (-not (Test-Path $entryPointPath)) {
-        throw (Get-LocalizedString -Key 'plugins.security.entry_point_not_found' -Parameters @{ Path = $entryPointPath })
+        throw (Get-LogString -Key 'plugins.security.entry_point_not_found' -Parameters @{ Path = $entryPointPath })
     }
 
-    Write-Status -Message (Get-LocalizedString -Key 'plugins.loading' -Parameters @{ Name = $Name }) -Level 'Info' -Category 'Plugin'
+    Write-Status -Message (Get-LogString -Key 'plugins.loading' -Parameters @{ Name = $Name }) -Level 'Info' -Category 'Plugin'
 
     try {
         # Import the plugin module
@@ -391,10 +391,10 @@ function Import-Plugin {
             Methods = $plugin.InstallationMethods
         }
 
-        Write-Status -Message (Get-LocalizedString -Key 'plugins.loaded' -Parameters @{ Name = $Name; Version = $plugin.Version }) -Level 'Success' -Category 'Plugin'
+        Write-Status -Message (Get-LogString -Key 'plugins.loaded' -Parameters @{ Name = $Name; Version = $plugin.Version }) -Level 'Success' -Category 'Plugin'
 
     } catch {
-        Write-Status -Message (Get-LocalizedString -Key 'plugins.load_failed' -Parameters @{ Name = $Name; Error = $_.Exception.Message }) -Level 'Error' -Category 'Plugin'
+        Write-Status -Message (Get-LogString -Key 'plugins.load_failed' -Parameters @{ Name = $Name; Error = $_.Exception.Message }) -Level 'Error' -Category 'Plugin'
         throw
     }
 }
@@ -421,7 +421,7 @@ function Remove-Plugin {
     )
 
     if (-not $script:PluginState.LoadedPlugins.ContainsKey($Name)) {
-        Write-Warning (Get-LocalizedString -Key 'plugins.not_loaded' -Parameters @{ Name = $Name })
+        Write-Warning (Get-LogString -Key 'plugins.not_loaded' -Parameters @{ Name = $Name })
         return
     }
 
@@ -443,7 +443,7 @@ function Remove-Plugin {
     # Remove from loaded list
     $script:PluginState.LoadedPlugins.Remove($Name)
 
-    Write-Status -Message (Get-LocalizedString -Key 'plugins.unloaded' -Parameters @{ Name = $Name }) -Level 'Info' -Category 'Plugin'
+    Write-Status -Message (Get-LogString -Key 'plugins.unloaded' -Parameters @{ Name = $Name }) -Level 'Info' -Category 'Plugin'
 }
 
 # === HOOK SYSTEM ===
@@ -483,7 +483,7 @@ function Register-PluginHook {
     )
 
     if (-not $script:PluginState.RegisteredHooks.ContainsKey($HookName)) {
-        Write-Warning (Get-LocalizedString -Key 'plugins.unknown_hook' -Parameters @{ Hook = $HookName })
+        Write-Warning (Get-LogString -Key 'plugins.unknown_hook' -Parameters @{ Hook = $HookName })
         return
     }
 
@@ -559,7 +559,7 @@ function Invoke-PluginHook {
 
     if ($useSandbox -and (Get-Command -Name Invoke-PluginHookSandboxed -ErrorAction SilentlyContinue)) {
         # Use sandboxed execution
-        Write-Status -Message (Get-LocalizedString -Key 'plugins.sandbox.hook_sandboxed' -Parameters @{ Hook = $HookName; Count = $handlers.Count }) -Level 'Verbose' -Category 'Plugin'
+        Write-Status -Message (Get-LogString -Key 'plugins.sandbox.hook_sandboxed' -Parameters @{ Hook = $HookName; Count = $handlers.Count }) -Level 'Verbose' -Category 'Plugin'
         return Invoke-PluginHookSandboxed -HookName $HookName -Context $Context -Handlers $handlers
     }
 
@@ -576,7 +576,7 @@ function Invoke-PluginHook {
                 Result = $result
             }
         } catch {
-            Write-Warning (Get-LocalizedString -Key 'plugins.hook_failed' -Parameters @{ Hook = $HookName; Name = $handler.PluginName; Error = $_.Exception.Message })
+            Write-Warning (Get-LogString -Key 'plugins.hook_failed' -Parameters @{ Hook = $HookName; Name = $handler.PluginName; Error = $_.Exception.Message })
 
             $results += @{
                 Plugin = $handler.PluginName

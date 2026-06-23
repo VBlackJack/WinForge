@@ -48,7 +48,7 @@ if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
 }
 
 # Import Localization module
-if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Get-LogString -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:LocalizationModulePath) {
         Import-Module -Name $script:LocalizationModulePath -Force
     }

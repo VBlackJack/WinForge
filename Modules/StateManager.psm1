@@ -233,7 +233,7 @@ if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
     }
 }
 
-if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Get-LogString -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:LocalizationModulePath) {
         Import-Module -Name $script:LocalizationModulePath -Force
     }
@@ -309,7 +309,7 @@ function Test-ValidStateData {
         try {
             [guid]::Parse($sessionId) | Out-Null
         } catch {
-            Write-Status -Message (Get-LocalizedString -Key 'state.validation.invalid_session_id') -Level 'Warning' -Category 'State'
+            Write-Status -Message (Get-LogString -Key 'state.validation.invalid_session_id') -Level 'Warning' -Category 'State'
             return $false
         }
     }
@@ -319,11 +319,11 @@ function Test-ValidStateData {
     $profileName = if ($profileNameProp) { $profileNameProp.Value } else { $null }
     if ($profileName) {
         if ($profileName -match '\.\.|[/\\|<>:"|?*]') {
-            Write-Status -Message (Get-LocalizedString -Key 'state.validation.invalid_profile_name') -Level 'Warning' -Category 'State'
+            Write-Status -Message (Get-LogString -Key 'state.validation.invalid_profile_name') -Level 'Warning' -Category 'State'
             return $false
         }
         if ($profileName.Length -gt 100) {
-            Write-Status -Message (Get-LocalizedString -Key 'state.validation.profile_name_too_long') -Level 'Warning' -Category 'State'
+            Write-Status -Message (Get-LogString -Key 'state.validation.profile_name_too_long') -Level 'Warning' -Category 'State'
             return $false
         }
     }
@@ -333,7 +333,7 @@ function Test-ValidStateData {
     $totalApps = if ($totalAppsProp) { $totalAppsProp.Value } else { $null }
     if ($null -ne $totalApps) {
         if ($totalApps -lt 0 -or $totalApps -gt 1000) {
-            Write-Status -Message (Get-LocalizedString -Key 'state.validation.invalid_total_apps') -Level 'Warning' -Category 'State'
+            Write-Status -Message (Get-LogString -Key 'state.validation.invalid_total_apps') -Level 'Warning' -Category 'State'
             return $false
         }
     }
@@ -351,7 +351,7 @@ function Test-ValidStateData {
         if ($appList) {
             foreach ($appName in $appList) {
                 if ($appName -match $dangerousPattern) {
-                    Write-Status -Message (Get-LocalizedString -Key 'state.validation.dangerous_app_name') -Level 'Warning' -Category 'State'
+                    Write-Status -Message (Get-LogString -Key 'state.validation.dangerous_app_name') -Level 'Warning' -Category 'State'
                     return $false
                 }
             }
@@ -425,7 +425,7 @@ function Initialize-RollbackSession {
     }
 
     Save-RollbackState
-    Write-Status -Message (Get-LocalizedString -Key 'state.rollback.session_initialized' -Parameters @{ SessionId = $script:RollbackState.SessionId }) -Level 'Verbose' -Category 'State'
+    Write-Status -Message (Get-LogString -Key 'state.rollback.session_initialized' -Parameters @{ SessionId = $script:RollbackState.SessionId }) -Level 'Verbose' -Category 'State'
 
     return $script:RollbackState.SessionId
 }
@@ -444,7 +444,7 @@ function Save-RollbackState {
     try {
         $script:RollbackState | ConvertTo-Json -Depth 5 | Set-Content -Path $script:RollbackStateFile -Encoding UTF8
     } catch {
-        Write-Status -Message (Get-LocalizedString -Key 'state.rollback.save_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Warning' -Category 'State'
+        Write-Status -Message (Get-LogString -Key 'state.rollback.save_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Warning' -Category 'State'
     }
 }
 
@@ -488,13 +488,13 @@ function Add-RollbackEntry {
 
     # Validate entry
     if (-not (Test-ValidRollbackEntry -Entry $entry)) {
-        Write-Status -Message (Get-LocalizedString -Key 'state.rollback.invalid_entry') -Level 'Warning' -Category 'State'
+        Write-Status -Message (Get-LogString -Key 'state.rollback.invalid_entry') -Level 'Warning' -Category 'State'
         return
     }
 
     $script:RollbackState.InstalledApps += $entry
     Save-RollbackState
-    Write-Status -Message (Get-LocalizedString -Key 'state.rollback.entry_added' -Parameters @{ AppName = $AppName; Method = $Method }) -Level 'Verbose' -Category 'State'
+    Write-Status -Message (Get-LogString -Key 'state.rollback.entry_added' -Parameters @{ AppName = $AppName; Method = $Method }) -Level 'Verbose' -Category 'State'
 }
 
 function Get-RollbackState {
@@ -553,7 +553,7 @@ function Clear-RollbackState {
         Remove-Item $script:RollbackStateFile -Force -ErrorAction SilentlyContinue
     }
 
-    Write-Status -Message (Get-LocalizedString -Key 'state.rollback.cleared') -Level 'Verbose' -Category 'State'
+    Write-Status -Message (Get-LogString -Key 'state.rollback.cleared') -Level 'Verbose' -Category 'State'
 }
 
 function Restore-RollbackState {
@@ -582,11 +582,11 @@ function Restore-RollbackState {
 
             if (Test-ValidStateData -StateData $stateData) {
                 $script:RollbackState = $stateData
-                Write-Status -Message (Get-LocalizedString -Key 'state.rollback.restored') -Level 'Verbose' -Category 'State'
+                Write-Status -Message (Get-LogString -Key 'state.rollback.restored') -Level 'Verbose' -Category 'State'
                 return $true
             }
         } catch {
-            Write-Status -Message (Get-LocalizedString -Key 'state.rollback.restore_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Warning' -Category 'State'
+            Write-Status -Message (Get-LogString -Key 'state.rollback.restore_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Warning' -Category 'State'
         }
     }
 
@@ -635,7 +635,7 @@ function Initialize-DeploymentSession {
     }
 
     Save-DeploymentState
-    Write-Status -Message (Get-LocalizedString -Key 'state.deployment.session_initialized' -Parameters @{ ProfileName = $ProfileName; Count = $Applications.Count }) -Level 'Info' -Category 'State'
+    Write-Status -Message (Get-LogString -Key 'state.deployment.session_initialized' -Parameters @{ ProfileName = $ProfileName; Count = $Applications.Count }) -Level 'Info' -Category 'State'
 
     return $script:DeploymentState.SessionId
 }
@@ -656,7 +656,7 @@ function Save-DeploymentState {
         $script:DeploymentState.LastUpdated = Get-Date -Format 'o'
         $script:DeploymentState | ConvertTo-Json -Depth 5 | Set-Content -Path $script:DeploymentStateFile -Encoding UTF8
     } catch {
-        Write-Status -Message (Get-LocalizedString -Key 'state.deployment.save_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Warning' -Category 'State'
+        Write-Status -Message (Get-LogString -Key 'state.deployment.save_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Warning' -Category 'State'
     }
 }
 
@@ -730,7 +730,7 @@ function Get-DeploymentState {
                 return $stateData
             }
         } catch {
-            Write-Status -Message (Get-LocalizedString -Key 'state.deployment.load_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Warning' -Category 'State'
+            Write-Status -Message (Get-LogString -Key 'state.deployment.load_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Warning' -Category 'State'
         }
     }
 
@@ -786,7 +786,7 @@ function Clear-DeploymentState {
         Remove-Item $script:DeploymentStateFile -Force -ErrorAction SilentlyContinue
     }
 
-    Write-Status -Message (Get-LocalizedString -Key 'state.deployment.cleared') -Level 'Verbose' -Category 'State'
+    Write-Status -Message (Get-LogString -Key 'state.deployment.cleared') -Level 'Verbose' -Category 'State'
 }
 
 function Test-DeploymentInProgress {

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Globalization;
 using System.Text.Json;
 using Moq;
 using WinForge.GUI.Models;
@@ -65,7 +66,7 @@ public class ApplicationManagementServicePackageIdValidationTests
         InstallResult result = await ExecuteOperationAsync(operation, service, app);
 
         Assert.False(result.Success);
-        Assert.Equal(WinForge.GUI.Resources.Resources.AppManagement_InvalidPackageId, result.Message);
+        Assert.Equal(GetEnglishResource(nameof(WinForge.GUI.Resources.Resources.AppManagement_InvalidPackageId)), result.Message);
         Assert.Contains(
             $"Rejected invalid {sourceLabel} package id (failed safe-charset validation)",
             result.Logs,
@@ -84,7 +85,7 @@ public class ApplicationManagementServicePackageIdValidationTests
         UpdateCheckResult result = await service.CheckApplicationUpdateAsync(app);
 
         Assert.False(result.HasUpdate);
-        Assert.Equal(WinForge.GUI.Resources.Resources.AppManagement_CannotDetermineVersion, result.ErrorMessage);
+        Assert.Equal(GetEnglishResource(nameof(WinForge.GUI.Resources.Resources.AppManagement_CannotDetermineVersion)), result.ErrorMessage);
         Assert.Equal(string.Empty, result.CurrentVersion);
         Assert.Equal(string.Empty, result.AvailableVersion);
     }
@@ -106,6 +107,9 @@ public class ApplicationManagementServicePackageIdValidationTests
 
         throw new ArgumentOutOfRangeException(nameof(operation), operation, "Unknown operation.");
     }
+
+    private static string GetEnglishResource(string key)
+        => WinForge.GUI.Resources.Resources.ResourceManager.GetString(key, CultureInfo.GetCultureInfo("en")) ?? key;
 
     private static ApplicationModel CreateInstalledApp()
     {

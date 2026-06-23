@@ -58,7 +58,7 @@ if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
     }
 }
 
-if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Get-LogString -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:LocalizationModulePath) {
         Import-Module -Name $script:LocalizationModulePath -Force
     }
@@ -181,11 +181,11 @@ function Invoke-Rollback {
 
     $rollbackState = Get-RollbackState
     if ($rollbackState.InstalledApps.Count -eq 0) {
-        Write-Status -Message (Get-LocalizedString -Key 'rollback.no_apps') -Level 'Info'
+        Write-Status -Message (Get-LogString -Key 'rollback.no_apps') -Level 'Info'
         return $result
     }
 
-    Write-Status -Message (Get-LocalizedString -Key 'rollback.rolling_back' -Parameters @{ Count = $rollbackState.InstalledApps.Count }) -Level 'Info'
+    Write-Status -Message (Get-LogString -Key 'rollback.rolling_back' -Parameters @{ Count = $rollbackState.InstalledApps.Count }) -Level 'Info'
 
     foreach ($app in $rollbackState.InstalledApps) {
         $uninstalled = $false
@@ -207,20 +207,20 @@ function Invoke-Rollback {
                     }
                 }
                 default {
-                    Write-Status -Message (Get-LocalizedString -Key 'rollback.cannot_auto_rollback' -Parameters @{ AppName = $app.AppName; Method = $app.Method }) -Level 'Warning'
+                    Write-Status -Message (Get-LogString -Key 'rollback.cannot_auto_rollback' -Parameters @{ AppName = $app.AppName; Method = $app.Method }) -Level 'Warning'
                 }
             }
 
             if ($uninstalled) {
-                Write-Status -Message (Get-LocalizedString -Key 'rollback.rolled_back' -Parameters @{ AppName = $app.AppName }) -Level 'Success'
+                Write-Status -Message (Get-LogString -Key 'rollback.rolled_back' -Parameters @{ AppName = $app.AppName }) -Level 'Success'
                 $result.RolledBack += $app.AppName
             } else {
-                Write-Status -Message (Get-LocalizedString -Key 'rollback.rollback_failed' -Parameters @{ AppName = $app.AppName }) -Level 'Warning'
+                Write-Status -Message (Get-LogString -Key 'rollback.rollback_failed' -Parameters @{ AppName = $app.AppName }) -Level 'Warning'
                 $result.Failed += $app.AppName
                 $result.Success = $false
             }
         } catch {
-            Write-Status -Message (Get-LocalizedString -Key 'rollback.rollback_error' -Parameters @{ AppName = $app.AppName; Error = $_.Exception.Message }) -Level 'Error'
+            Write-Status -Message (Get-LogString -Key 'rollback.rollback_error' -Parameters @{ AppName = $app.AppName; Error = $_.Exception.Message }) -Level 'Error'
             $result.Failed += $app.AppName
             $result.Success = $false
         }
@@ -262,14 +262,14 @@ function Resume-Deployment {
 
     $state = Get-DeploymentState
     if (-not $state -or $state.PendingApps.Count -eq 0) {
-        Write-Status -Message (Get-LocalizedString -Key 'deployment.no_incomplete') -Level 'Info'
+        Write-Status -Message (Get-LogString -Key 'deployment.no_incomplete') -Level 'Info'
         return $null
     }
 
-    Write-Status -Message (Get-LocalizedString -Key 'deployment.resuming' -Parameters @{ ProfileName = $state.ProfileName }) -Level 'Info'
-    Write-Status -Message "  $(Get-LocalizedString -Key 'deployment.completed_count' -Parameters @{ Count = $state.CompletedApps.Count })" -Level 'Info'
-    Write-Status -Message "  $(Get-LocalizedString -Key 'deployment.pending_count' -Parameters @{ Count = $state.PendingApps.Count })" -Level 'Info'
-    Write-Status -Message "  $(Get-LocalizedString -Key 'deployment.failed_count' -Parameters @{ Count = $state.FailedApps.Count })" -Level 'Info'
+    Write-Status -Message (Get-LogString -Key 'deployment.resuming' -Parameters @{ ProfileName = $state.ProfileName }) -Level 'Info'
+    Write-Status -Message "  $(Get-LogString -Key 'deployment.completed_count' -Parameters @{ Count = $state.CompletedApps.Count })" -Level 'Info'
+    Write-Status -Message "  $(Get-LogString -Key 'deployment.pending_count' -Parameters @{ Count = $state.PendingApps.Count })" -Level 'Info'
+    Write-Status -Message "  $(Get-LogString -Key 'deployment.failed_count' -Parameters @{ Count = $state.FailedApps.Count })" -Level 'Info'
 
     return $state.PendingApps
 }
@@ -321,11 +321,11 @@ function Test-EnvironmentRestriction {
 
         if ($Application.EnvironmentRestrictions -contains $currentEnv) {
             $result.Restricted = $true
-            $result.Message = (Get-LocalizedString -Key 'engine.env_restricted' -Parameters @{ AppName = $Application.Name; Environment = $currentEnv })
+            $result.Message = (Get-LogString -Key 'engine.env_restricted' -Parameters @{ AppName = $Application.Name; Environment = $currentEnv })
             Write-Status -Message $result.Message -Level 'Warning'
         }
     } catch {
-        Write-Status -Message (Get-LocalizedString -Key 'engine.env_check_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
+        Write-Status -Message (Get-LogString -Key 'engine.env_check_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
     }
 
     return $result
@@ -383,7 +383,7 @@ function Invoke-InstallationMethodSequence {
     $sources = $Application.Sources
 
     if (-not $sources) {
-        $result.Message = (Get-LocalizedString -Key 'orchestrator.no_sources')
+        $result.Message = (Get-LogString -Key 'orchestrator.no_sources')
         return $result
     }
 
@@ -416,7 +416,7 @@ function Invoke-InstallationMethodSequence {
 
         $result.Success = $true
         $result.Method = $MethodName
-        $result.Message = (Get-LocalizedString -Key $MessageKey)
+        $result.Message = (Get-LogString -Key $MessageKey)
         return $result
     }
 
@@ -427,11 +427,11 @@ function Invoke-InstallationMethodSequence {
             return
         }
 
-        & $writeLog (Get-LocalizedString -Key 'install.orchestrator.office_c2r_waiting') 'Info'
+        & $writeLog (Get-LogString -Key 'install.orchestrator.office_c2r_waiting') 'Info'
         $officeTimeout = Get-InstallationTimeout -AppName 'Office'
         $officeInstalled = Wait-ForOfficeInstallation -TimeoutSeconds $officeTimeout
         if (-not $officeInstalled) {
-            $result.FailureReasons += (Get-LocalizedString -Key 'orchestrator.failure.office_c2r_timeout')
+            $result.FailureReasons += (Get-LogString -Key 'orchestrator.failure.office_c2r_timeout')
         }
     }
 
@@ -485,7 +485,7 @@ function Invoke-InstallationMethodSequence {
                 $installArgs = if ($Application.PSObject.Properties['InstallArguments']) { $Application.InstallArguments } else { $null }
                 if ($installArgs) {
                     $installParams['CustomArguments'] = $installArgs
-                    & $writeLog (Get-LocalizedString -Key 'install.orchestrator.custom_args_detected' -Parameters @{ Arguments = $installArgs }) 'Verbose'
+                    & $writeLog (Get-LogString -Key 'install.orchestrator.custom_args_detected' -Parameters @{ Arguments = $installArgs }) 'Verbose'
                 }
 
                 if ($Application.Detection -and $Application.Detection.Path) {
@@ -526,7 +526,7 @@ function Invoke-InstallationMethodSequence {
 
         $result.AttemptedMethods += $method.Name
         $attemptParameterFactory = $method.AttemptParameters
-        & $writeLog (Get-LocalizedString -Key $method.AttemptKey -Parameters (& $attemptParameterFactory $method.Source)) 'Verbose'
+        & $writeLog (Get-LogString -Key $method.AttemptKey -Parameters (& $attemptParameterFactory $method.Source)) 'Verbose'
 
         $installer = $method.Invoke
         $installOutput = & $installer $method.Source
@@ -536,26 +536,26 @@ function Invoke-InstallationMethodSequence {
         }
 
         if ($method.VerifiedResultKey -and (& $testIgnoreExitCode)) {
-            & $writeLog (Get-LocalizedString -Key 'install.orchestrator.success_despite_exit_code') 'Success'
+            & $writeLog (Get-LogString -Key 'install.orchestrator.success_despite_exit_code') 'Success'
             return (& $completeSuccessfulInstall $method.Name $method.VerifiedResultKey)
         }
 
         $failureParameterFactory = $method.FailureParameters
         $failureParameters = & $failureParameterFactory $method.Source
         if ($failureParameters.Count -gt 0) {
-            $result.FailureReasons += (Get-LocalizedString -Key $method.FailureKey -Parameters $failureParameters)
+            $result.FailureReasons += (Get-LogString -Key $method.FailureKey -Parameters $failureParameters)
         } else {
-            $result.FailureReasons += (Get-LocalizedString -Key $method.FailureKey)
+            $result.FailureReasons += (Get-LogString -Key $method.FailureKey)
         }
     }
 
     $result.Message = if ($result.AttemptedMethods.Count -gt 0) {
-        Get-LocalizedString -Key 'orchestrator.all_methods_failed' -Parameters @{ Reasons = ($result.FailureReasons -join '; ') }
+        Get-LogString -Key 'orchestrator.all_methods_failed' -Parameters @{ Reasons = ($result.FailureReasons -join '; ') }
     } else {
-        Get-LocalizedString -Key 'orchestrator.no_valid_sources'
+        Get-LogString -Key 'orchestrator.no_valid_sources'
     }
 
-    & $writeLog (Get-LocalizedString -Key 'orchestrator.install_failed' -Parameters @{ Message = $result.Message }) 'Warning'
+    & $writeLog (Get-LogString -Key 'orchestrator.install_failed' -Parameters @{ Message = $result.Message }) 'Warning'
     return $result
 }
 
@@ -621,7 +621,7 @@ function Invoke-ApplicationUpgrade {
 
     if ($sources.Winget -and (Test-CommandExists -Name 'winget')) {
         try {
-            Write-Status -Message (Get-LocalizedString -Key 'orchestrator.upgrade.attempting_winget' -Parameters @{ PackageId = $sources.Winget }) -Level 'Info'
+            Write-Status -Message (Get-LogString -Key 'orchestrator.upgrade.attempting_winget' -Parameters @{ PackageId = $sources.Winget }) -Level 'Info'
 
             $arguments = @(
                 'upgrade',
@@ -634,24 +634,24 @@ function Invoke-ApplicationUpgrade {
             $process = Start-ProcessWithTimeout -FilePath 'winget' -ArgumentList $arguments -NoNewWindow -PassThru -TimeoutSeconds $script:DefaultInstallTimeoutSeconds
 
             if ($process.ExitCode -eq 0) {
-                Write-Status -Message (Get-LocalizedString -Key 'orchestrator.upgrade.success_winget' -Parameters @{ AppName = $Application.Name }) -Level 'Success'
+                Write-Status -Message (Get-LogString -Key 'orchestrator.upgrade.success_winget' -Parameters @{ AppName = $Application.Name }) -Level 'Success'
                 $result.Success = $true
                 $result.Method = 'Winget'
-                $result.Message = (Get-LocalizedString -Key 'orchestrator.result.upgraded')
+                $result.Message = (Get-LogString -Key 'orchestrator.result.upgraded')
                 return $result
             } elseif ($process.ExitCode -eq $script:WingetNoApplicableUpdateExitCode) {
-                Write-Status -Message (Get-LocalizedString -Key 'orchestrator.upgrade.no_update_winget' -Parameters @{ AppName = $Application.Name }) -Level 'Verbose'
+                Write-Status -Message (Get-LogString -Key 'orchestrator.upgrade.no_update_winget' -Parameters @{ AppName = $Application.Name }) -Level 'Verbose'
             } else {
-                Write-Status -Message (Get-LocalizedString -Key 'orchestrator.upgrade.exit_code_winget' -Parameters @{ ExitCode = $process.ExitCode }) -Level 'Verbose'
+                Write-Status -Message (Get-LogString -Key 'orchestrator.upgrade.exit_code_winget' -Parameters @{ ExitCode = $process.ExitCode }) -Level 'Verbose'
             }
         } catch {
-            Write-Status -Message (Get-LocalizedString -Key 'orchestrator.upgrade.error_winget' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
+            Write-Status -Message (Get-LogString -Key 'orchestrator.upgrade.error_winget' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
         }
     }
 
     if ($sources.Chocolatey -and (Test-CommandExists -Name 'choco')) {
         try {
-            Write-Status -Message (Get-LocalizedString -Key 'orchestrator.upgrade.attempting_choco' -Parameters @{ PackageId = $sources.Chocolatey }) -Level 'Info'
+            Write-Status -Message (Get-LogString -Key 'orchestrator.upgrade.attempting_choco' -Parameters @{ PackageId = $sources.Chocolatey }) -Level 'Info'
 
             $arguments = @(
                 'upgrade',
@@ -663,20 +663,20 @@ function Invoke-ApplicationUpgrade {
             $process = Start-ProcessWithTimeout -FilePath 'choco' -ArgumentList $arguments -NoNewWindow -PassThru -TimeoutSeconds $script:DefaultInstallTimeoutSeconds
 
             if ($process.ExitCode -eq 0) {
-                Write-Status -Message (Get-LocalizedString -Key 'orchestrator.upgrade.success_choco' -Parameters @{ AppName = $Application.Name }) -Level 'Success'
+                Write-Status -Message (Get-LogString -Key 'orchestrator.upgrade.success_choco' -Parameters @{ AppName = $Application.Name }) -Level 'Success'
                 $result.Success = $true
                 $result.Method = 'Chocolatey'
-                $result.Message = (Get-LocalizedString -Key 'orchestrator.result.upgraded')
+                $result.Message = (Get-LogString -Key 'orchestrator.result.upgraded')
                 return $result
             } else {
-                Write-Status -Message (Get-LocalizedString -Key 'orchestrator.upgrade.exit_code_choco' -Parameters @{ ExitCode = $process.ExitCode }) -Level 'Verbose'
+                Write-Status -Message (Get-LogString -Key 'orchestrator.upgrade.exit_code_choco' -Parameters @{ ExitCode = $process.ExitCode }) -Level 'Verbose'
             }
         } catch {
-            Write-Status -Message (Get-LocalizedString -Key 'orchestrator.upgrade.error_choco' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
+            Write-Status -Message (Get-LogString -Key 'orchestrator.upgrade.error_choco' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
         }
     }
 
-    $result.Message = (Get-LocalizedString -Key 'orchestrator.result.no_upgrade')
+    $result.Message = (Get-LogString -Key 'orchestrator.result.no_upgrade')
     return $result
 }
 
@@ -728,7 +728,7 @@ function Install-Application {
     # 1. Check environment restrictions
     $envCheck = Test-EnvironmentRestriction -Application $Application
     if ($envCheck.Restricted) {
-        $result.Message = (Get-LocalizedString -Key 'engine.env_not_compatible' -Parameters @{ Environment = $envCheck.Environment })
+        $result.Message = (Get-LogString -Key 'engine.env_not_compatible' -Parameters @{ Environment = $envCheck.Environment })
         return $result
     }
 
@@ -737,27 +737,27 @@ function Install-Application {
         $isInstalled = Test-ApplicationInstalled -Application $Application
         if ($isInstalled) {
             if ($ForceUpdate) {
-                Write-Status -Message (Get-LocalizedString -Key 'orchestrator.checking_updates' -Parameters @{ AppName = $Application.Name }) -Level 'Info'
+                Write-Status -Message (Get-LogString -Key 'orchestrator.checking_updates' -Parameters @{ AppName = $Application.Name }) -Level 'Info'
                 $upgradeResult = Invoke-ApplicationUpgrade -Application $Application
                 if ($upgradeResult.Success) {
                     return $upgradeResult
                 }
-                Write-Status -Message (Get-LocalizedString -Key 'orchestrator.no_update_available' -Parameters @{ AppName = $Application.Name }) -Level 'Info'
+                Write-Status -Message (Get-LogString -Key 'orchestrator.no_update_available' -Parameters @{ AppName = $Application.Name }) -Level 'Info'
                 $result.AlreadyInstalled = $true
                 $result.Success = $true
-                $result.Message = (Get-LocalizedString -Key 'orchestrator.already_installed_no_update')
+                $result.Message = (Get-LogString -Key 'orchestrator.already_installed_no_update')
                 return $result
             }
 
-            Write-Status -Message (Get-LocalizedString -Key 'orchestrator.already_installed' -Parameters @{ AppName = $Application.Name }) -Level 'Success'
+            Write-Status -Message (Get-LogString -Key 'orchestrator.already_installed' -Parameters @{ AppName = $Application.Name }) -Level 'Success'
             $result.AlreadyInstalled = $true
             $result.Success = $true
-            $result.Message = (Get-LocalizedString -Key 'orchestrator.already_installed_status')
+            $result.Message = (Get-LogString -Key 'orchestrator.already_installed_status')
             return $result
         }
     }
 
-    Write-Status -Message (Get-LocalizedString -Key 'orchestrator.installing' -Parameters @{ AppName = $Application.Name }) -Level 'Info'
+    Write-Status -Message (Get-LogString -Key 'orchestrator.installing' -Parameters @{ AppName = $Application.Name }) -Level 'Info'
 
     # 3. Handle custom install methods (WindowsFeature, WindowsCapability)
     $installMethod = if ($Application.PSObject.Properties['InstallMethod']) { $Application.InstallMethod } else { $null }
@@ -819,9 +819,9 @@ function Install-ApplicationsParallel {
     }
 
     if (-not $hasParallelSupport) {
-        Write-Host (Get-LocalizedString -Key 'parallel.requires_ps7') -ForegroundColor Yellow
-        Write-Host (Get-LocalizedString -Key 'parallel.current_version' -Parameters @{ Version = $PSVersionTable.PSVersion }) -ForegroundColor Yellow
-        Write-Host (Get-LocalizedString -Key 'parallel.fallback_sequential') -ForegroundColor Yellow
+        Write-Host (Get-LogString -Key 'parallel.requires_ps7') -ForegroundColor Yellow
+        Write-Host (Get-LogString -Key 'parallel.current_version' -Parameters @{ Version = $PSVersionTable.PSVersion }) -ForegroundColor Yellow
+        Write-Host (Get-LogString -Key 'parallel.fallback_sequential') -ForegroundColor Yellow
 
         $results = New-Object 'System.Collections.Generic.List[object]'
         foreach ($app in $Applications) {
@@ -831,9 +831,9 @@ function Install-ApplicationsParallel {
     }
 
     Write-Host ""
-    Write-Host (Get-LocalizedString -Key 'parallel.title') -ForegroundColor Cyan
-    Write-Host (Get-LocalizedString -Key 'parallel.max_threads' -Parameters @{ Count = $MaxParallel }) -ForegroundColor Cyan
-    Write-Host (Get-LocalizedString -Key 'parallel.total_apps' -Parameters @{ Count = $Applications.Count }) -ForegroundColor Cyan
+    Write-Host (Get-LogString -Key 'parallel.title') -ForegroundColor Cyan
+    Write-Host (Get-LogString -Key 'parallel.max_threads' -Parameters @{ Count = $MaxParallel }) -ForegroundColor Cyan
+    Write-Host (Get-LogString -Key 'parallel.total_apps' -Parameters @{ Count = $Applications.Count }) -ForegroundColor Cyan
     Write-Host ""
 
     $startTime = Get-Date
@@ -857,14 +857,14 @@ function Install-ApplicationsParallel {
     foreach ($app in $sortedApps) {
         if ($app.EnvironmentRestrictions -and $app.EnvironmentRestrictions.Count -gt 0) {
             if ($app.EnvironmentRestrictions -contains $currentEnvironment) {
-                Write-Host (Get-LocalizedString -Key 'install.skipping_environment' -Parameters @{ AppName = $app.Name; Environment = $currentEnvironment }) -ForegroundColor Yellow
+                Write-Host (Get-LogString -Key 'install.skipping_environment' -Parameters @{ AppName = $app.Name; Environment = $currentEnvironment }) -ForegroundColor Yellow
                 $skippedApps += [PSCustomObject]@{
                     ApplicationName = $app.Name
                     Success = $false
                     Skipped = $true
                     AlreadyInstalled = $false
                     Method = $null
-                    Message = (Get-LocalizedString -Key 'install.skipping_environment' -Parameters @{ AppName = $app.Name; Environment = $currentEnvironment })
+                    Message = (Get-LogString -Key 'install.skipping_environment' -Parameters @{ AppName = $app.Name; Environment = $currentEnvironment })
                 }
                 continue
             }
@@ -872,8 +872,8 @@ function Install-ApplicationsParallel {
         $appsToInstall += $app
     }
 
-    Write-Host (Get-LocalizedString -Key 'parallel.apps_to_install' -Parameters @{ Count = $appsToInstall.Count }) -ForegroundColor Cyan
-    Write-Host (Get-LocalizedString -Key 'parallel.skipped_environment' -Parameters @{ Count = $skippedApps.Count }) -ForegroundColor Yellow
+    Write-Host (Get-LogString -Key 'parallel.apps_to_install' -Parameters @{ Count = $appsToInstall.Count }) -ForegroundColor Cyan
+    Write-Host (Get-LogString -Key 'parallel.skipped_environment' -Parameters @{ Count = $skippedApps.Count }) -ForegroundColor Yellow
     Write-Host ""
 
     # Create parallel logs directory
@@ -890,7 +890,7 @@ function Install-ApplicationsParallel {
         } catch {
             $retryCount++
             if ($retryCount -ge $maxRetries) {
-                Write-Host (Get-LocalizedString -Key 'parallel.logs_create_failed' -Parameters @{ Retries = $maxRetries; Error = $_ }) -ForegroundColor Red
+                Write-Host (Get-LogString -Key 'parallel.logs_create_failed' -Parameters @{ Retries = $maxRetries; Error = $_ }) -ForegroundColor Red
                 throw
             }
             Start-Sleep -Milliseconds (100 * $retryCount)
@@ -904,7 +904,7 @@ function Install-ApplicationsParallel {
             Where-Object { $_.LastWriteTime -lt $cutoffDate } |
             Remove-Item -Force -ErrorAction SilentlyContinue
     } catch {
-        Write-Host (Get-LocalizedString -Key 'parallel.logs_cleanup_failed' -Parameters @{ Error = $_ }) -ForegroundColor Yellow
+        Write-Host (Get-LogString -Key 'parallel.logs_cleanup_failed' -Parameters @{ Error = $_ }) -ForegroundColor Yellow
     }
 
     $timestamp = Get-Date -Format 'yyyyMMdd_HHmmss'
@@ -1004,7 +1004,7 @@ function Install-ApplicationsParallel {
                     Write-ParallelLog "Already installed - skipping" 'Success'
                     $result.AlreadyInstalled = $true
                     $result.Success = $true
-                    $result.Message = (Get-LocalizedString -Key 'orchestrator.already_installed_status')
+                    $result.Message = (Get-LogString -Key 'orchestrator.already_installed_status')
                     return $result
                 }
             }
@@ -1024,7 +1024,7 @@ function Install-ApplicationsParallel {
                         Write-ParallelLog "Windows Feature installed successfully" 'Success'
                         $result.Success = $true
                         $result.Method = 'WindowsFeature'
-                        $result.Message = (Get-LocalizedString -Key 'orchestrator.result.windows_feature')
+                        $result.Message = (Get-LogString -Key 'orchestrator.result.windows_feature')
                         return $result
                     }
                     'WindowsCapability' {
@@ -1038,7 +1038,7 @@ function Install-ApplicationsParallel {
                             Write-ParallelLog "Windows Capability installed successfully" 'Success'
                             $result.Success = $true
                             $result.Method = 'WindowsCapability'
-                            $result.Message = (Get-LocalizedString -Key 'orchestrator.result.windows_capability')
+                            $result.Message = (Get-LogString -Key 'orchestrator.result.windows_capability')
                             return $result
                         }
                     }
@@ -1080,7 +1080,7 @@ function Install-ApplicationsParallel {
                         Write-ParallelLog "Installed successfully via Winget$retryMsg" 'Success'
                         $result.Success = $true
                         $result.Method = 'Winget'
-                        $result.Message = if ($attempt -gt 1) { Get-LocalizedString -Key 'orchestrator.result.winget_retry' -Parameters @{ Attempt = $attempt } } else { Get-LocalizedString -Key 'orchestrator.result.winget' }
+                        $result.Message = if ($attempt -gt 1) { Get-LogString -Key 'orchestrator.result.winget_retry' -Parameters @{ Attempt = $attempt } } else { Get-LogString -Key 'orchestrator.result.winget' }
                         return $result
                     } elseif ($process.ExitCode -eq $using:wingetAlreadyInstalledExitCode) {
                         $retryMsg = if ($attempt -gt 1) { " (attempt $attempt)" } else { "" }
@@ -1088,11 +1088,11 @@ function Install-ApplicationsParallel {
                         $result.Success = $true
                         $result.Method = 'Winget'
                         $result.AlreadyInstalled = $true
-                        $result.Message = if ($attempt -gt 1) { Get-LocalizedString -Key 'orchestrator.result.already_installed_winget_retry' -Parameters @{ Attempt = $attempt } } else { Get-LocalizedString -Key 'orchestrator.result.already_installed_winget' }
+                        $result.Message = if ($attempt -gt 1) { Get-LogString -Key 'orchestrator.result.already_installed_winget_retry' -Parameters @{ Attempt = $attempt } } else { Get-LogString -Key 'orchestrator.result.already_installed_winget' }
                         return $result
                     } elseif ($process.ExitCode -eq $using:wingetHashMismatchExitCode) {
                         if ($forceOnHashMismatch) {
-                            Write-ParallelLog (Get-LocalizedString -Key 'install.orchestrator.parallel.winget_hash_mismatch_retrying_force' -Parameters @{ PackageId = $sources.Winget }) 'Warning'
+                            Write-ParallelLog (Get-LogString -Key 'install.orchestrator.parallel.winget_hash_mismatch_retrying_force' -Parameters @{ PackageId = $sources.Winget }) 'Warning'
                             $forceArguments = $arguments + @('--force')
                             $forceProcess = Start-Process -FilePath 'winget' -ArgumentList $forceArguments -NoNewWindow -PassThru
                             if (-not $forceProcess.WaitForExit($installTimeoutMs)) {
@@ -1103,13 +1103,13 @@ function Install-ApplicationsParallel {
                                 Write-ParallelLog "Installed successfully via Winget with --force$retryMsg" 'Success'
                                 $result.Success = $true
                                 $result.Method = 'Winget (force)'
-                                $result.Message = Get-LocalizedString -Key 'orchestrator.result.winget_force'
+                                $result.Message = Get-LogString -Key 'orchestrator.result.winget_force'
                                 return $result
                             } else {
                                 Write-ParallelLog "Winget --force also failed (exit code: $($forceProcess.ExitCode))" 'Warning'
                             }
                         } else {
-                            Write-ParallelLog (Get-LocalizedString -Key 'orchestrator.parallel.winget_hash_mismatch' -Parameters @{ PackageId = $sources.Winget }) 'Warning'
+                            Write-ParallelLog (Get-LogString -Key 'orchestrator.parallel.winget_hash_mismatch' -Parameters @{ PackageId = $sources.Winget }) 'Warning'
                         }
                         break
                     } elseif ($transientErrors -contains $process.ExitCode -and $attempt -lt $maxRetries) {
@@ -1156,7 +1156,7 @@ function Install-ApplicationsParallel {
                         Write-ParallelLog "Installed successfully via Chocolatey$retryMsg" 'Success'
                         $result.Success = $true
                         $result.Method = 'Chocolatey'
-                        $result.Message = if ($attempt -gt 1) { Get-LocalizedString -Key 'orchestrator.result.chocolatey_retry' -Parameters @{ Attempt = $attempt } } else { Get-LocalizedString -Key 'orchestrator.result.chocolatey' }
+                        $result.Message = if ($attempt -gt 1) { Get-LogString -Key 'orchestrator.result.chocolatey_retry' -Parameters @{ Attempt = $attempt } } else { Get-LogString -Key 'orchestrator.result.chocolatey' }
                         return $result
                     } elseif ($transientErrors -contains $process.ExitCode -and $attempt -lt $maxRetries) {
                         $delay = $retryDelaySeconds * [Math]::Pow(2, $attempt - 1)
@@ -1200,7 +1200,7 @@ function Install-ApplicationsParallel {
                         Write-ParallelLog "Installed successfully via Microsoft Store" 'Success'
                         $result.Success = $true
                         $result.Method = 'Store'
-                        $result.Message = (Get-LocalizedString -Key 'orchestrator.result.store')
+                        $result.Message = (Get-LogString -Key 'orchestrator.result.store')
                         return $result
                     } else {
                         Write-ParallelLog "Microsoft Store installation failed (exit code: $($process.ExitCode))" 'Warning'
@@ -1212,7 +1212,7 @@ function Install-ApplicationsParallel {
             if ($sources.DirectUrl) {
                 if (-not (Test-ValidDownloadUrl -Url $sources.DirectUrl)) {
                     Write-ParallelLog "Invalid or insecure URL: $($sources.DirectUrl)" 'Error'
-                    $result.Message = (Get-LocalizedString -Key 'orchestrator.result.invalid_direct_url')
+                    $result.Message = (Get-LogString -Key 'orchestrator.result.invalid_direct_url')
                     return $result
                 }
 
@@ -1268,7 +1268,7 @@ function Install-ApplicationsParallel {
                     $parallelValidationMode = Resolve-DirectDownloadValidationMode -ExpectedSHA256 $parallelChecksum -ExpectedPublisher $parallelPublisher
                     if ($parallelValidationMode -eq 'None') {
                         Write-ParallelLog "Validation required but not configured for $($sources.DirectUrl)" 'Error'
-                        $result.Message = (Get-LocalizedString -Key 'download.validation.required')
+                        $result.Message = (Get-LogString -Key 'download.validation.required')
                         return $result
                     }
                     # Parallel runspace - intentional direct env usage
@@ -1307,7 +1307,7 @@ function Install-ApplicationsParallel {
                     }
 
                     if (-not $downloadSuccess -or -not (Test-Path -Path $tempFile)) {
-                        throw (Get-LocalizedString -Key 'orchestrator.result.download_exhausted')
+                        throw (Get-LogString -Key 'orchestrator.result.download_exhausted')
                     }
                     Write-ParallelLog "Download completed" 'Info'
 
@@ -1319,7 +1319,7 @@ function Install-ApplicationsParallel {
                         if (-not $parallelChecksumVerdict.Proceed) {
                             Write-ParallelLog "Checksum FAILED! Expected: $parallelChecksum, Got: $($parallelChecksumVerdict.ActualHash)" 'Error'
                             Remove-Item -Path $tempDir -Recurse -Force -ErrorAction SilentlyContinue
-                            $result.Message = (Get-LocalizedString -Key 'orchestrator.result.checksum_failed')
+                            $result.Message = (Get-LogString -Key 'orchestrator.result.checksum_failed')
                             return $result
                         }
                         Write-ParallelLog "Checksum validation passed" 'Success'
@@ -1329,7 +1329,7 @@ function Install-ApplicationsParallel {
                         if (-not (Test-InstallerSignature -FilePath $tempFile -ExpectedPublisher $sources.ExpectedPublisher)) {
                             Write-ParallelLog "Signature validation failed for $($sources.DirectUrl)" 'Error'
                             Remove-Item -Path $tempDir -Recurse -Force -ErrorAction SilentlyContinue
-                            $result.Message = (Get-LocalizedString -Key 'download.signature.publisher_mismatch' -Parameters @{ Expected = $sources.ExpectedPublisher; Got = 'signature validation failed' })
+                            $result.Message = (Get-LogString -Key 'download.signature.publisher_mismatch' -Parameters @{ Expected = $sources.ExpectedPublisher; Got = 'signature validation failed' })
                             return $result
                         }
                     }
@@ -1376,7 +1376,7 @@ function Install-ApplicationsParallel {
                                 $expandResult = Expand-ArchiveSafe -Path $tempFile -DestinationPath $extractPath -AllowDangerousExtensions
                                 if (-not $expandResult) {
                                     Write-ParallelLog "Archive extraction blocked by security validation" 'Error'
-                                    throw (Get-LocalizedString -Key 'orchestrator.result.archive_security_failed')
+                                    throw (Get-LogString -Key 'orchestrator.result.archive_security_failed')
                                 }
                             } else {
                                 Expand-Archive -Path $tempFile -DestinationPath $extractPath -Force
@@ -1443,7 +1443,7 @@ function Install-ApplicationsParallel {
                         Write-ParallelLog "Installed successfully via direct download" 'Success'
                         $result.Success = $true
                         $result.Method = 'DirectDownload'
-                        $result.Message = (Get-LocalizedString -Key 'orchestrator.result.direct_download')
+                        $result.Message = (Get-LogString -Key 'orchestrator.result.direct_download')
                         return $result
                     } else {
                         Write-ParallelLog "Direct download installation failed (exit code: $processExitCode)" 'Warning'
@@ -1454,11 +1454,11 @@ function Install-ApplicationsParallel {
             }
 
             Write-ParallelLog "All installation methods failed" 'Error'
-            $result.Message = (Get-LocalizedString -Key 'orchestrator.result.all_failed')
+            $result.Message = (Get-LogString -Key 'orchestrator.result.all_failed')
 
         } catch {
             Write-ParallelException -ErrorRecord $_ -Context 'MainInstallLoop'
-            $result.Message = (Get-LocalizedString -Key 'orchestrator.result.error' -Parameters @{ Error = $_.Exception.Message })
+            $result.Message = (Get-LogString -Key 'orchestrator.result.error' -Parameters @{ Error = $_.Exception.Message })
         }
 
         if ($result.Success -or $result.AlreadyInstalled) {
@@ -1477,28 +1477,28 @@ function Install-ApplicationsParallel {
     $totalTime = $endTime - $startTime
 
     Write-Host ""
-    Write-Host (Get-LocalizedString -Key 'parallel.summary.title') -ForegroundColor Green
-    Write-Host (Get-LocalizedString -Key 'parallel.summary.total_time' -Parameters @{ Time = $totalTime.ToString('mm\:ss') }) -ForegroundColor Cyan
-    Write-Host (Get-LocalizedString -Key 'parallel.summary.apps_processed' -Parameters @{ Count = $Applications.Count }) -ForegroundColor Cyan
+    Write-Host (Get-LogString -Key 'parallel.summary.title') -ForegroundColor Green
+    Write-Host (Get-LogString -Key 'parallel.summary.total_time' -Parameters @{ Time = $totalTime.ToString('mm\:ss') }) -ForegroundColor Cyan
+    Write-Host (Get-LogString -Key 'parallel.summary.apps_processed' -Parameters @{ Count = $Applications.Count }) -ForegroundColor Cyan
     Write-Host ""
-    Write-Host (Get-LocalizedString -Key 'parallel.logs_directory' -Parameters @{ Path = $parallelLogsDir }) -ForegroundColor Yellow
-    Write-Host (Get-LocalizedString -Key 'parallel.logs_pattern' -Parameters @{ Timestamp = $timestamp }) -ForegroundColor Gray
+    Write-Host (Get-LogString -Key 'parallel.logs_directory' -Parameters @{ Path = $parallelLogsDir }) -ForegroundColor Yellow
+    Write-Host (Get-LogString -Key 'parallel.logs_pattern' -Parameters @{ Timestamp = $timestamp }) -ForegroundColor Gray
     Write-Host ""
 
-    Write-Host (Get-LocalizedString -Key 'parallel.summary.results_title') -ForegroundColor Cyan
+    Write-Host (Get-LogString -Key 'parallel.summary.results_title') -ForegroundColor Cyan
     foreach ($result in $allResults) {
         if ($result.PSObject.Properties['Skipped'] -and $result.Skipped) {
-            Write-Host (Get-LocalizedString -Key 'parallel.summary.result_skip' -Parameters @{ AppName = $result.ApplicationName }) -ForegroundColor Yellow
-            Write-Host "    $(Get-LocalizedString -Key 'parallel.summary.reason' -Parameters @{ Message = $result.Message })" -ForegroundColor Gray
+            Write-Host (Get-LogString -Key 'parallel.summary.result_skip' -Parameters @{ AppName = $result.ApplicationName }) -ForegroundColor Yellow
+            Write-Host "    $(Get-LogString -Key 'parallel.summary.reason' -Parameters @{ Message = $result.Message })" -ForegroundColor Gray
         } elseif ($result.Success -or $result.AlreadyInstalled) {
-            $status = if ($result.AlreadyInstalled) { (Get-LocalizedString -Key 'install.already_installed' -Parameters @{ AppName = '' }) } else { (Get-LocalizedString -Key 'common.success') }
-            Write-Host (Get-LocalizedString -Key 'parallel.summary.result_ok' -Parameters @{ AppName = $result.ApplicationName; Status = $status }) -ForegroundColor Green
+            $status = if ($result.AlreadyInstalled) { (Get-LogString -Key 'install.already_installed' -Parameters @{ AppName = '' }) } else { (Get-LogString -Key 'common.success') }
+            Write-Host (Get-LogString -Key 'parallel.summary.result_ok' -Parameters @{ AppName = $result.ApplicationName; Status = $status }) -ForegroundColor Green
             if ($result.Method) {
-                Write-Host "    $(Get-LocalizedString -Key 'parallel.summary.method_used' -Parameters @{ Method = $result.Method })" -ForegroundColor Gray
+                Write-Host "    $(Get-LogString -Key 'parallel.summary.method_used' -Parameters @{ Method = $result.Method })" -ForegroundColor Gray
             }
         } else {
-            Write-Host (Get-LocalizedString -Key 'parallel.summary.result_failed' -Parameters @{ AppName = $result.ApplicationName }) -ForegroundColor Red
-            Write-Host "    $(Get-LocalizedString -Key 'parallel.summary.reason' -Parameters @{ Message = $result.Message })" -ForegroundColor Gray
+            Write-Host (Get-LogString -Key 'parallel.summary.result_failed' -Parameters @{ AppName = $result.ApplicationName }) -ForegroundColor Red
+            Write-Host "    $(Get-LogString -Key 'parallel.summary.reason' -Parameters @{ Message = $result.Message })" -ForegroundColor Gray
         }
     }
 

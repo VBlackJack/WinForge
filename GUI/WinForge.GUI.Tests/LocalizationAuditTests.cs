@@ -339,4 +339,69 @@ public class LocalizationAuditTests
             Assert.Fail(message);
         }
     }
+
+    [Fact]
+    public void PowerShellOperationalLogs_ShouldUseEnglishLogStringResolver()
+    {
+        List<string> violations = new List<string>();
+        string coreDirectory = RepositoryPathHelper.FindDirectory("Core");
+        string modulesDirectory = RepositoryPathHelper.FindDirectory("Modules");
+        string repositoryRoot = Directory.GetParent(coreDirectory)?.FullName
+            ?? throw new DirectoryNotFoundException($"Could not resolve repository root from {coreDirectory}.");
+        HashSet<string> excludedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            Path.Combine(coreDirectory, "Localization.psm1"),
+            Path.Combine(modulesDirectory, "WinForgeGUI.psm1")
+        };
+
+        string[] files = Directory.GetFiles(coreDirectory, "*.psm1")
+            .Concat(Directory.GetFiles(modulesDirectory, "*.psm1"))
+            .Where(file => !excludedFiles.Contains(file))
+            .ToArray();
+
+        foreach (string filePath in files)
+        {
+            string[] lines = File.ReadAllLines(filePath);
+            string displayPath = Path.GetRelativePath(repositoryRoot, filePath);
+
+            for (int lineIndex = 0; lineIndex < lines.Length; lineIndex++)
+            {
+                if (lines[lineIndex].Contains("Get-LocalizedString", StringComparison.Ordinal) ||
+                    Regex.IsMatch(lines[lineIndex], @"\bt\s+'", RegexOptions.CultureInvariant))
+                {
+                    if (Path.GetFileName(filePath).Equals("ModuleLoader.psm1", StringComparison.OrdinalIgnoreCase) &&
+                        lines[lineIndex].Contains("'Get-LocalizedString'", StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+
+                    violations.Add($"{displayPath}:{lineIndex + 1}: {lines[lineIndex].Trim()}");
+                }
+            }
+        }
+
+        if (violations.Count > 0)
+        {
+            Assert.Fail(
+                "Operational PowerShell logs and result messages must use Get-LogString so persisted logs stay English:\n" +
+                string.Join("\n", violations.Take(20)));
+        }
+    }
+
+    [Fact]
+    public void ApplicationManagementLogResults_ShouldUseEnglishResourceResolver()
+    {
+        string filePath = RepositoryPathHelper.FindFile(
+            "GUI",
+            "WinForge.GUI",
+            "Services",
+            "Implementations",
+            "ApplicationManagementServiceImpl.cs");
+        string source = File.ReadAllText(filePath);
+
+        Assert.DoesNotMatch(
+            new Regex(@"(?<!nameof\()Resources\.Resources\.AppManagement_", RegexOptions.Multiline),
+            source);
+        Assert.Contains("GetLogResource", source, StringComparison.Ordinal);
+    }
 }

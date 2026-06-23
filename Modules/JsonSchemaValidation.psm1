@@ -47,7 +47,7 @@ if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
 
 # Import Localization module for i18n support
 $script:LocalizationModulePath = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
-if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Get-LogString -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:LocalizationModulePath) {
         Import-Module -Name $script:LocalizationModulePath -Force
     }
@@ -179,7 +179,7 @@ function Test-JsonAgainstSchema {
     }
 
     if (-not (Test-Path $SchemaPath)) {
-        $result.AddError((t 'validation.schema.file_not_found' @{ Path = $SchemaPath }))
+        $result.AddError((Get-LogString 'validation.schema.file_not_found' @{ Path = $SchemaPath }))
         return $result
     }
 
@@ -277,7 +277,7 @@ function Test-ObjectAgainstSchema {
     if ($null -eq $Object) {
         $schemaType = Get-SchemaProperty -Schema $Schema -PropertyName 'type'
         if ($schemaType -and $schemaType -ne 'null') {
-            Add-ValidationError (t 'validation.schema.type_mismatch' @{ Expected = $schemaType; Actual = 'null'; Path = $Path })
+            Add-ValidationError (Get-LogString 'validation.schema.type_mismatch' @{ Expected = $schemaType; Actual = 'null'; Path = $Path })
         }
         return $errors.ToArray()
     }
@@ -289,7 +289,7 @@ function Test-ObjectAgainstSchema {
         $expectedTypes = if ($schemaType -is [array]) { $schemaType } else { @($schemaType) }
 
         if ($actualType -notin $expectedTypes) {
-            Add-ValidationError (t 'validation.schema.type_mismatch' @{ Expected = ($expectedTypes -join ' or '); Actual = $actualType; Path = $Path })
+            Add-ValidationError (Get-LogString 'validation.schema.type_mismatch' @{ Expected = ($expectedTypes -join ' or '); Actual = $actualType; Path = $Path })
             return $errors.ToArray()
         }
     }
@@ -301,7 +301,7 @@ function Test-ObjectAgainstSchema {
         if ($requiredProps) {
             foreach ($requiredProp in $requiredProps) {
                 if (-not ($Object.PSObject.Properties.Name -contains $requiredProp)) {
-                    Add-ValidationError (t 'validation.schema.required_missing' @{ Property = $requiredProp; Path = $Path })
+                    Add-ValidationError (Get-LogString 'validation.schema.required_missing' @{ Property = $requiredProp; Path = $Path })
                 }
             }
         }
@@ -486,7 +486,7 @@ function Test-DeploymentProfile {
     if (-not (Test-Path $script:ProfileSchemaPath)) {
         $result = [JsonValidationResult]::new()
         $result.FilePath = $ProfilePath
-        $result.AddError((t 'validation.schema.file_not_found' @{ Path = $script:ProfileSchemaPath }))
+        $result.AddError((Get-LogString 'validation.schema.file_not_found' @{ Path = $script:ProfileSchemaPath }))
         return $result
     }
 
@@ -524,7 +524,7 @@ function Test-ApplicationsDatabase {
     if (-not (Test-Path $script:DatabaseSchemaPath)) {
         $result = [JsonValidationResult]::new()
         $result.FilePath = $DatabasePath
-        $result.AddError((t 'validation.schema.file_not_found' @{ Path = $script:DatabaseSchemaPath }))
+        $result.AddError((Get-LogString 'validation.schema.file_not_found' @{ Path = $script:DatabaseSchemaPath }))
         return $result
     }
 

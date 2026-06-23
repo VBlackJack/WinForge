@@ -18,6 +18,7 @@
 
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 
 namespace WinForge.GUI.Services;
 
@@ -32,6 +33,7 @@ public sealed class FileLogWriter : IFileLogWriter, IDisposable
 {
     private const string FileLogEnvironmentVariable = "WINFORGE_FILE_LOG";
     private const string LegacyFileLogEnvironmentVariable = "WIN11FORGE_FILE_LOG";
+    private static readonly UTF8Encoding Utf8NoBom = new(encoderShouldEmitUTF8Identifier: false);
 
     private readonly object _lock = new object();
     private readonly string _logsDirectory;
@@ -61,7 +63,7 @@ public sealed class FileLogWriter : IFileLogWriter, IDisposable
             {
                 Directory.CreateDirectory(_logsDirectory);
                 string filePath = Path.Combine(_logsDirectory, $"WinForge_{DateTime.Now:yyyy-MM-dd}.log");
-                File.AppendAllText(filePath, line + Environment.NewLine);
+                File.AppendAllText(filePath, line + Environment.NewLine, Utf8NoBom);
             }
         }
         catch (Exception ex)

@@ -57,7 +57,7 @@ if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
 
 # Import Localization module for i18n support
 $script:LocalizationModulePath = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
-if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Get-LogString -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:LocalizationModulePath) {
         Import-Module -Name $script:LocalizationModulePath -Force
     }
@@ -595,7 +595,7 @@ function Clear-TelemetryData {
     )
 
     if (-not $Confirm) {
-        Write-Warning (Get-LocalizedString -Key 'telemetry.clear_requires_confirm')
+        Write-Warning (Get-LogString -Key 'telemetry.clear_requires_confirm')
         return
     }
 
@@ -628,7 +628,7 @@ function Clear-TelemetryData {
     }
 
     Save-TelemetryData
-    Write-Status -Message (Get-LocalizedString -Key 'telemetry.data_cleared') -Level 'Info' -Category 'Telemetry'
+    Write-Status -Message (Get-LogString -Key 'telemetry.data_cleared') -Level 'Info' -Category 'Telemetry'
 }
 
 # === MODULE EXPORTS ===

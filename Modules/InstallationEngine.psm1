@@ -115,7 +115,7 @@ if (-not (Get-Command -Name Get-WinForgeDirectory -ErrorAction SilentlyContinue)
     }
 }
 
-if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Get-LogString -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:LocalizationModulePath) {
         Import-Module -Name $script:LocalizationModulePath -Force
     }

@@ -50,7 +50,7 @@ if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
 }
 
 # Import Localization module
-if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Get-LogString -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:LocalizationModulePath) {
         Import-Module -Name $script:LocalizationModulePath -Force
     }
@@ -113,9 +113,9 @@ function Get-RollbackConfig {
                     ConfirmationTimeoutSeconds = if ($null -ne $json.confirmationTimeoutSeconds) { $json.confirmationTimeoutSeconds } else { $script:DefaultConfig.ConfirmationTimeoutSeconds }
                     CriticalFailurePatterns = if ($null -ne $json.criticalFailurePatterns) { @($json.criticalFailurePatterns) } else { $script:DefaultConfig.CriticalFailurePatterns }
                 }
-                Write-Verbose (Get-LocalizedString -Key 'rollbackManager.config.loaded' -Parameters @{ Path = $script:ConfigPath })
+                Write-Verbose (Get-LogString -Key 'rollbackManager.config.loaded' -Parameters @{ Path = $script:ConfigPath })
             } catch {
-                Write-Warning (Get-LocalizedString -Key 'rollbackManager.config.loadFailed' -Parameters @{ Error = $_.Exception.Message })
+                Write-Warning (Get-LogString -Key 'rollbackManager.config.loadFailed' -Parameters @{ Error = $_.Exception.Message })
                 $script:RollbackConfig = $script:DefaultConfig.Clone()
             }
         } else {
@@ -159,7 +159,7 @@ function Enable-AutoRollbackOnFailure {
     }
 
     $script:FailureCount = 0
-    Write-Status -Message (Get-LocalizedString -Key 'rollbackManager.enabled' -Parameters @{ Threshold = $config.AutoRollbackThreshold }) -Level 'Info'
+    Write-Status -Message (Get-LogString -Key 'rollbackManager.enabled' -Parameters @{ Threshold = $config.AutoRollbackThreshold }) -Level 'Info'
 }
 
 function Disable-AutoRollbackOnFailure {
@@ -179,7 +179,7 @@ function Disable-AutoRollbackOnFailure {
     $config = Get-RollbackConfig
     $config.AutoRollbackEnabled = $false
     $script:FailureCount = 0
-    Write-Status -Message (t 'rollbackManager.disabled') -Level 'Info'
+    Write-Status -Message (Get-LogString 'rollbackManager.disabled') -Level 'Info'
 }
 
 function Register-CriticalFailureHandler {
@@ -220,7 +220,7 @@ function Register-CriticalFailureHandler {
     }
 
     $script:CriticalFailureHandlers += $handlerEntry
-    Write-Verbose (Get-LocalizedString -Key 'rollbackManager.handler_registered' -Parameters @{ Name = $Name })
+    Write-Verbose (Get-LogString -Key 'rollbackManager.handler_registered' -Parameters @{ Name = $Name })
     return $Name
 }
 
@@ -245,7 +245,7 @@ function Unregister-CriticalFailureHandler {
     )
 
     $script:CriticalFailureHandlers = @($script:CriticalFailureHandlers | Where-Object { $_.Id -ne $Name })
-    Write-Verbose (Get-LocalizedString -Key 'rollbackManager.handler.unregistered' -Parameters @{ Name = $Name })
+    Write-Verbose (Get-LogString -Key 'rollbackManager.handler.unregistered' -Parameters @{ Name = $Name })
 }
 
 # === FAILURE TRACKING ===
@@ -289,7 +289,7 @@ function Register-InstallationFailure {
     )
 
     if (-not $PSBoundParameters.ContainsKey('ErrorMessage')) {
-        $ErrorMessage = t 'rollbackManager.error.unknown'
+        $ErrorMessage = Get-LogString 'rollbackManager.error.unknown'
     }
 
     $config = Get-RollbackConfig
@@ -318,23 +318,23 @@ function Register-InstallationFailure {
 
     # Invoke critical failure handlers
     if ($isCriticalFailure) {
-        Write-Status -Message (Get-LocalizedString -Key 'rollbackManager.critical_detected' -Parameters @{ AppName = $AppName }) -Level 'Error'
+        Write-Status -Message (Get-LogString -Key 'rollbackManager.critical_detected' -Parameters @{ AppName = $AppName }) -Level 'Error'
         foreach ($handlerEntry in $script:CriticalFailureHandlers) {
             try {
                 & $handlerEntry.Handler $failureDetails
             } catch {
-                Write-Verbose (Get-LocalizedString -Key 'rollbackManager.handler.failed' -Parameters @{ Name = $handlerEntry.Id; Error = $_.Exception.Message })
+                Write-Verbose (Get-LogString -Key 'rollbackManager.handler.failed' -Parameters @{ Name = $handlerEntry.Id; Error = $_.Exception.Message })
             }
         }
         $failureDetails.ShouldRollback = $true
-        $failureDetails.RollbackReason = t 'rollbackManager.reason.criticalFailure'
+        $failureDetails.RollbackReason = Get-LogString 'rollbackManager.reason.criticalFailure'
     }
 
     # Check threshold
     if ($config.AutoRollbackEnabled -and $script:FailureCount -ge $config.AutoRollbackThreshold) {
         $failureDetails.ShouldRollback = $true
-        $failureDetails.RollbackReason = Get-LocalizedString -Key 'rollbackManager.reason.thresholdReached' -Parameters @{ Count = $script:FailureCount }
-        Write-Status -Message (Get-LocalizedString -Key 'rollbackManager.threshold_reached' -Parameters @{ Count = $script:FailureCount }) -Level 'Warning'
+        $failureDetails.RollbackReason = Get-LogString -Key 'rollbackManager.reason.thresholdReached' -Parameters @{ Count = $script:FailureCount }
+        Write-Status -Message (Get-LogString -Key 'rollbackManager.threshold_reached' -Parameters @{ Count = $script:FailureCount }) -Level 'Warning'
     }
 
     return $failureDetails
@@ -355,7 +355,7 @@ function Reset-FailureCount {
     param()
 
     $script:FailureCount = 0
-    Write-Verbose (t 'rollbackManager.failureCount.reset')
+    Write-Verbose (Get-LogString 'rollbackManager.failureCount.reset')
 }
 
 # === ROLLBACK EXECUTION ===
@@ -406,7 +406,7 @@ function Invoke-RollbackWithConfirmation {
     if ($summary.TotalApps -eq 0) {
         return [PSCustomObject]@{
             Success = $false
-            Message = t 'rollbackManager.noApps.toRollback'
+            Message = Get-LogString 'rollbackManager.noApps.toRollback'
             AppsRolledBack = 0
             Errors = @()
         }
@@ -414,10 +414,10 @@ function Invoke-RollbackWithConfirmation {
 
     # Show summary
     Write-Host ""
-    Write-Host (Get-LocalizedString -Key 'rollback.summary_title') -ForegroundColor Cyan
-    Write-Host (Get-LocalizedString -Key 'rollback.summary_apps_count' -Parameters @{ Count = $summary.TotalApps }) -ForegroundColor Yellow
+    Write-Host (Get-LogString -Key 'rollback.summary_title') -ForegroundColor Cyan
+    Write-Host (Get-LogString -Key 'rollback.summary_apps_count' -Parameters @{ Count = $summary.TotalApps }) -ForegroundColor Yellow
     foreach ($app in $summary.Applications) {
-        Write-Host (Get-LocalizedString -Key 'rollback.summary_app_item' -Parameters @{ AppName = $app.AppName; Method = $app.Method }) -ForegroundColor Gray
+        Write-Host (Get-LogString -Key 'rollback.summary_app_item' -Parameters @{ AppName = $app.AppName; Method = $app.Method }) -ForegroundColor Gray
     }
     Write-Host ""
 
@@ -425,7 +425,7 @@ function Invoke-RollbackWithConfirmation {
     $proceed = $Force.IsPresent -or (-not $config.RequireConfirmation)
 
     if (-not $proceed) {
-        Write-Host (Get-LocalizedString -Key 'rollback.confirm_prompt' -Parameters @{ Timeout = $timeout }) -ForegroundColor Yellow
+        Write-Host (Get-LogString -Key 'rollback.confirm_prompt' -Parameters @{ Timeout = $timeout }) -ForegroundColor Yellow
 
         $startTime = Get-Date
         $response = $null
@@ -445,10 +445,10 @@ function Invoke-RollbackWithConfirmation {
             $elapsed = (Get-Date) - $startTime
             if ($elapsed.TotalSeconds -ge $timeout) {
                 if ($AutoProceedOnTimeout) {
-                    Write-Host (Get-LocalizedString -Key 'rollback.confirm_timeout_proceed') -ForegroundColor Yellow
+                    Write-Host (Get-LogString -Key 'rollback.confirm_timeout_proceed') -ForegroundColor Yellow
                     $proceed = $true
                 } else {
-                    Write-Host (Get-LocalizedString -Key 'rollback.confirm_timeout_cancel') -ForegroundColor Yellow
+                    Write-Host (Get-LogString -Key 'rollback.confirm_timeout_cancel') -ForegroundColor Yellow
                     $proceed = $false
                 }
                 break
@@ -461,17 +461,17 @@ function Invoke-RollbackWithConfirmation {
     if (-not $proceed) {
         return [PSCustomObject]@{
             Success = $false
-            Message = t 'rollbackManager.cancelled'
+            Message = Get-LogString 'rollbackManager.cancelled'
             AppsRolledBack = 0
             Errors = @()
         }
     }
 
     # Execute rollback via InstallationEngine
-    Write-Status -Message (t 'rollbackManager.executing') -Level 'Info'
+    Write-Status -Message (Get-LogString 'rollbackManager.executing') -Level 'Info'
     $result = @{
         Success = $true
-        Message = t 'rollbackManager.completed'
+        Message = Get-LogString 'rollbackManager.completed'
         AppsRolledBack = 0
         Errors = @()
     }
@@ -488,12 +488,12 @@ function Invoke-RollbackWithConfirmation {
             $result.AppsRolledBack = $summary.TotalApps
         } else {
             $result.Success = $false
-            $result.Message = t 'rollbackManager.functionNotAvailable'
+            $result.Message = Get-LogString 'rollbackManager.functionNotAvailable'
         }
     } catch {
         $result.Success = $false
         $result.Errors += $_.Exception.Message
-        $result.Message = Get-LocalizedString -Key 'rollbackManager.failed' -Parameters @{ Error = $_.Exception.Message }
+        $result.Message = Get-LogString -Key 'rollbackManager.failed' -Parameters @{ Error = $_.Exception.Message }
     }
 
     # Reset failure count after rollback
@@ -615,32 +615,32 @@ function Export-RollbackReport {
             $subSeparator = '-' * 19
             $textLines = @(
                 $separator
-                (t 'rollbackManager.report.title')
-                (Get-LocalizedString -Key 'rollbackManager.report.generated' -Parameters @{ Timestamp = $report.GeneratedAt })
-                (Get-LocalizedString -Key 'rollbackManager.report.computer' -Parameters @{ Name = $report.ComputerName })
-                (Get-LocalizedString -Key 'rollbackManager.report.user' -Parameters @{ Name = $report.UserName })
+                (Get-LogString 'rollbackManager.report.title')
+                (Get-LogString -Key 'rollbackManager.report.generated' -Parameters @{ Timestamp = $report.GeneratedAt })
+                (Get-LogString -Key 'rollbackManager.report.computer' -Parameters @{ Name = $report.ComputerName })
+                (Get-LogString -Key 'rollbackManager.report.user' -Parameters @{ Name = $report.UserName })
                 $separator
                 ''
-                (t 'rollbackManager.report.sessionInfo')
+                (Get-LogString 'rollbackManager.report.sessionInfo')
                 $subSeparator
-                (Get-LocalizedString -Key 'rollbackManager.report.sessionId' -Parameters @{ SessionId = $summary.SessionId })
-                (Get-LocalizedString -Key 'rollbackManager.report.startTime' -Parameters @{ Time = $summary.StartTime })
-                (Get-LocalizedString -Key 'rollbackManager.report.appsInstalled' -Parameters @{ Count = $summary.TotalApps })
-                (Get-LocalizedString -Key 'rollbackManager.report.rollbackable' -Parameters @{ Count = $summary.RollbackableCount })
+                (Get-LogString -Key 'rollbackManager.report.sessionId' -Parameters @{ SessionId = $summary.SessionId })
+                (Get-LogString -Key 'rollbackManager.report.startTime' -Parameters @{ Time = $summary.StartTime })
+                (Get-LogString -Key 'rollbackManager.report.appsInstalled' -Parameters @{ Count = $summary.TotalApps })
+                (Get-LogString -Key 'rollbackManager.report.rollbackable' -Parameters @{ Count = $summary.RollbackableCount })
                 ''
-                (t 'rollbackManager.report.configSection')
+                (Get-LogString 'rollbackManager.report.configSection')
                 ('-' * 13)
-                (Get-LocalizedString -Key 'rollbackManager.report.autoRollbackEnabled' -Parameters @{ Value = $config.AutoRollbackEnabled })
-                (Get-LocalizedString -Key 'rollbackManager.report.failureThreshold' -Parameters @{ Value = $config.AutoRollbackThreshold })
-                (Get-LocalizedString -Key 'rollbackManager.report.requireConfirmation' -Parameters @{ Value = $config.RequireConfirmation })
-                (Get-LocalizedString -Key 'rollbackManager.report.confirmationTimeout' -Parameters @{ Value = $config.ConfirmationTimeoutSeconds })
+                (Get-LogString -Key 'rollbackManager.report.autoRollbackEnabled' -Parameters @{ Value = $config.AutoRollbackEnabled })
+                (Get-LogString -Key 'rollbackManager.report.failureThreshold' -Parameters @{ Value = $config.AutoRollbackThreshold })
+                (Get-LogString -Key 'rollbackManager.report.requireConfirmation' -Parameters @{ Value = $config.RequireConfirmation })
+                (Get-LogString -Key 'rollbackManager.report.confirmationTimeout' -Parameters @{ Value = $config.ConfirmationTimeoutSeconds })
                 ''
-                (t 'rollbackManager.report.statusSection')
+                (Get-LogString 'rollbackManager.report.statusSection')
                 ('-' * 14)
-                (Get-LocalizedString -Key 'rollbackManager.report.consecutiveFailures' -Parameters @{ Count = $script:FailureCount })
-                (Get-LocalizedString -Key 'rollbackManager.report.registeredHandlers' -Parameters @{ Count = $script:CriticalFailureHandlers.Count })
+                (Get-LogString -Key 'rollbackManager.report.consecutiveFailures' -Parameters @{ Count = $script:FailureCount })
+                (Get-LogString -Key 'rollbackManager.report.registeredHandlers' -Parameters @{ Count = $script:CriticalFailureHandlers.Count })
                 ''
-                (t 'rollbackManager.report.applicationsSection')
+                (Get-LogString 'rollbackManager.report.applicationsSection')
                 ('-' * 12)
             )
 
@@ -648,16 +648,16 @@ function Export-RollbackReport {
 
             foreach ($app in $summary.Applications) {
                 $textContent += "`n- $($app.AppName)`n"
-                $textContent += "    $(Get-LocalizedString -Key 'rollbackManager.report.appMethod' -Parameters @{ Method = $app.Method })`n"
-                $textContent += "    $(Get-LocalizedString -Key 'rollbackManager.report.appPackageId' -Parameters @{ PackageId = $app.PackageId })`n"
-                $textContent += "    $(Get-LocalizedString -Key 'rollbackManager.report.appCanRollback' -Parameters @{ Value = $app.CanRollback })`n"
+                $textContent += "    $(Get-LogString -Key 'rollbackManager.report.appMethod' -Parameters @{ Method = $app.Method })`n"
+                $textContent += "    $(Get-LogString -Key 'rollbackManager.report.appPackageId' -Parameters @{ PackageId = $app.PackageId })`n"
+                $textContent += "    $(Get-LogString -Key 'rollbackManager.report.appCanRollback' -Parameters @{ Value = $app.CanRollback })`n"
             }
 
             $textContent | Set-Content -Path $Path -Encoding UTF8
         }
     }
 
-    Write-Status -Message (Get-LocalizedString -Key 'rollbackManager.report_exported' -Parameters @{ Path = $Path }) -Level 'Info'
+    Write-Status -Message (Get-LogString -Key 'rollbackManager.report_exported' -Parameters @{ Path = $Path }) -Level 'Info'
 }
 
 function Test-RollbackCapability {

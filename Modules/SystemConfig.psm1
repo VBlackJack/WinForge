@@ -52,7 +52,7 @@ if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
 
 # Import Localization module for i18n support
 $script:LocalizationModulePath = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
-if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Get-LogString -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:LocalizationModulePath) {
         Import-Module -Name $script:LocalizationModulePath -Force
     }
@@ -81,15 +81,15 @@ function Get-SystemSettings {
         if (Test-Path -Path $script:SystemSettingsPath) {
             try {
                 $script:CachedSystemSettings = Get-Content -Path $script:SystemSettingsPath -Raw | ConvertFrom-Json
-                Write-Status -Message (Get-LocalizedString -Key 'sysconfig.loaded_settings') -Level 'Verbose'
+                Write-Status -Message (Get-LogString -Key 'sysconfig.loaded_settings') -Level 'Verbose'
             }
             catch {
-                Write-Status -Message (Get-LocalizedString -Key 'sysconfig.load_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Warning'
+                Write-Status -Message (Get-LogString -Key 'sysconfig.load_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Warning'
                 $script:CachedSystemSettings = $null
             }
         }
         else {
-            Write-Status -Message (Get-LocalizedString -Key 'sysconfig.settings_not_found') -Level 'Warning'
+            Write-Status -Message (Get-LogString -Key 'sysconfig.settings_not_found') -Level 'Warning'
             $script:CachedSystemSettings = $null
         }
     }
@@ -316,11 +316,11 @@ function Set-RegistryValue {
 
         # Use New-ItemProperty with -Force to create or overwrite the value
         New-ItemProperty -Path $Path -Name $Name -Value $Value -PropertyType $Type -Force | Out-Null
-        Write-Status -Message (Get-LocalizedString -Key 'sysconfig.set_value' -Parameters @{ Path = $Path; Name = $Name; Value = $Value }) -Level 'Verbose'
+        Write-Status -Message (Get-LogString -Key 'sysconfig.set_value' -Parameters @{ Path = $Path; Name = $Name; Value = $Value }) -Level 'Verbose'
         return $true
     }
     catch {
-        Write-Status -Message (Get-LocalizedString -Key 'sysconfig.set_failed' -Parameters @{ Path = $Path; Name = $Name; Error = $_.Exception.Message }) -Level 'Verbose'
+        Write-Status -Message (Get-LogString -Key 'sysconfig.set_failed' -Parameters @{ Path = $Path; Name = $Name; Error = $_.Exception.Message }) -Level 'Verbose'
         return $false
     }
 }
@@ -364,20 +364,20 @@ function Set-RegistrySettingFromConfig {
 
     $definition = Get-RegistryValueDefinition -Group $Group -Setting $Setting
     if ($null -eq $definition) {
-        Write-Status -Message (Get-LocalizedString -Key 'sysconfig.no_config_found' -Parameters @{ Group = $Group; Setting = $Setting }) -Level 'Warning'
+        Write-Status -Message (Get-LogString -Key 'sysconfig.no_config_found' -Parameters @{ Group = $Group; Setting = $Setting }) -Level 'Warning'
         return $false
     }
 
     # Get the registry path from the definition's Path property
     $pathKey = $definition.Path
     if (-not $pathKey) {
-        Write-Status -Message (Get-LocalizedString -Key 'sysconfig.no_path_defined' -Parameters @{ Group = $Group; Setting = $Setting }) -Level 'Warning'
+        Write-Status -Message (Get-LogString -Key 'sysconfig.no_path_defined' -Parameters @{ Group = $Group; Setting = $Setting }) -Level 'Warning'
         return $false
     }
 
     $registryPath = Get-SystemConfigRegistryPath -PathKey $pathKey -FallbackPath ''
     if (-not $registryPath) {
-        Write-Status -Message (Get-LocalizedString -Key 'sysconfig.path_not_found' -Parameters @{ Path = $pathKey }) -Level 'Warning'
+        Write-Status -Message (Get-LogString -Key 'sysconfig.path_not_found' -Parameters @{ Path = $pathKey }) -Level 'Warning'
         return $false
     }
 
@@ -393,7 +393,7 @@ function Set-RegistrySettingFromConfig {
     }
 
     if ($null -eq $value) {
-        Write-Status -Message (Get-LocalizedString -Key 'sysconfig.no_value_found' -Parameters @{ Group = $Group; Setting = $Setting; Enable = $Enable; ValueKey = $ValueKey }) -Level 'Warning'
+        Write-Status -Message (Get-LogString -Key 'sysconfig.no_value_found' -Parameters @{ Group = $Group; Setting = $Setting; Enable = $Enable; ValueKey = $ValueKey }) -Level 'Warning'
         return $false
     }
 
@@ -425,7 +425,7 @@ function Set-ExplorerConfiguration {
         [hashtable]$Config
     )
 
-    Write-Status -Message (Get-LocalizedString -Key 'sysconfig.explorer.configuring') -Level 'Info'
+    Write-Status -Message (Get-LogString -Key 'sysconfig.explorer.configuring') -Level 'Info'
 
     # Show hidden files
     if ($Config.ContainsKey('ShowHiddenFiles') -and $Config.ShowHiddenFiles) {
@@ -474,12 +474,12 @@ function Set-ExplorerConfiguration {
     }
 
     # Restart Explorer to apply changes
-    Write-Status -Message (Get-LocalizedString -Key 'sysconfig.explorer.restarting') -Level 'Info'
+    Write-Status -Message (Get-LogString -Key 'sysconfig.explorer.restarting') -Level 'Info'
     Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
     $restartDelay = Get-TimeoutValue -TimeoutKey 'ExplorerRestartDelaySeconds' -FallbackValue 2
     Start-Sleep -Seconds $restartDelay
 
-    Write-Status -Message (Get-LocalizedString -Key 'sysconfig.explorer.applied') -Level 'Success'
+    Write-Status -Message (Get-LogString -Key 'sysconfig.explorer.applied') -Level 'Success'
 }
 
 # === TASKBAR CONFIGURATION ===
@@ -502,7 +502,7 @@ function Set-TaskbarConfiguration {
         [hashtable]$Config
     )
 
-    Write-Status -Message (Get-LocalizedString -Key 'sysconfig.taskbar.configuring') -Level 'Info'
+    Write-Status -Message (Get-LogString -Key 'sysconfig.taskbar.configuring') -Level 'Info'
 
     try {
         # Disable widgets (DisableWidgets = true means we want widgets hidden = ValueDisabled)
@@ -537,11 +537,11 @@ function Set-TaskbarConfiguration {
             Set-RegistrySettingFromConfig -Group 'Taskbar' -Setting 'TaskbarMn' -Enable $false | Out-Null
         }
 
-        Write-Status -Message (Get-LocalizedString -Key 'sysconfig.taskbar.applied') -Level 'Success'
+        Write-Status -Message (Get-LogString -Key 'sysconfig.taskbar.applied') -Level 'Success'
     }
     catch {
-        Write-Status -Message (Get-LocalizedString -Key 'sysconfig.taskbar.permissions_warning') -Level 'Warning'
-        Write-Status -Message (Get-LocalizedString -Key 'sysconfig.taskbar.partial_applied') -Level 'Success'
+        Write-Status -Message (Get-LogString -Key 'sysconfig.taskbar.permissions_warning') -Level 'Warning'
+        Write-Status -Message (Get-LogString -Key 'sysconfig.taskbar.partial_applied') -Level 'Success'
     }
 }
 
@@ -565,7 +565,7 @@ function Set-NetworkConfiguration {
         [hashtable]$Config
     )
 
-    Write-Status -Message (Get-LocalizedString -Key 'sysconfig.network.configuring') -Level 'Info'
+    Write-Status -Message (Get-LogString -Key 'sysconfig.network.configuring') -Level 'Info'
 
     # Configure DNS servers
     if ($Config.ContainsKey('DnsServers') -and $Config.DnsServers) {
@@ -597,12 +597,12 @@ function Set-NetworkConfiguration {
                         $_ -and $_ -is [string] -and $_ -match '^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$'
                     })
                 } catch {
-                    Write-Status -Message (Get-LocalizedString -Key 'sysconfig.network.dns_parse_error' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
+                    Write-Status -Message (Get-LogString -Key 'sysconfig.network.dns_parse_error' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
                 }
             }
 
             if ($dnsArray.Count -gt 0) {
-                Write-Status -Message (Get-LocalizedString -Key 'sysconfig.network.setting_dns' -Parameters @{ Servers = ($dnsArray -join ', ') }) -Level 'Info'
+                Write-Status -Message (Get-LogString -Key 'sysconfig.network.setting_dns' -Parameters @{ Servers = ($dnsArray -join ', ') }) -Level 'Info'
 
                 $adapters = Get-NetAdapter | Where-Object {
                     $_.Status -eq 'Up' -and $_.InterfaceType -ne 'Loopback'
@@ -613,45 +613,45 @@ function Set-NetworkConfiguration {
                     try {
                         Set-DnsClientServerAddress -InterfaceIndex $adapter.InterfaceIndex `
                             -ServerAddresses $dnsArray -ErrorAction Stop
-                        Write-Status -Message (Get-LocalizedString -Key 'sysconfig.network.dns_configured' -Parameters @{ Adapter = $adapter.Name }) -Level 'Success'
+                        Write-Status -Message (Get-LogString -Key 'sysconfig.network.dns_configured' -Parameters @{ Adapter = $adapter.Name }) -Level 'Success'
                         $successCount++
                     } catch {
-                        Write-Status -Message (Get-LocalizedString -Key 'sysconfig.network.dns_failed' -Parameters @{ Adapter = $adapter.Name; Error = $_.Exception.Message }) -Level 'Warning'
+                        Write-Status -Message (Get-LogString -Key 'sysconfig.network.dns_failed' -Parameters @{ Adapter = $adapter.Name; Error = $_.Exception.Message }) -Level 'Warning'
                     }
                 }
 
                 if ($successCount -gt 0) {
-                    Write-Status -Message (Get-LocalizedString -Key 'sysconfig.network.dns_completed' -Parameters @{ Count = $successCount }) -Level 'Success'
+                    Write-Status -Message (Get-LogString -Key 'sysconfig.network.dns_completed' -Parameters @{ Count = $successCount }) -Level 'Success'
                 }
             } else {
-                Write-Status -Message (Get-LocalizedString -Key 'sysconfig.network.no_valid_dns') -Level 'Warning'
+                Write-Status -Message (Get-LogString -Key 'sysconfig.network.no_valid_dns') -Level 'Warning'
             }
         } catch {
-            Write-Status -Message (Get-LocalizedString -Key 'sysconfig.network.dns_error' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
+            Write-Status -Message (Get-LogString -Key 'sysconfig.network.dns_error' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
         }
     }
 
     # Network optimizations for gaming (uses ValueOptimized)
     if ($Config.ContainsKey('GamingOptimizations') -and $Config.GamingOptimizations) {
-        Write-Status -Message (Get-LocalizedString -Key 'sysconfig.network.gaming_optimizations') -Level 'Info'
+        Write-Status -Message (Get-LogString -Key 'sysconfig.network.gaming_optimizations') -Level 'Info'
         Set-RegistrySettingFromConfig -Group 'Network' -Setting 'TcpAckFrequency' -ValueKey 'ValueOptimized' | Out-Null
         Set-RegistrySettingFromConfig -Group 'Network' -Setting 'TCPNoDelay' -ValueKey 'ValueOptimized' | Out-Null
     }
 
     # QoS optimization
     if ($Config.ContainsKey('QoSOptimization') -and $Config.QoSOptimization) {
-        Write-Status -Message (Get-LocalizedString -Key 'sysconfig.network.qos_optimization') -Level 'Info'
+        Write-Status -Message (Get-LogString -Key 'sysconfig.network.qos_optimization') -Level 'Info'
         Set-RegistrySettingFromConfig -Group 'Network' -Setting 'NonBestEffortLimit' -ValueKey 'ValueOptimized' | Out-Null
     }
 
     # Developer optimizations (same as gaming)
     if ($Config.ContainsKey('DeveloperOptimizations') -and $Config.DeveloperOptimizations) {
-        Write-Status -Message (Get-LocalizedString -Key 'sysconfig.network.developer_optimizations') -Level 'Info'
+        Write-Status -Message (Get-LogString -Key 'sysconfig.network.developer_optimizations') -Level 'Info'
         Set-RegistrySettingFromConfig -Group 'Network' -Setting 'TcpAckFrequency' -ValueKey 'ValueOptimized' | Out-Null
         Set-RegistrySettingFromConfig -Group 'Network' -Setting 'TCPNoDelay' -ValueKey 'ValueOptimized' | Out-Null
     }
 
-    Write-Status -Message (Get-LocalizedString -Key 'sysconfig.network.applied') -Level 'Success'
+    Write-Status -Message (Get-LogString -Key 'sysconfig.network.applied') -Level 'Success'
 }
 
 # === PRIVACY CONFIGURATION ===
@@ -674,7 +674,7 @@ function Set-PrivacyConfiguration {
         [hashtable]$Config
     )
 
-    Write-Status -Message (Get-LocalizedString -Key 'sysconfig.privacy.configuring') -Level 'Info'
+    Write-Status -Message (Get-LogString -Key 'sysconfig.privacy.configuring') -Level 'Info'
 
     $settings = Get-SystemSettings
     $telemetryService = 'DiagTrack'
@@ -684,7 +684,7 @@ function Set-PrivacyConfiguration {
 
     # Disable telemetry (DisableTelemetry = true means we want telemetry disabled = ValueDisabled)
     if ($Config.ContainsKey('DisableTelemetry') -and $Config.DisableTelemetry) {
-        Write-Status -Message (Get-LocalizedString -Key 'sysconfig.privacy.disabling_telemetry') -Level 'Info'
+        Write-Status -Message (Get-LogString -Key 'sysconfig.privacy.disabling_telemetry') -Level 'Info'
         Set-RegistrySettingFromConfig -Group 'Privacy' -Setting 'AllowTelemetry' -Enable $false | Out-Null
         Set-RegistrySettingFromConfig -Group 'Privacy' -Setting 'AllowTelemetryUser' -Enable $false | Out-Null
 
@@ -694,13 +694,13 @@ function Set-PrivacyConfiguration {
             Stop-Service -Name $telemetryService -Force -ErrorAction SilentlyContinue
         }
         catch {
-            Write-Status -Message (Get-LocalizedString -Key 'sysconfig.privacy.telemetry_service_error' -Parameters @{ Service = $telemetryService }) -Level 'Verbose'
+            Write-Status -Message (Get-LogString -Key 'sysconfig.privacy.telemetry_service_error' -Parameters @{ Service = $telemetryService }) -Level 'Verbose'
         }
     }
 
     # Minimal data collection
     if ($Config.ContainsKey('MinimalDataCollection') -and $Config.MinimalDataCollection) {
-        Write-Status -Message (Get-LocalizedString -Key 'sysconfig.privacy.minimal_data') -Level 'Info'
+        Write-Status -Message (Get-LogString -Key 'sysconfig.privacy.minimal_data') -Level 'Info'
 
         # Disable advertising ID
         Set-RegistrySettingFromConfig -Group 'Privacy' -Setting 'AdvertisingEnabled' -Enable $false | Out-Null
@@ -721,7 +721,7 @@ function Set-PrivacyConfiguration {
 
     # Disable Cortana
     if ($Config.ContainsKey('DisableCortana') -and $Config.DisableCortana) {
-        Write-Status -Message (Get-LocalizedString -Key 'sysconfig.privacy.disabling_cortana') -Level 'Info'
+        Write-Status -Message (Get-LogString -Key 'sysconfig.privacy.disabling_cortana') -Level 'Info'
         Set-RegistrySettingFromConfig -Group 'Privacy' -Setting 'AllowCortana' -Enable $false | Out-Null
         Set-RegistrySettingFromConfig -Group 'Search' -Setting 'CortanaConsent' -Enable $false | Out-Null
     }
@@ -729,7 +729,7 @@ function Set-PrivacyConfiguration {
     # Disable consumer features (bloatware suggestions)
     # Note: DisableWindowsConsumerFeatures=1 means consumer features ARE disabled
     if ($Config.ContainsKey('DisableConsumerFeatures') -and $Config.DisableConsumerFeatures) {
-        Write-Status -Message (Get-LocalizedString -Key 'sysconfig.privacy.disabling_consumer') -Level 'Info'
+        Write-Status -Message (Get-LogString -Key 'sysconfig.privacy.disabling_consumer') -Level 'Info'
         Set-RegistrySettingFromConfig -Group 'Privacy' -Setting 'DisableWindowsConsumerFeatures' -Enable $true | Out-Null
         Set-RegistrySettingFromConfig -Group 'Privacy' -Setting 'SilentInstalledAppsEnabled' -Enable $false | Out-Null
         Set-RegistrySettingFromConfig -Group 'Privacy' -Setting 'SystemPaneSuggestionsEnabled' -Enable $false | Out-Null
@@ -738,12 +738,12 @@ function Set-PrivacyConfiguration {
 
     # Disable Windows tips and tricks
     if ($Config.ContainsKey('DisableWindowsTips') -and $Config.DisableWindowsTips) {
-        Write-Status -Message (Get-LocalizedString -Key 'sysconfig.privacy.disabling_tips') -Level 'Info'
+        Write-Status -Message (Get-LogString -Key 'sysconfig.privacy.disabling_tips') -Level 'Info'
         Set-RegistrySettingFromConfig -Group 'Privacy' -Setting 'SubscribedContent338389' -Enable $false | Out-Null
         Set-RegistrySettingFromConfig -Group 'Privacy' -Setting 'SoftLandingEnabled' -Enable $false | Out-Null
     }
 
-    Write-Status -Message (Get-LocalizedString -Key 'sysconfig.privacy.applied') -Level 'Success'
+    Write-Status -Message (Get-LogString -Key 'sysconfig.privacy.applied') -Level 'Success'
 }
 
 # === PERFORMANCE CONFIGURATION ===
@@ -766,17 +766,17 @@ function Set-PerformanceConfiguration {
         [hashtable]$Config
     )
 
-    Write-Status -Message (Get-LocalizedString -Key 'sysconfig.performance.configuring') -Level 'Info'
+    Write-Status -Message (Get-LogString -Key 'sysconfig.performance.configuring') -Level 'Info'
 
     # Disable visual effects (uses ValueBestPerformance)
     if ($Config.ContainsKey('DisableVisualEffects') -and $Config.DisableVisualEffects) {
-        Write-Status -Message (Get-LocalizedString -Key 'sysconfig.performance.disabling_visual_effects') -Level 'Info'
+        Write-Status -Message (Get-LogString -Key 'sysconfig.performance.disabling_visual_effects') -Level 'Info'
         Set-RegistrySettingFromConfig -Group 'Performance' -Setting 'VisualFXSetting' -ValueKey 'ValueBestPerformance' | Out-Null
     }
 
     # Optimize services
     if ($Config.ContainsKey('OptimizeServices') -and $Config.OptimizeServices) {
-        Write-Status -Message (Get-LocalizedString -Key 'sysconfig.performance.optimizing_services') -Level 'Info'
+        Write-Status -Message (Get-LogString -Key 'sysconfig.performance.optimizing_services') -Level 'Info'
 
         $servicesToDisable = Get-ServicesList -ListType 'ToDisable'
         $servicesToManual = Get-ServicesList -ListType 'ToManual'
@@ -786,11 +786,11 @@ function Set-PerformanceConfiguration {
                 $svc = Get-Service -Name $service -ErrorAction SilentlyContinue
                 if ($svc -and $svc.StartType -ne 'Disabled') {
                     Set-Service -Name $service -StartupType Disabled -ErrorAction Stop
-                    Write-Status -Message (Get-LocalizedString -Key 'sysconfig.performance.service_disabled' -Parameters @{ Service = $service }) -Level 'Verbose'
+                    Write-Status -Message (Get-LogString -Key 'sysconfig.performance.service_disabled' -Parameters @{ Service = $service }) -Level 'Verbose'
                 }
             }
             catch {
-                Write-Status -Message (Get-LocalizedString -Key 'sysconfig.performance.service_disable_failed' -Parameters @{ Service = $service }) -Level 'Verbose'
+                Write-Status -Message (Get-LogString -Key 'sysconfig.performance.service_disable_failed' -Parameters @{ Service = $service }) -Level 'Verbose'
             }
         }
 
@@ -799,18 +799,18 @@ function Set-PerformanceConfiguration {
                 $svc = Get-Service -Name $service -ErrorAction SilentlyContinue
                 if ($svc -and $svc.StartType -eq 'Automatic') {
                     Set-Service -Name $service -StartupType Manual -ErrorAction Stop
-                    Write-Status -Message (Get-LocalizedString -Key 'sysconfig.performance.service_manual' -Parameters @{ Service = $service }) -Level 'Verbose'
+                    Write-Status -Message (Get-LogString -Key 'sysconfig.performance.service_manual' -Parameters @{ Service = $service }) -Level 'Verbose'
                 }
             }
             catch {
-                Write-Status -Message (Get-LocalizedString -Key 'sysconfig.performance.service_modify_failed' -Parameters @{ Service = $service }) -Level 'Verbose'
+                Write-Status -Message (Get-LogString -Key 'sysconfig.performance.service_modify_failed' -Parameters @{ Service = $service }) -Level 'Verbose'
             }
         }
     }
 
     # Power plan
     if ($Config.ContainsKey('PowerPlan') -and $Config.PowerPlan) {
-        Write-Status -Message (Get-LocalizedString -Key 'sysconfig.performance.setting_power_plan' -Parameters @{ Plan = $Config.PowerPlan }) -Level 'Info'
+        Write-Status -Message (Get-LogString -Key 'sysconfig.performance.setting_power_plan' -Parameters @{ Plan = $Config.PowerPlan }) -Level 'Info'
 
         try {
             $powerPlan = switch ($Config.PowerPlan) {
@@ -821,20 +821,20 @@ function Set-PerformanceConfiguration {
             }
 
             & powercfg.exe /setactive $powerPlan
-            Write-Status -Message (Get-LocalizedString -Key 'sysconfig.performance.power_plan_configured') -Level 'Success'
+            Write-Status -Message (Get-LogString -Key 'sysconfig.performance.power_plan_configured') -Level 'Success'
         }
         catch {
-            Write-Status -Message (Get-LocalizedString -Key 'sysconfig.performance.power_plan_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
+            Write-Status -Message (Get-LogString -Key 'sysconfig.performance.power_plan_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
         }
     }
 
     # Game Mode
     if ($Config.ContainsKey('GameMode') -and $Config.GameMode) {
-        Write-Status -Message (Get-LocalizedString -Key 'sysconfig.performance.enabling_game_mode') -Level 'Info'
+        Write-Status -Message (Get-LogString -Key 'sysconfig.performance.enabling_game_mode') -Level 'Info'
         Set-RegistrySettingFromConfig -Group 'Performance' -Setting 'AutoGameModeEnabled' -Enable $true | Out-Null
     }
 
-    Write-Status -Message (Get-LocalizedString -Key 'sysconfig.performance.applied') -Level 'Success'
+    Write-Status -Message (Get-LogString -Key 'sysconfig.performance.applied') -Level 'Success'
 }
 
 # === SECURITY CONFIGURATION ===
@@ -856,37 +856,37 @@ function Set-SecurityConfiguration {
         [hashtable]$Config
     )
 
-    Write-Status -Message (Get-LocalizedString -Key 'sysconfig.security.configuring') -Level 'Info'
+    Write-Status -Message (Get-LogString -Key 'sysconfig.security.configuring') -Level 'Info'
 
     # Windows Defender
     if ($Config.ContainsKey('WindowsDefender')) {
         if ($Config.WindowsDefender) {
-            Write-Status -Message (Get-LocalizedString -Key 'sysconfig.security.defender_enabled') -Level 'Info'
+            Write-Status -Message (Get-LogString -Key 'sysconfig.security.defender_enabled') -Level 'Info'
         } else {
-            Write-Status -Message (Get-LocalizedString -Key 'sysconfig.security.defender_warning') -Level 'Warning'
+            Write-Status -Message (Get-LogString -Key 'sysconfig.security.defender_warning') -Level 'Warning'
         }
     }
 
     # Firewall
     if ($Config.ContainsKey('Firewall') -and $Config.Firewall) {
-        Write-Status -Message (Get-LocalizedString -Key 'sysconfig.security.firewall_enabled') -Level 'Info'
+        Write-Status -Message (Get-LogString -Key 'sysconfig.security.firewall_enabled') -Level 'Info'
 
         try {
             Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled True
-            Write-Status -Message (Get-LocalizedString -Key 'sysconfig.security.firewall_success') -Level 'Success'
+            Write-Status -Message (Get-LogString -Key 'sysconfig.security.firewall_success') -Level 'Success'
         }
         catch {
-            Write-Status -Message (Get-LocalizedString -Key 'sysconfig.security.firewall_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
+            Write-Status -Message (Get-LogString -Key 'sysconfig.security.firewall_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
         }
     }
 
     # Developer mode
     if ($Config.ContainsKey('DeveloperMode') -and $Config.DeveloperMode) {
-        Write-Status -Message (Get-LocalizedString -Key 'sysconfig.security.developer_mode') -Level 'Info'
+        Write-Status -Message (Get-LogString -Key 'sysconfig.security.developer_mode') -Level 'Info'
         Set-RegistrySettingFromConfig -Group 'Security' -Setting 'AllowDevelopmentWithoutDevLicense' -Enable $true | Out-Null
     }
 
-    Write-Status -Message (Get-LocalizedString -Key 'sysconfig.security.applied') -Level 'Success'
+    Write-Status -Message (Get-LogString -Key 'sysconfig.security.applied') -Level 'Success'
 }
 
 # === MAIN CONFIGURATION FUNCTION ===
@@ -910,7 +910,7 @@ function Set-SystemConfiguration {
     )
 
     Write-Host ""
-    Write-Status -Message (Get-LocalizedString -Key 'sysconfig.title') -Level 'Info'
+    Write-Status -Message (Get-LogString -Key 'sysconfig.title') -Level 'Info'
     Write-Host ""
 
     try {
@@ -945,12 +945,12 @@ function Set-SystemConfiguration {
         }
 
         Write-Host ""
-        Write-Status -Message (Get-LocalizedString -Key 'sysconfig.completed') -Level 'Success'
-        Write-Status -Message (Get-LocalizedString -Key 'sysconfig.restart_note') -Level 'Warning'
+        Write-Status -Message (Get-LogString -Key 'sysconfig.completed') -Level 'Success'
+        Write-Status -Message (Get-LogString -Key 'sysconfig.restart_note') -Level 'Warning'
 
     }
     catch {
-        Write-Status -Message (Get-LocalizedString -Key 'sysconfig.failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
+        Write-Status -Message (Get-LogString -Key 'sysconfig.failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
         throw
     }
 }

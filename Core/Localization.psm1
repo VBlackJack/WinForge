@@ -204,6 +204,59 @@ function Get-LocalizedString {
     return $value
 }
 
+function Get-LogString {
+    <#
+    .SYNOPSIS
+        Gets an English string for persisted logs and operation result messages.
+    .DESCRIPTION
+        Resolves a dot-notation translation key against the English fallback translations only.
+        UI strings should continue to use Get-LocalizedString so they follow the user language,
+        while logs stay stable and language-neutral for support and automation.
+
+    .PARAMETER Key
+        Translation key using dot notation (e.g., 'install.starting')
+
+    .PARAMETER Parameters
+        Hashtable of parameters to substitute in the string.
+
+    .PARAMETER DefaultValue
+        Value to return if key is not found. Defaults to the key itself.
+
+    .OUTPUTS
+        [string] The English string with parameters substituted.
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory, Position = 0)]
+        [string]$Key,
+
+        [Parameter(Position = 1)]
+        [hashtable]$Parameters = @{},
+
+        [Parameter()]
+        [string]$DefaultValue
+    )
+
+    if (-not $script:IsInitialized) {
+        Initialize-Localization
+    }
+
+    $value = Get-NestedValue -Object $script:FallbackTranslations -Key $Key
+
+    if ($null -eq $value) {
+        $value = if ($DefaultValue) { $DefaultValue } else { "[$Key]" }
+    }
+
+    if ($Parameters.Count -gt 0) {
+        foreach ($param in $Parameters.GetEnumerator()) {
+            $value = $value -replace "\{$($param.Key)\}", $param.Value
+        }
+    }
+
+    return $value
+}
+
 function Get-NestedValue {
     <#
     .SYNOPSIS
@@ -369,6 +422,7 @@ function Test-TranslationKey {
 Export-ModuleMember -Function @(
     'Initialize-Localization',
     'Get-LocalizedString',
+    'Get-LogString',
     'Get-CurrentLocale',
     'Set-CurrentLocale',
     'Get-AvailableLocales',

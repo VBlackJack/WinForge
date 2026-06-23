@@ -54,7 +54,7 @@ if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
 }
 
 # Import Localization module for i18n support
-if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Get-LogString -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:LocalizationModulePath) {
         Import-Module -Name $script:LocalizationModulePath -Force
     }
@@ -288,7 +288,7 @@ function Test-SafeExtractPath {
 
         # Verify the extracted path starts with the target directory
         if (-not $canonicalExtracted.StartsWith($canonicalTarget + [System.IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {
-            Write-Status -Message (Get-LocalizedString -Key 'security.archive.path_traversal_blocked' -Parameters @{ Path = $ExtractedPath }) -Level 'Warning'
+            Write-Status -Message (Get-LogString -Key 'security.archive.path_traversal_blocked' -Parameters @{ Path = $ExtractedPath }) -Level 'Warning'
             return $false
         }
 
@@ -296,14 +296,14 @@ function Test-SafeExtractPath {
         if ([System.IO.File]::Exists($ExtractedPath)) {
             $fileInfo = [System.IO.FileInfo]::new($ExtractedPath)
             if ($fileInfo.Attributes -band [System.IO.FileAttributes]::ReparsePoint) {
-                Write-Status -Message (Get-LocalizedString -Key 'security.archive.symlink_blocked' -Parameters @{ Path = $ExtractedPath }) -Level 'Warning'
+                Write-Status -Message (Get-LogString -Key 'security.archive.symlink_blocked' -Parameters @{ Path = $ExtractedPath }) -Level 'Warning'
                 return $false
             }
         }
 
         return $true
     } catch {
-        Write-Status -Message (Get-LocalizedString -Key 'security.archive.path_validation_error' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
+        Write-Status -Message (Get-LogString -Key 'security.archive.path_validation_error' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
         return $false
     }
 }
@@ -368,7 +368,7 @@ function Expand-ArchiveSafe {
                 $unixMode = ($entry.ExternalAttributes -shr 16) -band 0xFFFF
                 $isSymlink = ($unixMode -band 0xA000) -eq 0xA000
                 if ($isSymlink) {
-                    Write-Status -Message (Get-LocalizedString -Key 'security.archive.symlink_detected' -Parameters @{ Entry = $entry.FullName }) -Level 'Error'
+                    Write-Status -Message (Get-LogString -Key 'security.archive.symlink_detected' -Parameters @{ Entry = $entry.FullName }) -Level 'Error'
                     return $false
                 }
 
@@ -378,7 +378,7 @@ function Expand-ArchiveSafe {
 
                 # Validate path doesn't escape destination (Zip Slip prevention)
                 if (-not $entryFullPath.StartsWith($canonicalDest + [System.IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {
-                    Write-Status -Message (Get-LocalizedString -Key 'security.archive.zip_slip_detected' -Parameters @{ Entry = $entry.FullName }) -Level 'Error'
+                    Write-Status -Message (Get-LogString -Key 'security.archive.zip_slip_detected' -Parameters @{ Entry = $entry.FullName }) -Level 'Error'
                     return $false
                 }
 
@@ -386,10 +386,10 @@ function Expand-ArchiveSafe {
                 $extension = [System.IO.Path]::GetExtension($entry.FullName).ToLower()
                 if ($extension -in $dangerousExtensions) {
                     if (-not $AllowDangerousExtensions) {
-                        Write-Status -Message (Get-LocalizedString -Key 'security.archive.dangerous_filetype_blocked' -Parameters @{ Entry = $entry.FullName }) -Level 'Error'
+                        Write-Status -Message (Get-LogString -Key 'security.archive.dangerous_filetype_blocked' -Parameters @{ Entry = $entry.FullName }) -Level 'Error'
                         return $false
                     }
-                    Write-Status -Message (Get-LocalizedString -Key 'security.archive.dangerous_filetype_warning' -Parameters @{ Entry = $entry.FullName }) -Level 'Warning'
+                    Write-Status -Message (Get-LogString -Key 'security.archive.dangerous_filetype_warning' -Parameters @{ Entry = $entry.FullName }) -Level 'Warning'
                 }
 
                 # Entry passed all security checks - add to extraction list
@@ -409,7 +409,7 @@ function Expand-ArchiveSafe {
                     $fileAttribs = (Get-Item $item.DestPath -Force).Attributes
                     if ($fileAttribs -band [System.IO.FileAttributes]::ReparsePoint) {
                         Remove-Item $item.DestPath -Force -ErrorAction SilentlyContinue
-                        Write-Status -Message (Get-LocalizedString -Key 'security.archive.symlink_removed' -Parameters @{ Path = $item.DestPath }) -Level 'Warning'
+                        Write-Status -Message (Get-LogString -Key 'security.archive.symlink_removed' -Parameters @{ Path = $item.DestPath }) -Level 'Warning'
                     }
                 }
             }
@@ -418,7 +418,7 @@ function Expand-ArchiveSafe {
             $archive.Dispose()
         }
     } catch {
-        Write-Status -Message (Get-LocalizedString -Key 'security.archive.extraction_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
+        Write-Status -Message (Get-LogString -Key 'security.archive.extraction_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
         return $false
     }
 }
@@ -529,7 +529,7 @@ function Test-ValidDownloadUrl {
 
     # Check URL format (must be HTTP/HTTPS)
     if (-not ($Url -match '^https?://')) {
-        Write-Status -Message (Get-LocalizedString -Key 'download.invalid_protocol' -Parameters @{ Url = $Url }) -Level 'Verbose'
+        Write-Status -Message (Get-LogString -Key 'download.invalid_protocol' -Parameters @{ Url = $Url }) -Level 'Verbose'
         return $false
     }
 
@@ -537,17 +537,17 @@ function Test-ValidDownloadUrl {
     try {
         $uri = [System.Uri]$Url
         if ($uri.Scheme -notin @('http', 'https')) {
-            Write-Status -Message (Get-LocalizedString -Key 'download.invalid_scheme' -Parameters @{ Scheme = $uri.Scheme }) -Level 'Verbose'
+            Write-Status -Message (Get-LogString -Key 'download.invalid_scheme' -Parameters @{ Scheme = $uri.Scheme }) -Level 'Verbose'
             return $false
         }
     } catch {
-        Write-Status -Message (Get-LocalizedString -Key 'download.malformed_url' -Parameters @{ Url = $Url }) -Level 'Verbose'
+        Write-Status -Message (Get-LogString -Key 'download.malformed_url' -Parameters @{ Url = $Url }) -Level 'Verbose'
         return $false
     }
 
     # SSRF Protection: Block internal/private IP addresses
     if (Test-InternalAddress -Host $uri.Host) {
-        Write-Status -Message (Get-LocalizedString -Key 'security.download.internal_address_blocked' -Parameters @{ Host = $uri.Host }) -Level 'Error'
+        Write-Status -Message (Get-LogString -Key 'security.download.internal_address_blocked' -Parameters @{ Host = $uri.Host }) -Level 'Error'
         return $false
     }
 
@@ -565,10 +565,10 @@ function Test-ValidDownloadUrl {
 
     if (-not $domainMatched) {
         if ($AllowUntrusted) {
-            Write-Status -Message (Get-LocalizedString -Key 'download.non_whitelisted' -Parameters @{ Host = $uri.Host }) -Level 'Warning'
+            Write-Status -Message (Get-LogString -Key 'download.non_whitelisted' -Parameters @{ Host = $uri.Host }) -Level 'Warning'
             return $true
         } else {
-            Write-Status -Message (Get-LocalizedString -Key 'security.download.untrusted_domain_blocked' -Parameters @{ Host = $uri.Host }) -Level 'Warning'
+            Write-Status -Message (Get-LogString -Key 'security.download.untrusted_domain_blocked' -Parameters @{ Host = $uri.Host }) -Level 'Warning'
             return $false
         }
     }
@@ -620,7 +620,7 @@ function Start-ProcessWithTimeout {
 
         # Wait for process with timeout
         if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
-            Write-Status -Message (Get-LocalizedString -Key 'download.process_timeout' -Parameters @{ Seconds = $TimeoutSeconds }) -Level 'Warning'
+            Write-Status -Message (Get-LogString -Key 'download.process_timeout' -Parameters @{ Seconds = $TimeoutSeconds }) -Level 'Warning'
 
             # Graceful termination: Try CloseMainWindow first
             $gracefulClosed = $false
@@ -629,22 +629,22 @@ function Start-ProcessWithTimeout {
                     # Wait up to 5 seconds for graceful close
                     $gracefulClosed = $process.WaitForExit(5000)
                     if ($gracefulClosed) {
-                        Write-Status -Message (Get-LocalizedString -Key 'install.method.process.graceful_terminated') -Level 'Info'
+                        Write-Status -Message (Get-LogString -Key 'install.method.process.graceful_terminated') -Level 'Info'
                     }
                 }
             } catch {
-                Write-Status -Message (Get-LocalizedString -Key 'install.method.process.close_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
+                Write-Status -Message (Get-LogString -Key 'install.method.process.close_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
             }
 
             # Forceful termination if graceful failed
             if (-not $gracefulClosed -and -not $process.HasExited) {
-                Write-Status -Message (Get-LocalizedString -Key 'install.method.process.force_kill') -Level 'Warning'
+                Write-Status -Message (Get-LogString -Key 'install.method.process.force_kill') -Level 'Warning'
                 try {
                     $process.Kill()
                     # Wait for process to actually terminate
                     $process.WaitForExit(3000)
                 } catch {
-                    Write-Status -Message (Get-LocalizedString -Key 'install.method.process.kill_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
+                    Write-Status -Message (Get-LogString -Key 'install.method.process.kill_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
                 }
 
                 # Kill child processes to prevent orphans
@@ -655,11 +655,11 @@ function Start-ProcessWithTimeout {
                             Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue
                         }
                 } catch {
-                    Write-Status -Message (Get-LocalizedString -Key 'install.method.process.child_cleanup_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
+                    Write-Status -Message (Get-LogString -Key 'install.method.process.child_cleanup_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
                 }
             }
 
-            throw (Get-LocalizedString -Key 'install.method.process.timed_out' -Parameters @{ Seconds = $TimeoutSeconds })
+            throw (Get-LogString -Key 'install.method.process.timed_out' -Parameters @{ Seconds = $TimeoutSeconds })
         }
 
         # Refresh process object to ensure ExitCode is available
@@ -680,7 +680,7 @@ function Start-ProcessWithTimeout {
 
         return $exitCode
     } catch {
-        Write-Status -Message (Get-LocalizedString -Key 'download.process_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
+        Write-Status -Message (Get-LogString -Key 'download.process_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
         throw
     }
 }
@@ -705,22 +705,22 @@ function Test-InstallerSignature {
     try {
         $signature = Get-AuthenticodeSignature -FilePath $FilePath
     } catch {
-        Write-Status -Message (Get-LocalizedString -Key 'download.signature.error' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
+        Write-Status -Message (Get-LogString -Key 'download.signature.error' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
         return $false
     }
 
     if ($signature.Status -ne 'Valid') {
-        Write-Status -Message (Get-LocalizedString -Key 'download.signature.invalid' -Parameters @{ Status = $signature.Status }) -Level 'Error'
+        Write-Status -Message (Get-LogString -Key 'download.signature.invalid' -Parameters @{ Status = $signature.Status }) -Level 'Error'
         return $false
     }
 
     $subject = if ($signature.SignerCertificate) { $signature.SignerCertificate.Subject } else { $null }
     if ($subject -and $subject.ToLowerInvariant().Contains($ExpectedPublisher.ToLowerInvariant())) {
-        Write-Status -Message (Get-LocalizedString -Key 'download.signature.valid' -Parameters @{ Publisher = $ExpectedPublisher }) -Level 'Success'
+        Write-Status -Message (Get-LogString -Key 'download.signature.valid' -Parameters @{ Publisher = $ExpectedPublisher }) -Level 'Success'
         return $true
     }
 
-    Write-Status -Message (Get-LocalizedString -Key 'download.signature.publisher_mismatch' -Parameters @{ Expected = $ExpectedPublisher; Got = $subject }) -Level 'Error'
+    Write-Status -Message (Get-LogString -Key 'download.signature.publisher_mismatch' -Parameters @{ Expected = $ExpectedPublisher; Got = $subject }) -Level 'Error'
     return $false
 }
 
@@ -759,7 +759,7 @@ function Invoke-FileDownloadWithProgress {
     $dangerousChars = @(';', '|', '`', '$', '(', ')', '<', '>', '"', "'", "`n", "`r", [char]0)
     foreach ($char in $dangerousChars) {
         if ($Url.Contains($char)) {
-            Write-Status -Message (Get-LocalizedString -Key 'security.download.dangerous_character' -Parameters @{ Character = $char }) -Level 'Error'
+            Write-Status -Message (Get-LogString -Key 'security.download.dangerous_character' -Parameters @{ Character = $char }) -Level 'Error'
             return $false
         }
     }
@@ -768,11 +768,11 @@ function Invoke-FileDownloadWithProgress {
     try {
         $uri = [System.Uri]$Url
         if ($uri.Scheme -notin @('http', 'https')) {
-            Write-Status -Message (Get-LocalizedString -Key 'security.download.invalid_scheme' -Parameters @{ Scheme = $uri.Scheme }) -Level 'Error'
+            Write-Status -Message (Get-LogString -Key 'security.download.invalid_scheme' -Parameters @{ Scheme = $uri.Scheme }) -Level 'Error'
             return $false
         }
     } catch {
-        Write-Status -Message (Get-LocalizedString -Key 'security.download.malformed_url' -Parameters @{ Url = $Url }) -Level 'Error'
+        Write-Status -Message (Get-LogString -Key 'security.download.malformed_url' -Parameters @{ Url = $Url }) -Level 'Error'
         return $false
     }
 
@@ -783,8 +783,8 @@ function Invoke-FileDownloadWithProgress {
 
     # Method 1: Try Invoke-WebRequest (modern, secure, better redirect handling)
     try {
-        Write-Output "[INFO] $(Get-LocalizedString -Key 'download.method.invoke_webrequest')"
-        Write-Status -Message (Get-LocalizedString -Key 'download.method.invoke_webrequest') -Level 'Verbose'
+        Write-Output "[INFO] $(Get-LogString -Key 'download.method.invoke_webrequest')"
+        Write-Status -Message (Get-LogString -Key 'download.method.invoke_webrequest') -Level 'Verbose'
 
         # Disable progress bar for faster download
         $ProgressPreference = 'SilentlyContinue'
@@ -799,23 +799,23 @@ function Invoke-FileDownloadWithProgress {
         $response = Invoke-WebRequest -Uri $Url -OutFile $OutputPath -Headers $headers -UseBasicParsing -TimeoutSec $TimeoutSeconds -ErrorAction Stop -PassThru
 
         if ($response.StatusCode -ge 400) {
-            Write-Output "[WARNING] $(Get-LocalizedString -Key 'download.method.http_error' -Parameters @{ StatusCode = $response.StatusCode })"
-            Write-Status -Message (Get-LocalizedString -Key 'download.method.http_error' -Parameters @{ StatusCode = $response.StatusCode }) -Level 'Warning'
+            Write-Output "[WARNING] $(Get-LogString -Key 'download.method.http_error' -Parameters @{ StatusCode = $response.StatusCode })"
+            Write-Status -Message (Get-LogString -Key 'download.method.http_error' -Parameters @{ StatusCode = $response.StatusCode }) -Level 'Warning'
             if (Test-Path -Path $OutputPath) {
                 Remove-Item -Path $OutputPath -Force -ErrorAction SilentlyContinue
             }
         }
         elseif ((Test-Path -Path $OutputPath) -and (Get-Item -Path $OutputPath).Length -gt 0) {
             $downloadSuccess = $true
-            Write-Output "[SUCCESS] $(Get-LocalizedString -Key 'download.method.completed')"
-            Write-Status -Message (Get-LocalizedString -Key 'download.method.completed') -Level 'Verbose'
+            Write-Output "[SUCCESS] $(Get-LogString -Key 'download.method.completed')"
+            Write-Status -Message (Get-LogString -Key 'download.method.completed') -Level 'Verbose'
         }
         else {
-            Write-Output "[WARNING] $(Get-LocalizedString -Key 'download.method.empty_or_missing')"
+            Write-Output "[WARNING] $(Get-LogString -Key 'download.method.empty_or_missing')"
         }
     } catch {
-        Write-Output "[WARNING] $(Get-LocalizedString -Key 'download.method.webrequest_failed_curl')"
-        Write-Status -Message (Get-LocalizedString -Key 'download.method.webrequest_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
+        Write-Output "[WARNING] $(Get-LogString -Key 'download.method.webrequest_failed_curl')"
+        Write-Status -Message (Get-LogString -Key 'download.method.webrequest_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
         # Clean up any partial file
         if (Test-Path -Path $OutputPath) {
             Remove-Item -Path $OutputPath -Force -ErrorAction SilentlyContinue
@@ -830,8 +830,8 @@ function Invoke-FileDownloadWithProgress {
         try {
             $curlPath = [System.IO.Path]::Combine($env:SystemRoot, 'System32', 'curl.exe')
             if (Test-Path $curlPath) {
-                Write-Output "[INFO] $(Get-LocalizedString -Key 'download.method.curl')"
-                Write-Status -Message (Get-LocalizedString -Key 'download.method.curl') -Level 'Verbose'
+                Write-Output "[INFO] $(Get-LogString -Key 'download.method.curl')"
+                Write-Status -Message (Get-LogString -Key 'download.method.curl') -Level 'Verbose'
                 # Security: Use Start-Process with ArgumentList array to prevent command injection
                 # Each argument is passed separately, preventing shell interpretation
                 # Build curl arguments - User-Agent must be quoted due to spaces
@@ -850,14 +850,14 @@ function Invoke-FileDownloadWithProgress {
                 $curlProcess = Start-Process -FilePath $curlPath -ArgumentList $curlArgs -NoNewWindow -Wait -PassThru
                 if ($curlProcess.ExitCode -eq 0 -and (Test-Path -Path $OutputPath) -and (Get-Item -Path $OutputPath).Length -gt 0) {
                     $downloadSuccess = $true
-                    Write-Output "[SUCCESS] $(Get-LocalizedString -Key 'download.method.completed')"
+                    Write-Output "[SUCCESS] $(Get-LogString -Key 'download.method.completed')"
                 } else {
-                    Write-Output "[WARNING] $(Get-LocalizedString -Key 'download.method.curl_exit_code' -Parameters @{ ExitCode = $curlProcess.ExitCode })"
+                    Write-Output "[WARNING] $(Get-LogString -Key 'download.method.curl_exit_code' -Parameters @{ ExitCode = $curlProcess.ExitCode })"
                 }
             }
         } catch {
-            Write-Output "[WARNING] $(Get-LocalizedString -Key 'download.method.curl_failed' -Parameters @{ Error = $_.Exception.Message })"
-            Write-Status -Message (Get-LocalizedString -Key 'download.method.curl_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
+            Write-Output "[WARNING] $(Get-LogString -Key 'download.method.curl_failed' -Parameters @{ Error = $_.Exception.Message })"
+            Write-Status -Message (Get-LogString -Key 'download.method.curl_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
         }
     }
 
@@ -867,55 +867,55 @@ function Invoke-FileDownloadWithProgress {
             Remove-Item -Path $OutputPath -Force -ErrorAction SilentlyContinue
         }
         try {
-            Write-Output "[INFO] $(Get-LocalizedString -Key 'download.method.bits')"
-            Write-Status -Message (Get-LocalizedString -Key 'download.method.bits') -Level 'Verbose'
+            Write-Output "[INFO] $(Get-LogString -Key 'download.method.bits')"
+            Write-Status -Message (Get-LogString -Key 'download.method.bits') -Level 'Verbose'
             Start-BitsTransfer -Source $Url -Destination $OutputPath -ErrorAction Stop
             if ((Test-Path -Path $OutputPath) -and (Get-Item -Path $OutputPath).Length -gt 0) {
                 $downloadSuccess = $true
-                Write-Output "[SUCCESS] $(Get-LocalizedString -Key 'download.method.completed')"
+                Write-Output "[SUCCESS] $(Get-LogString -Key 'download.method.completed')"
             }
         } catch {
-            Write-Output "[ERROR] $(Get-LocalizedString -Key 'download.method.bits_failed')"
-            Write-Status -Message (Get-LocalizedString -Key 'download.method.bits_failed_detail' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
+            Write-Output "[ERROR] $(Get-LogString -Key 'download.method.bits_failed')"
+            Write-Status -Message (Get-LogString -Key 'download.method.bits_failed_detail' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
         }
     }
 
     if (-not $downloadSuccess) {
-        Write-Output "[ERROR] $(Get-LocalizedString -Key 'download.method.all_exhausted')"
-        Write-Status -Message (Get-LocalizedString -Key 'download.method.all_exhausted') -Level 'Error'
+        Write-Output "[ERROR] $(Get-LogString -Key 'download.method.all_exhausted')"
+        Write-Status -Message (Get-LogString -Key 'download.method.all_exhausted') -Level 'Error'
         return $false
     }
 
     # Verify file exists and has content
     if (-not (Test-Path -Path $OutputPath)) {
-        Write-Status -Message (Get-LocalizedString -Key 'download.file_not_found') -Level 'Error'
+        Write-Status -Message (Get-LogString -Key 'download.file_not_found') -Level 'Error'
         return $false
     }
 
     $fileSize = (Get-Item -Path $OutputPath).Length
     if ($fileSize -eq 0) {
-        Write-Status -Message (Get-LocalizedString -Key 'download.download_failed' -Parameters @{ Error = 'Downloaded file is empty' }) -Level 'Error'
+        Write-Status -Message (Get-LogString -Key 'download.download_failed' -Parameters @{ Error = 'Downloaded file is empty' }) -Level 'Error'
         Remove-Item -Path $OutputPath -Force -ErrorAction SilentlyContinue
         return $false
     }
 
-    Write-Status -Message (Get-LocalizedString -Key 'download.method.completed_size' -Parameters @{ Size = $fileSize }) -Level 'Verbose'
+    Write-Status -Message (Get-LogString -Key 'download.method.completed_size' -Parameters @{ Size = $fileSize }) -Level 'Verbose'
 
     # SHA256 checksum validation via the shared enforcement helper
     # (DownloadValidation\Assert-FileChecksum), so the comparison rule cannot drift
     # between the sequential and parallel installation paths.
     if ($ExpectedSHA256) {
-        Write-Status -Message (Get-LocalizedString -Key 'download.validating_checksum') -Level 'Verbose'
+        Write-Status -Message (Get-LogString -Key 'download.validating_checksum') -Level 'Verbose'
 
         if (-not (Assert-FileChecksum -Path $OutputPath -ExpectedSHA256 $ExpectedSHA256)) {
             $fileHash = (Get-FileHash -Path $OutputPath -Algorithm SHA256).Hash
-            Write-Status -Message (Get-LocalizedString -Key 'download.checksum_failed' -Parameters @{ Expected = $ExpectedSHA256; Got = $fileHash }) -Level 'Error'
-            Write-Status -Message (Get-LocalizedString -Key 'download.removing_corrupted') -Level 'Warning'
+            Write-Status -Message (Get-LogString -Key 'download.checksum_failed' -Parameters @{ Expected = $ExpectedSHA256; Got = $fileHash }) -Level 'Error'
+            Write-Status -Message (Get-LogString -Key 'download.removing_corrupted') -Level 'Warning'
             Remove-Item -Path $OutputPath -Force -ErrorAction SilentlyContinue
             return $false
         }
 
-        Write-Status -Message (Get-LocalizedString -Key 'download.checksum_passed' -Parameters @{ Hash = $ExpectedSHA256 }) -Level 'Success'
+        Write-Status -Message (Get-LogString -Key 'download.checksum_passed' -Parameters @{ Hash = $ExpectedSHA256 }) -Level 'Success'
     }
 
     return $true
@@ -947,7 +947,7 @@ function Install-ViaWinget {
     )
 
     if (-not (Test-CommandExists -Name 'winget')) {
-        Write-Status -Message (Get-LocalizedString -Key 'install.method.winget_unavailable') -Level 'Verbose'
+        Write-Status -Message (Get-LogString -Key 'install.method.winget_unavailable') -Level 'Verbose'
         return $false
     }
 
@@ -969,11 +969,11 @@ function Install-ViaWinget {
     for ($attempt = 1; $attempt -le $MaxRetries; $attempt++) {
         try {
             if ($attempt -eq 1) {
-                Write-Output "[INFO] $(Get-LocalizedString -Key 'install.method.winget' -Parameters @{ PackageId = $PackageId })"
-                Write-Status -Message (Get-LocalizedString -Key 'install.method.winget' -Parameters @{ PackageId = $PackageId }) -Level 'Info'
+                Write-Output "[INFO] $(Get-LogString -Key 'install.method.winget' -Parameters @{ PackageId = $PackageId })"
+                Write-Status -Message (Get-LogString -Key 'install.method.winget' -Parameters @{ PackageId = $PackageId }) -Level 'Info'
             } else {
-                Write-Output "[INFO] $(Get-LocalizedString -Key 'install.retry.attempt' -Parameters @{ Current = $attempt; Max = $MaxRetries }) - Winget: $PackageId"
-                Write-Status -Message "$(Get-LocalizedString -Key 'install.retry.attempt' -Parameters @{ Current = $attempt; Max = $MaxRetries }) - Winget: $PackageId" -Level 'Info'
+                Write-Output "[INFO] $(Get-LogString -Key 'install.retry.attempt' -Parameters @{ Current = $attempt; Max = $MaxRetries }) - Winget: $PackageId"
+                Write-Status -Message "$(Get-LogString -Key 'install.retry.attempt' -Parameters @{ Current = $attempt; Max = $MaxRetries }) - Winget: $PackageId" -Level 'Info'
             }
 
             # Execute winget and capture output to detect "already installed" patterns
@@ -988,8 +988,8 @@ function Install-ViaWinget {
                 $wingetOutput -match 'Successfully installed') {
                 $version = Get-InstalledAppVersion -WingetId $PackageId
                 $versionInfo = if ($version) { " v$version" } else { "" }
-                $attemptInfo = if ($attempt -gt 1) { " ($(Get-LocalizedString -Key 'install.retry.attempt' -Parameters @{ Current = $attempt; Max = $MaxRetries }))" } else { "" }
-                $successMsg = Get-LocalizedString -Key 'install.method.winget_success' -Parameters @{ PackageId = $PackageId; Version = $versionInfo; Attempt = $attemptInfo }
+                $attemptInfo = if ($attempt -gt 1) { " ($(Get-LogString -Key 'install.retry.attempt' -Parameters @{ Current = $attempt; Max = $MaxRetries }))" } else { "" }
+                $successMsg = Get-LogString -Key 'install.method.winget_success' -Parameters @{ PackageId = $PackageId; Version = $versionInfo; Attempt = $attemptInfo }
                 Write-Output "[SUCCESS] $successMsg"
                 Write-Status -Message $successMsg -Level 'Success'
                 return $true
@@ -999,8 +999,8 @@ function Install-ViaWinget {
             if ($exitCode -eq 0) {
                 $version = Get-InstalledAppVersion -WingetId $PackageId
                 $versionInfo = if ($version) { " v$version" } else { "" }
-                $attemptInfo = if ($attempt -gt 1) { " ($(Get-LocalizedString -Key 'install.retry.attempt' -Parameters @{ Current = $attempt; Max = $MaxRetries }))" } else { "" }
-                $successMsg = Get-LocalizedString -Key 'install.method.winget_success' -Parameters @{ PackageId = $PackageId; Version = $versionInfo; Attempt = $attemptInfo }
+                $attemptInfo = if ($attempt -gt 1) { " ($(Get-LogString -Key 'install.retry.attempt' -Parameters @{ Current = $attempt; Max = $MaxRetries }))" } else { "" }
+                $successMsg = Get-LogString -Key 'install.method.winget_success' -Parameters @{ PackageId = $PackageId; Version = $versionInfo; Attempt = $attemptInfo }
                 Write-Output "[SUCCESS] $successMsg"
                 Write-Status -Message $successMsg -Level 'Success'
                 return $true
@@ -1010,8 +1010,8 @@ function Install-ViaWinget {
             if ($exitCode -eq -1978334974) {
                 $version = Get-InstalledAppVersion -WingetId $PackageId
                 $versionInfo = if ($version) { " v$version" } else { "" }
-                $attemptInfo = if ($attempt -gt 1) { " ($(Get-LocalizedString -Key 'install.retry.attempt' -Parameters @{ Current = $attempt; Max = $MaxRetries }))" } else { "" }
-                $alreadyMsg = Get-LocalizedString -Key 'install.method.winget_already_installed' -Parameters @{ PackageId = $PackageId; Version = $versionInfo; Attempt = $attemptInfo }
+                $attemptInfo = if ($attempt -gt 1) { " ($(Get-LogString -Key 'install.retry.attempt' -Parameters @{ Current = $attempt; Max = $MaxRetries }))" } else { "" }
+                $alreadyMsg = Get-LogString -Key 'install.method.winget_already_installed' -Parameters @{ PackageId = $PackageId; Version = $versionInfo; Attempt = $attemptInfo }
                 Write-Output "[SUCCESS] $alreadyMsg"
                 Write-Status -Message $alreadyMsg -Level 'Success'
                 return $true
@@ -1023,7 +1023,7 @@ function Install-ViaWinget {
 
                 if ($shouldForce) {
                     # Retry with --force to bypass hash validation
-                    $retryMsg = Get-LocalizedString -Key 'install.method.winget_hash_mismatch_retrying_force' -Parameters @{ PackageId = $PackageId }
+                    $retryMsg = Get-LogString -Key 'install.method.winget_hash_mismatch_retrying_force' -Parameters @{ PackageId = $PackageId }
                     Write-Output "[WARNING] $retryMsg"
                     Write-Status -Message $retryMsg -Level 'Warning'
 
@@ -1034,20 +1034,20 @@ function Install-ViaWinget {
                     if ($forceExitCode -eq 0 -or $forceOutput -match 'Successfully installed' -or $forceOutput -match 'already installed') {
                         $version = Get-InstalledAppVersion -WingetId $PackageId
                         $versionInfo = if ($version) { " v$version" } else { "" }
-                        $forceSuccessMsg = Get-LocalizedString -Key 'install.method.winget_force_success' -Parameters @{ PackageId = $PackageId; Version = $versionInfo }
+                        $forceSuccessMsg = Get-LogString -Key 'install.method.winget_force_success' -Parameters @{ PackageId = $PackageId; Version = $versionInfo }
                         Write-Output "[SUCCESS] $forceSuccessMsg"
                         Write-Status -Message $forceSuccessMsg -Level 'Success'
                         return $true
                     }
 
-                    $forceFailMsg = Get-LocalizedString -Key 'install.method.winget_force_failed' -Parameters @{ PackageId = $PackageId; ExitCode = $forceExitCode }
+                    $forceFailMsg = Get-LogString -Key 'install.method.winget_force_failed' -Parameters @{ PackageId = $PackageId; ExitCode = $forceExitCode }
                     Write-Output "[WARNING] $forceFailMsg"
                     Write-Status -Message $forceFailMsg -Level 'Warning'
                     return $false
                 }
 
                 # Default: fail fast without --force
-                $hashMsg = Get-LocalizedString -Key 'install.method.winget_hash_mismatch' -Parameters @{ PackageId = $PackageId }
+                $hashMsg = Get-LogString -Key 'install.method.winget_hash_mismatch' -Parameters @{ PackageId = $PackageId }
                 Write-Output "[WARNING] $hashMsg"
                 Write-Status -Message $hashMsg -Level 'Warning'
                 return $false
@@ -1058,14 +1058,14 @@ function Install-ViaWinget {
             if ($transientErrors -contains $exitCode) {
                 if ($attempt -lt $MaxRetries) {
                     $delay = $RetryDelaySeconds * [Math]::Pow(2, $attempt - 1)  # Exponential backoff
-                    $transientMsg = Get-LocalizedString -Key 'install.method.transient_error' -Parameters @{ ExitCode = $exitCode; Delay = $delay }
+                    $transientMsg = Get-LogString -Key 'install.method.transient_error' -Parameters @{ ExitCode = $exitCode; Delay = $delay }
                     Write-Output "[WARNING] $transientMsg"
                     Write-Status -Message $transientMsg -Level 'Warning'
                     Start-Sleep -Seconds $delay
                     continue
                 }
                 # Last attempt with transient error - don't verify (could detect old install), just fail
-                $failMsg = Get-LocalizedString -Key 'install.method.winget_failed_attempts' -Parameters @{ Attempts = $MaxRetries; ExitCode = $exitCode }
+                $failMsg = Get-LogString -Key 'install.method.winget_failed_attempts' -Parameters @{ Attempts = $MaxRetries; ExitCode = $exitCode }
                 Write-Output "[WARNING] $failMsg"
                 Write-Status -Message $failMsg -Level 'Warning'
                 return $false
@@ -1073,19 +1073,19 @@ function Install-ViaWinget {
 
             # Post-install verification: Check if package is actually installed despite non-zero exit code
             # This handles cases where winget returns unexpected exit codes but installation succeeded
-            Write-Output "[INFO] $(Get-LocalizedString -Key 'install.method.verifying')"
+            Write-Output "[INFO] $(Get-LogString -Key 'install.method.verifying')"
             $verifyResult = & winget list --id $PackageId --accept-source-agreements 2>&1 | Out-String
             if ($verifyResult -match [regex]::Escape($PackageId) -and $verifyResult -notmatch "No installed package") {
                 $version = Get-InstalledAppVersion -WingetId $PackageId
                 $versionInfo = if ($version) { " v$version" } else { "" }
-                $attemptInfo = if ($attempt -gt 1) { " ($(Get-LocalizedString -Key 'install.retry.attempt' -Parameters @{ Current = $attempt; Max = $MaxRetries }))" } else { "" }
-                $verifiedMsg = Get-LocalizedString -Key 'install.method.winget_verified' -Parameters @{ PackageId = $PackageId; Version = $versionInfo; Attempt = $attemptInfo }
+                $attemptInfo = if ($attempt -gt 1) { " ($(Get-LogString -Key 'install.retry.attempt' -Parameters @{ Current = $attempt; Max = $MaxRetries }))" } else { "" }
+                $verifiedMsg = Get-LogString -Key 'install.method.winget_verified' -Parameters @{ PackageId = $PackageId; Version = $versionInfo; Attempt = $attemptInfo }
                 Write-Output "[SUCCESS] $verifiedMsg"
                 Write-Status -Message $verifiedMsg -Level 'Success'
                 return $true
             }
 
-            $wingetFailMsg = Get-LocalizedString -Key 'install.method.winget_failed' -Parameters @{ ExitCode = $exitCode }
+            $wingetFailMsg = Get-LogString -Key 'install.method.winget_failed' -Parameters @{ ExitCode = $exitCode }
             Write-Output "[WARNING] $wingetFailMsg"
             Write-Status -Message $wingetFailMsg -Level 'Warning'
             return $false
@@ -1093,13 +1093,13 @@ function Install-ViaWinget {
         } catch {
             if ($attempt -lt $MaxRetries) {
                 $delay = $RetryDelaySeconds * [Math]::Pow(2, $attempt - 1)  # Exponential backoff
-                $retryMsg = Get-LocalizedString -Key 'install.method.winget_error_retry' -Parameters @{ Error = $_.Exception.Message; Delay = $delay }
+                $retryMsg = Get-LogString -Key 'install.method.winget_error_retry' -Parameters @{ Error = $_.Exception.Message; Delay = $delay }
                 Write-Output "[WARNING] $retryMsg"
                 Write-Status -Message $retryMsg -Level 'Warning'
                 Start-Sleep -Seconds $delay
                 continue
             } else {
-                $wingetErrorMsg = Get-LocalizedString -Key 'install.method.winget_error_final' -Parameters @{ Attempts = $MaxRetries; Error = $_.Exception.Message }
+                $wingetErrorMsg = Get-LogString -Key 'install.method.winget_error_final' -Parameters @{ Attempts = $MaxRetries; Error = $_.Exception.Message }
                 Write-Output "[ERROR] $wingetErrorMsg"
                 Write-Status -Message $wingetErrorMsg -Level 'Verbose'
                 return $false
@@ -1125,7 +1125,7 @@ function Install-ViaChocolatey {
     )
 
     if (-not (Test-CommandExists -Name 'choco')) {
-        Write-Status -Message (Get-LocalizedString -Key 'install.method.choco_unavailable') -Level 'Verbose'
+        Write-Status -Message (Get-LogString -Key 'install.method.choco_unavailable') -Level 'Verbose'
         return $false
     }
 
@@ -1139,11 +1139,11 @@ function Install-ViaChocolatey {
     for ($attempt = 1; $attempt -le $MaxRetries; $attempt++) {
         try {
             if ($attempt -eq 1) {
-                Write-Output "[INFO] $(Get-LocalizedString -Key 'install.method.chocolatey' -Parameters @{ PackageId = $PackageName })"
-                Write-Status -Message (Get-LocalizedString -Key 'install.method.chocolatey' -Parameters @{ PackageId = $PackageName }) -Level 'Info'
+                Write-Output "[INFO] $(Get-LogString -Key 'install.method.chocolatey' -Parameters @{ PackageId = $PackageName })"
+                Write-Status -Message (Get-LogString -Key 'install.method.chocolatey' -Parameters @{ PackageId = $PackageName }) -Level 'Info'
             } else {
-                Write-Output "[INFO] $(Get-LocalizedString -Key 'install.retry.attempt' -Parameters @{ Current = $attempt; Max = $MaxRetries }) - Chocolatey: $PackageName"
-                Write-Status -Message "$(Get-LocalizedString -Key 'install.retry.attempt' -Parameters @{ Current = $attempt; Max = $MaxRetries }) - Chocolatey: $PackageName" -Level 'Info'
+                Write-Output "[INFO] $(Get-LogString -Key 'install.retry.attempt' -Parameters @{ Current = $attempt; Max = $MaxRetries }) - Chocolatey: $PackageName"
+                Write-Status -Message "$(Get-LogString -Key 'install.retry.attempt' -Parameters @{ Current = $attempt; Max = $MaxRetries }) - Chocolatey: $PackageName" -Level 'Info'
             }
 
             # Execute choco and capture output to detect "already installed"
@@ -1154,8 +1154,8 @@ function Install-ViaChocolatey {
             if ($chocoOutput -match 'already installed' -or $chocoOutput -match 'has been installed') {
                 $version = Get-InstalledAppVersion -ChocolateyId $PackageName
                 $versionInfo = if ($version) { " v$version" } else { "" }
-                $attemptInfo = if ($attempt -gt 1) { " ($(Get-LocalizedString -Key 'install.retry.attempt' -Parameters @{ Current = $attempt; Max = $MaxRetries }))" } else { "" }
-                $chocoSuccessMsg = Get-LocalizedString -Key 'install.method.choco_success' -Parameters @{ PackageName = $PackageName; Version = $versionInfo; Attempt = $attemptInfo }
+                $attemptInfo = if ($attempt -gt 1) { " ($(Get-LogString -Key 'install.retry.attempt' -Parameters @{ Current = $attempt; Max = $MaxRetries }))" } else { "" }
+                $chocoSuccessMsg = Get-LogString -Key 'install.method.choco_success' -Parameters @{ PackageName = $PackageName; Version = $versionInfo; Attempt = $attemptInfo }
                 Write-Output "[SUCCESS] $chocoSuccessMsg"
                 Write-Status -Message $chocoSuccessMsg -Level 'Success'
                 return $true
@@ -1164,8 +1164,8 @@ function Install-ViaChocolatey {
             if ($exitCode -eq 0) {
                 $version = Get-InstalledAppVersion -ChocolateyId $PackageName
                 $versionInfo = if ($version) { " v$version" } else { "" }
-                $attemptInfo = if ($attempt -gt 1) { " ($(Get-LocalizedString -Key 'install.retry.attempt' -Parameters @{ Current = $attempt; Max = $MaxRetries }))" } else { "" }
-                $chocoSuccessMsg = Get-LocalizedString -Key 'install.method.choco_success' -Parameters @{ PackageName = $PackageName; Version = $versionInfo; Attempt = $attemptInfo }
+                $attemptInfo = if ($attempt -gt 1) { " ($(Get-LogString -Key 'install.retry.attempt' -Parameters @{ Current = $attempt; Max = $MaxRetries }))" } else { "" }
+                $chocoSuccessMsg = Get-LogString -Key 'install.method.choco_success' -Parameters @{ PackageName = $PackageName; Version = $versionInfo; Attempt = $attemptInfo }
                 Write-Output "[SUCCESS] $chocoSuccessMsg"
                 Write-Status -Message $chocoSuccessMsg -Level 'Success'
                 return $true
@@ -1175,20 +1175,20 @@ function Install-ViaChocolatey {
             $transientErrors = $script:ChocolateyRebootExitCodes
             if ($transientErrors -contains $exitCode -and $attempt -lt $MaxRetries) {
                 # Before retrying, check if package is already installed
-                Write-Output "[INFO] $(Get-LocalizedString -Key 'install.method.verifying')"
+                Write-Output "[INFO] $(Get-LogString -Key 'install.method.verifying')"
                 $chocoList = & choco list --local-only --exact $PackageName 2>&1 | Out-String
                 if ($chocoList -match $PackageName -and $chocoList -notmatch "0 packages installed") {
                     $version = Get-InstalledAppVersion -ChocolateyId $PackageName
                     $versionInfo = if ($version) { " v$version" } else { "" }
-                    $attemptInfo = if ($attempt -gt 1) { " ($(Get-LocalizedString -Key 'install.retry.attempt' -Parameters @{ Current = $attempt; Max = $MaxRetries }))" } else { "" }
-                    $chocoVerifiedMsg = Get-LocalizedString -Key 'install.method.choco_verified' -Parameters @{ PackageName = $PackageName; Version = $versionInfo; Attempt = $attemptInfo }
+                    $attemptInfo = if ($attempt -gt 1) { " ($(Get-LogString -Key 'install.retry.attempt' -Parameters @{ Current = $attempt; Max = $MaxRetries }))" } else { "" }
+                    $chocoVerifiedMsg = Get-LogString -Key 'install.method.choco_verified' -Parameters @{ PackageName = $PackageName; Version = $versionInfo; Attempt = $attemptInfo }
                     Write-Output "[SUCCESS] $chocoVerifiedMsg"
                     Write-Status -Message $chocoVerifiedMsg -Level 'Success'
                     return $true
                 }
 
                 $delay = $RetryDelaySeconds * [Math]::Pow(2, $attempt - 1)  # Exponential backoff
-                $transientMsg = Get-LocalizedString -Key 'install.method.transient_error' -Parameters @{ ExitCode = $exitCode; Delay = $delay }
+                $transientMsg = Get-LogString -Key 'install.method.transient_error' -Parameters @{ ExitCode = $exitCode; Delay = $delay }
                 Write-Output "[WARNING] $transientMsg"
                 Write-Status -Message $transientMsg -Level 'Warning'
                 Start-Sleep -Seconds $delay
@@ -1197,19 +1197,19 @@ function Install-ViaChocolatey {
 
             # Post-install verification: Check if package is actually installed despite non-zero exit code
             # Chocolatey may return non-zero codes even when installation succeeded
-            Write-Output "[INFO] $(Get-LocalizedString -Key 'install.method.verifying')"
+            Write-Output "[INFO] $(Get-LogString -Key 'install.method.verifying')"
             $chocoList = & choco list --local-only --exact $PackageName 2>&1 | Out-String
             if ($chocoList -match $PackageName -and $chocoList -notmatch "0 packages installed") {
                 $version = Get-InstalledAppVersion -ChocolateyId $PackageName
                 $versionInfo = if ($version) { " v$version" } else { "" }
-                $attemptInfo = if ($attempt -gt 1) { " ($(Get-LocalizedString -Key 'install.retry.attempt' -Parameters @{ Current = $attempt; Max = $MaxRetries }))" } else { "" }
-                $chocoVerifiedMsg = Get-LocalizedString -Key 'install.method.choco_verified' -Parameters @{ PackageName = $PackageName; Version = $versionInfo; Attempt = $attemptInfo }
+                $attemptInfo = if ($attempt -gt 1) { " ($(Get-LogString -Key 'install.retry.attempt' -Parameters @{ Current = $attempt; Max = $MaxRetries }))" } else { "" }
+                $chocoVerifiedMsg = Get-LogString -Key 'install.method.choco_verified' -Parameters @{ PackageName = $PackageName; Version = $versionInfo; Attempt = $attemptInfo }
                 Write-Output "[SUCCESS] $chocoVerifiedMsg"
                 Write-Status -Message $chocoVerifiedMsg -Level 'Success'
                 return $true
             }
 
-            $chocoFailMsg = Get-LocalizedString -Key 'install.method.choco_failed' -Parameters @{ ExitCode = $exitCode }
+            $chocoFailMsg = Get-LogString -Key 'install.method.choco_failed' -Parameters @{ ExitCode = $exitCode }
             Write-Output "[WARNING] $chocoFailMsg"
             Write-Status -Message $chocoFailMsg -Level 'Verbose'
             return $false
@@ -1217,13 +1217,13 @@ function Install-ViaChocolatey {
         } catch {
             if ($attempt -lt $MaxRetries) {
                 $delay = $RetryDelaySeconds * [Math]::Pow(2, $attempt - 1)  # Exponential backoff
-                $chocoRetryMsg = Get-LocalizedString -Key 'install.method.choco_error_retry' -Parameters @{ Error = $_.Exception.Message; Delay = $delay }
+                $chocoRetryMsg = Get-LogString -Key 'install.method.choco_error_retry' -Parameters @{ Error = $_.Exception.Message; Delay = $delay }
                 Write-Output "[WARNING] $chocoRetryMsg"
                 Write-Status -Message $chocoRetryMsg -Level 'Warning'
                 Start-Sleep -Seconds $delay
                 continue
             } else {
-                $chocoErrorMsg = Get-LocalizedString -Key 'install.method.choco_error_final' -Parameters @{ Attempts = $MaxRetries; Error = $_.Exception.Message }
+                $chocoErrorMsg = Get-LogString -Key 'install.method.choco_error_final' -Parameters @{ Attempts = $MaxRetries; Error = $_.Exception.Message }
                 Write-Output "[ERROR] $chocoErrorMsg"
                 Write-Status -Message $chocoErrorMsg -Level 'Verbose'
                 return $false
@@ -1245,14 +1245,14 @@ function Install-ViaStore {
 
     # Check for Windows Sandbox - Store is unavailable
     if (Test-IsWindowsSandbox) {
-        Write-Output "[WARNING] $(Get-LocalizedString -Key 'install.method.store_unavailable_sandbox' -Parameters @{ ProductId = $ProductId })"
-        Write-Status -Message (Get-LocalizedString -Key 'install.method.store_unavailable_sandbox' -Parameters @{ ProductId = $ProductId }) -Level 'Warning'
+        Write-Output "[WARNING] $(Get-LogString -Key 'install.method.store_unavailable_sandbox' -Parameters @{ ProductId = $ProductId })"
+        Write-Status -Message (Get-LogString -Key 'install.method.store_unavailable_sandbox' -Parameters @{ ProductId = $ProductId }) -Level 'Warning'
         return $false
     }
 
     try {
-        Write-Output "[INFO] $(Get-LocalizedString -Key 'install.method.store' -Parameters @{ AppName = $ProductId })"
-        Write-Status -Message (Get-LocalizedString -Key 'install.method.store' -Parameters @{ AppName = $ProductId }) -Level 'Info'
+        Write-Output "[INFO] $(Get-LogString -Key 'install.method.store' -Parameters @{ AppName = $ProductId })"
+        Write-Status -Message (Get-LogString -Key 'install.method.store' -Parameters @{ AppName = $ProductId }) -Level 'Info'
 
         if (Test-CommandExists -Name 'winget') {
             $arguments = @(
@@ -1275,7 +1275,7 @@ function Install-ViaStore {
                 $storeOutput -match 'Successfully installed') {
                 $version = Get-InstalledAppVersion -WingetId $ProductId
                 $versionInfo = if ($version) { " v$version" } else { "" }
-                $storeSuccessMsg = Get-LocalizedString -Key 'install.method.store_success' -Parameters @{ ProductId = $ProductId; Version = $versionInfo }
+                $storeSuccessMsg = Get-LogString -Key 'install.method.store_success' -Parameters @{ ProductId = $ProductId; Version = $versionInfo }
                 Write-Output "[SUCCESS] $storeSuccessMsg"
                 Write-Status -Message $storeSuccessMsg -Level 'Success'
                 return $true
@@ -1284,7 +1284,7 @@ function Install-ViaStore {
             if ($exitCode -eq 0) {
                 $version = Get-InstalledAppVersion -WingetId $ProductId
                 $versionInfo = if ($version) { " v$version" } else { "" }
-                $storeSuccessMsg = Get-LocalizedString -Key 'install.method.store_success' -Parameters @{ ProductId = $ProductId; Version = $versionInfo }
+                $storeSuccessMsg = Get-LogString -Key 'install.method.store_success' -Parameters @{ ProductId = $ProductId; Version = $versionInfo }
                 Write-Output "[SUCCESS] $storeSuccessMsg"
                 Write-Status -Message $storeSuccessMsg -Level 'Success'
                 return $true
@@ -1292,12 +1292,12 @@ function Install-ViaStore {
         }
 
         Start-Process "ms-windows-store://pdp/?ProductId=$ProductId"
-        Write-Output "[WARNING] $(Get-LocalizedString -Key 'install.method.store_manual_required')"
-        Write-Status -Message (Get-LocalizedString -Key 'install.method.store_manual_required') -Level 'Warning'
+        Write-Output "[WARNING] $(Get-LogString -Key 'install.method.store_manual_required')"
+        Write-Status -Message (Get-LogString -Key 'install.method.store_manual_required') -Level 'Warning'
         return $false
 
     } catch {
-        $storeErrorMsg = Get-LocalizedString -Key 'install.method.store_error' -Parameters @{ Error = $_.Exception.Message }
+        $storeErrorMsg = Get-LogString -Key 'install.method.store_error' -Parameters @{ Error = $_.Exception.Message }
         Write-Output "[ERROR] $storeErrorMsg"
         Write-Status -Message $storeErrorMsg -Level 'Verbose'
         return $false
@@ -1322,13 +1322,13 @@ function Install-MsiPackage {
         [string]$InstallerPath
     )
 
-    Write-Output "[INFO] $(Get-LocalizedString -Key 'install.method.msi_installing')"
+    Write-Output "[INFO] $(Get-LogString -Key 'install.method.msi_installing')"
     $arguments = @('/i', "`"$InstallerPath`"", '/qn', '/norestart')
     $process = Start-ProcessWithTimeout -FilePath 'msiexec.exe' -ArgumentList $arguments -NoNewWindow -PassThru -TimeoutSeconds $script:DefaultInstallTimeoutSeconds
     if ($process.ExitCode -eq 0) {
-        Write-Output "[SUCCESS] $(Get-LocalizedString -Key 'install.method.msi_success')"
+        Write-Output "[SUCCESS] $(Get-LogString -Key 'install.method.msi_success')"
     } else {
-        Write-Output "[WARNING] $(Get-LocalizedString -Key 'install.method.msi_exit_code' -Parameters @{ ExitCode = $process.ExitCode })"
+        Write-Output "[WARNING] $(Get-LogString -Key 'install.method.msi_exit_code' -Parameters @{ ExitCode = $process.ExitCode })"
     }
     return ($process.ExitCode -eq 0)
 }
@@ -1354,34 +1354,34 @@ function Install-ExePackage {
     )
 
     if ($CustomArguments) {
-        Write-Output "[INFO] $(Get-LocalizedString -Key 'install.method.exe_custom_args' -Parameters @{ Arguments = $CustomArguments })"
-        Write-Status -Message (Get-LocalizedString -Key 'install.method.exe_executing' -Parameters @{ Path = $InstallerPath; Arguments = $CustomArguments }) -Level 'Info'
+        Write-Output "[INFO] $(Get-LogString -Key 'install.method.exe_custom_args' -Parameters @{ Arguments = $CustomArguments })"
+        Write-Status -Message (Get-LogString -Key 'install.method.exe_executing' -Parameters @{ Path = $InstallerPath; Arguments = $CustomArguments }) -Level 'Info'
         try {
             $process = Start-ProcessWithTimeout -FilePath $InstallerPath -ArgumentList $CustomArguments -NoNewWindow -PassThru -TimeoutSeconds $script:DefaultInstallTimeoutSeconds
-            Write-Status -Message (Get-LocalizedString -Key 'install.method.exe_exit_code' -Parameters @{ ExitCode = $process.ExitCode }) -Level 'Info'
+            Write-Status -Message (Get-LogString -Key 'install.method.exe_exit_code' -Parameters @{ ExitCode = $process.ExitCode }) -Level 'Info'
             if ($process.ExitCode -eq 0) {
-                Write-Output "[SUCCESS] $(Get-LocalizedString -Key 'install.method.exe_success')"
+                Write-Output "[SUCCESS] $(Get-LogString -Key 'install.method.exe_success')"
             } else {
-                Write-Output "[WARNING] $(Get-LocalizedString -Key 'install.method.exe_exit_code' -Parameters @{ ExitCode = $process.ExitCode })"
-                Write-Status -Message (Get-LocalizedString -Key 'install.method.exe_nonzero_exit' -Parameters @{ ExitCode = $process.ExitCode }) -Level 'Warning'
+                Write-Output "[WARNING] $(Get-LogString -Key 'install.method.exe_exit_code' -Parameters @{ ExitCode = $process.ExitCode })"
+                Write-Status -Message (Get-LogString -Key 'install.method.exe_nonzero_exit' -Parameters @{ ExitCode = $process.ExitCode }) -Level 'Warning'
             }
             return ($process.ExitCode -eq 0)
         } catch {
-            $exeFailMsg = Get-LocalizedString -Key 'install.method.exe_failed' -Parameters @{ Error = $_.Exception.Message }
+            $exeFailMsg = Get-LogString -Key 'install.method.exe_failed' -Parameters @{ Error = $_.Exception.Message }
             Write-Output "[ERROR] $exeFailMsg"
             Write-Status -Message $exeFailMsg -Level 'Error'
             return $false
         }
     }
 
-    Write-Output "[INFO] $(Get-LocalizedString -Key 'install.method.exe_trying_silent')"
+    Write-Output "[INFO] $(Get-LogString -Key 'install.method.exe_trying_silent')"
     # Try common silent switches
     $silentSwitches = @('/S', '/SILENT', '/VERYSILENT', '/quiet', '/qn')
     foreach ($switch in $silentSwitches) {
         try {
             $process = Start-ProcessWithTimeout -FilePath $InstallerPath -ArgumentList $switch -NoNewWindow -PassThru -TimeoutSeconds $script:DefaultInstallTimeoutSeconds
             if ($process.ExitCode -eq 0) {
-                Write-Output "[SUCCESS] $(Get-LocalizedString -Key 'install.method.exe_switch_success' -Parameters @{ Switch = $switch })"
+                Write-Output "[SUCCESS] $(Get-LogString -Key 'install.method.exe_switch_success' -Parameters @{ Switch = $switch })"
                 return $true
             }
         } catch {
@@ -1389,7 +1389,7 @@ function Install-ExePackage {
         }
     }
 
-    Write-Output "[WARNING] $(Get-LocalizedString -Key 'install.method.exe_no_silent_switch')"
+    Write-Output "[WARNING] $(Get-LogString -Key 'install.method.exe_no_silent_switch')"
     return $false
 }
 
@@ -1419,13 +1419,13 @@ function Install-ZipPackage {
         [string]$DetectionPath = $null
     )
 
-    Write-Status -Message (Get-LocalizedString -Key 'install.method.zip_extracting') -Level 'Info'
+    Write-Status -Message (Get-LogString -Key 'install.method.zip_extracting') -Level 'Info'
     $extractPath = Join-Path $TempDir "extracted"
 
     # Use safe extraction with path traversal validation
     $extractResult = Expand-ArchiveSafe -Path $InstallerPath -DestinationPath $extractPath -AllowDangerousExtensions
     if (-not $extractResult) {
-        Write-Status -Message (Get-LocalizedString -Key 'install.method.zip_security_failed') -Level 'Error'
+        Write-Status -Message (Get-LogString -Key 'install.method.zip_security_failed') -Level 'Error'
         return $false
     }
 
@@ -1435,32 +1435,32 @@ function Install-ZipPackage {
         Select-Object -First 1
 
     if ($setupExe) {
-        Write-Status -Message (Get-LocalizedString -Key 'install.method.zip_executing_installer' -Parameters @{ FileName = $setupExe.Name }) -Level 'Info'
+        Write-Status -Message (Get-LogString -Key 'install.method.zip_executing_installer' -Parameters @{ FileName = $setupExe.Name }) -Level 'Info'
         try {
             $args = if ($CustomArguments) { $CustomArguments } else { '/S' }
             $process = Start-ProcessWithTimeout -FilePath $setupExe.FullName -ArgumentList $args -NoNewWindow -PassThru -TimeoutSeconds $script:DefaultInstallTimeoutSeconds
             return ($process.ExitCode -eq 0)
         } catch {
-            Write-Status -Message (Get-LocalizedString -Key 'install.method.zip_installer_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
+            Write-Status -Message (Get-LogString -Key 'install.method.zip_installer_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
             return $false
         }
     }
 
     # ZIP contains portable tools - deploy to destination
-    Write-Status -Message (Get-LocalizedString -Key 'install.method.zip_deploying_portable') -Level 'Info'
+    Write-Status -Message (Get-LogString -Key 'install.method.zip_deploying_portable') -Level 'Info'
 
     $destinationPath = $null
     if ($DetectionPath) {
         $expandedDetectionPath = [Environment]::ExpandEnvironmentVariables($DetectionPath)
         $destinationPath = Split-Path $expandedDetectionPath -Parent
-        Write-Status -Message (t 'install.method.debug.direct_path_verbose' -Parameters @{ Path = $DetectionPath }) -Level 'Verbose'
+        Write-Status -Message (Get-LogString 'install.method.debug.direct_path_verbose' -Parameters @{ Path = $DetectionPath }) -Level 'Verbose'
     }
 
     if (-not $destinationPath) {
         $destinationPath = Join-Path ${env:ProgramFiles} ([System.IO.Path]::GetFileNameWithoutExtension($InstallerPath))
     }
 
-    Write-Status -Message (Get-LocalizedString -Key 'install.method.zip_deploying_to' -Parameters @{ Path = $destinationPath }) -Level 'Info'
+    Write-Status -Message (Get-LogString -Key 'install.method.zip_deploying_to' -Parameters @{ Path = $destinationPath }) -Level 'Info'
 
     if (-not (Test-Path $destinationPath)) {
         New-Item -Path $destinationPath -ItemType Directory -Force | Out-Null
@@ -1476,7 +1476,7 @@ function Install-ZipPackage {
     }
 
     Copy-Item -Path (Join-Path $copySourcePath '*') -Destination $destinationPath -Recurse -Force
-    Write-Status -Message (Get-LocalizedString -Key 'install.method.zip_deployed_success') -Level 'Success'
+    Write-Status -Message (Get-LogString -Key 'install.method.zip_deployed_success') -Level 'Success'
     return $true
 }
 
@@ -1504,13 +1504,13 @@ function Install-ViaDirectDownload {
         [string]$ExpectedPublisher = $null
     )
 
-    Write-Verbose (t 'install.method.debug.attempting_direct' -Parameters @{ Url = $Url })
-    Write-Verbose (t 'install.method.debug.direct_custom_args_status' -Parameters @{ Arguments = $CustomArguments })
+    Write-Verbose (Get-LogString 'install.method.debug.attempting_direct' -Parameters @{ Url = $Url })
+    Write-Verbose (Get-LogString 'install.method.debug.direct_custom_args_status' -Parameters @{ Arguments = $CustomArguments })
 
     try {
         # Validate URL before download
         if (-not (Test-ValidDownloadUrl -Url $Url)) {
-            Write-Status -Message (t 'install.method.direct_invalid_url' -Parameters @{ Url = $Url }) -Level 'Error'
+            Write-Status -Message (Get-LogString 'install.method.direct_invalid_url' -Parameters @{ Url = $Url }) -Level 'Error'
             return $false
         }
 
@@ -1519,7 +1519,7 @@ function Install-ViaDirectDownload {
         # opt-out are present, rather than fetch a binary we could not validate.
         $validationMode = Resolve-DirectDownloadValidationMode -ExpectedSHA256 $ExpectedSHA256 -ExpectedPublisher $ExpectedPublisher
         if ($validationMode -eq 'None') {
-            Write-Status -Message (t 'download.validation.required') -Level 'Error'
+            Write-Status -Message (Get-LogString 'download.validation.required') -Level 'Error'
             return $false
         }
 
@@ -1527,16 +1527,16 @@ function Install-ViaDirectDownload {
         # is never forwarded to the hash compare.
         $hasChecksum = $ExpectedSHA256 -and ($ExpectedSHA256 -ne 'SKIP_VALIDATION')
 
-        Write-Status -Message (t 'install.method.direct_downloading' -Parameters @{ Url = $Url }) -Level 'Info'
+        Write-Status -Message (Get-LogString 'install.method.direct_downloading' -Parameters @{ Url = $Url }) -Level 'Info'
 
         $tempDir = Join-Path -Path (Get-ShellFolder -FolderType 'Temp') -ChildPath "WinForge_$([guid]::NewGuid().ToString('N'))"
         New-Item -Path $tempDir -ItemType Directory -Force | Out-Null
-        Write-Verbose (t 'install.method.debug.direct_path_verbose' -Parameters @{ Path = $tempDir })
+        Write-Verbose (Get-LogString 'install.method.debug.direct_path_verbose' -Parameters @{ Path = $tempDir })
 
         # Extract filename from URL, handling query parameters properly
         # URLs like: https://example.com/getInstaller?os=win&installer=Setup.exe
         $filename = $null
-        Write-Verbose (t 'install.method.debug.attempting_direct' -Parameters @{ Url = $Url })
+        Write-Verbose (Get-LogString 'install.method.debug.attempting_direct' -Parameters @{ Url = $Url })
         try {
             $uri = [System.Uri]::new($Url)
             Write-Verbose "URI parsed - Query: $($uri.Query)"
@@ -1580,8 +1580,8 @@ function Install-ViaDirectDownload {
         }
 
         $installerPath = Join-Path -Path $tempDir -ChildPath $filename
-        Write-Verbose (t 'install.method.debug.installer_filename' -Parameters @{ Filename = $filename })
-        Write-Verbose (t 'install.method.debug.direct_path_verbose' -Parameters @{ Path = $installerPath })
+        Write-Verbose (Get-LogString 'install.method.debug.installer_filename' -Parameters @{ Filename = $filename })
+        Write-Verbose (Get-LogString 'install.method.debug.direct_path_verbose' -Parameters @{ Path = $installerPath })
 
         # Use streaming download with optional checksum validation
         $downloadParams = @{
@@ -1592,21 +1592,21 @@ function Install-ViaDirectDownload {
         # SKIP_VALIDATION is an explicit opt-out: never forward it to the hash compare.
         if ($hasChecksum) {
             $downloadParams['ExpectedSHA256'] = $ExpectedSHA256
-            Write-Verbose (t 'install.method.direct_checksum_enabled')
-            Write-Status -Message (t 'install.method.direct_checksum_enabled') -Level 'Info'
+            Write-Verbose (Get-LogString 'install.method.direct_checksum_enabled')
+            Write-Status -Message (Get-LogString 'install.method.direct_checksum_enabled') -Level 'Info'
         }
 
         $downloadSuccess = Invoke-FileDownloadWithProgress @downloadParams
 
         if (-not $downloadSuccess -or -not (Test-Path -Path $installerPath)) {
-            Write-Verbose (t 'install.method.debug.direct_download_failed_verbose')
-            Write-Status -Message (t 'install.method.debug.direct_download_failed_verbose') -Level 'Error'
+            Write-Verbose (Get-LogString 'install.method.debug.direct_download_failed_verbose')
+            Write-Status -Message (Get-LogString 'install.method.debug.direct_download_failed_verbose') -Level 'Error'
             return $false
         }
 
         $fileSize = Format-FileSize -Bytes (Get-Item $installerPath).Length
-        Write-Verbose (t 'install.method.debug.direct_downloaded_verbose' -Parameters @{ Size = $fileSize })
-        Write-Status -Message (t 'install.method.direct_downloaded' -Parameters @{ Size = $fileSize }) -Level 'Info'
+        Write-Verbose (Get-LogString 'install.method.debug.direct_downloaded_verbose' -Parameters @{ Size = $fileSize })
+        Write-Status -Message (Get-LogString 'install.method.direct_downloaded' -Parameters @{ Size = $fileSize }) -Level 'Info'
 
         if ($ExpectedPublisher) {
             if (-not (Test-InstallerSignature -FilePath $installerPath -ExpectedPublisher $ExpectedPublisher)) {
@@ -1623,10 +1623,10 @@ function Install-ViaDirectDownload {
             }
         }
 
-        Write-Verbose (t 'install.method.debug.direct_running_verbose' -Parameters @{ Type = $InstallerType })
-        Write-Status -Message (t 'install.method.direct_running_installer' -Parameters @{ Type = $InstallerType; FileName = $filename }) -Level 'Info'
-        Write-Status -Message (t 'install.method.debug.direct_custom_args_status' -Parameters @{ Arguments = $CustomArguments }) -Level 'Verbose'
-        Write-Status -Message (t 'install.method.debug.direct_path_exists' -Parameters @{ Exists = "$(Test-Path $installerPath)" }) -Level 'Verbose'
+        Write-Verbose (Get-LogString 'install.method.debug.direct_running_verbose' -Parameters @{ Type = $InstallerType })
+        Write-Status -Message (Get-LogString 'install.method.direct_running_installer' -Parameters @{ Type = $InstallerType; FileName = $filename }) -Level 'Info'
+        Write-Status -Message (Get-LogString 'install.method.debug.direct_custom_args_status' -Parameters @{ Arguments = $CustomArguments }) -Level 'Verbose'
+        Write-Status -Message (Get-LogString 'install.method.debug.direct_path_exists' -Parameters @{ Exists = "$(Test-Path $installerPath)" }) -Level 'Verbose'
 
         # Install using appropriate method (delegated to helper functions)
         # Note: Helper functions output strings AND return boolean, so we must extract the boolean
@@ -1638,33 +1638,33 @@ function Install-ViaDirectDownload {
         }
 
         # Extract the boolean return value from the output (last boolean in the stream)
-        Write-Status -Message (t 'install.method.debug.direct_output_type' -Parameters @{ Type = $installOutput.GetType().Name; Count = "$(if ($installOutput -is [array]) { $installOutput.Count } else { 1 })" }) -Level 'Verbose'
+        Write-Status -Message (Get-LogString 'install.method.debug.direct_output_type' -Parameters @{ Type = $installOutput.GetType().Name; Count = "$(if ($installOutput -is [array]) { $installOutput.Count } else { 1 })" }) -Level 'Verbose'
         $installed = if ($installOutput -is [bool]) {
             $installOutput
         } elseif ($installOutput -is [array]) {
             $boolResult = $installOutput | Where-Object { $_ -is [bool] } | Select-Object -Last 1
-            Write-Status -Message (t 'install.method.debug.direct_extracted_bool' -Parameters @{ Result = "$boolResult" }) -Level 'Verbose'
+            Write-Status -Message (Get-LogString 'install.method.debug.direct_extracted_bool' -Parameters @{ Result = "$boolResult" }) -Level 'Verbose'
             if ($null -ne $boolResult) { $boolResult } else { $false }
         } else {
             $false
         }
-        Write-Status -Message (t 'install.method.debug.direct_final_result' -Parameters @{ Result = "$installed" }) -Level 'Verbose'
+        Write-Status -Message (Get-LogString 'install.method.debug.direct_final_result' -Parameters @{ Result = "$installed" }) -Level 'Verbose'
 
         Remove-Item -Path $tempDir -Recurse -Force -ErrorAction SilentlyContinue
 
         if ($installed -eq $true) {
-            Write-Verbose (t 'install.method.debug.direct_success_verbose')
-            Write-Status -Message (t 'install.method.direct_success') -Level 'Success'
+            Write-Verbose (Get-LogString 'install.method.debug.direct_success_verbose')
+            Write-Status -Message (Get-LogString 'install.method.direct_success') -Level 'Success'
         } else {
-            Write-Verbose (t 'install.method.debug.direct_failed_verbose')
-            Write-Status -Message (t 'install.method.direct_failed') -Level 'Verbose'
+            Write-Verbose (Get-LogString 'install.method.debug.direct_failed_verbose')
+            Write-Status -Message (Get-LogString 'install.method.direct_failed') -Level 'Verbose'
         }
 
         return $installed
 
     } catch {
-        Write-Verbose (t 'install.method.debug.direct_error_verbose' -Parameters @{ Error = $_.Exception.Message })
-        Write-Status -Message (t 'install.method.direct_error' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
+        Write-Verbose (Get-LogString 'install.method.debug.direct_error_verbose' -Parameters @{ Error = $_.Exception.Message })
+        Write-Status -Message (Get-LogString 'install.method.direct_error' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
         return $false
     }
 }
@@ -1680,22 +1680,22 @@ function Install-WindowsFeature {
     )
 
     try {
-        Write-Status -Message (Get-LocalizedString -Key 'install.method.feature' -Parameters @{ Feature = $FeatureName }) -Level 'Info'
+        Write-Status -Message (Get-LogString -Key 'install.method.feature' -Parameters @{ Feature = $FeatureName }) -Level 'Info'
 
         $feature = Get-WindowsOptionalFeature -Online -FeatureName $FeatureName -ErrorAction Stop
 
         if ($feature.State -eq 'Enabled') {
-            Write-Status -Message (Get-LocalizedString -Key 'install.method.feature_already_enabled' -Parameters @{ Feature = $FeatureName }) -Level 'Success'
+            Write-Status -Message (Get-LogString -Key 'install.method.feature_already_enabled' -Parameters @{ Feature = $FeatureName }) -Level 'Success'
             return $true
         }
 
         Enable-WindowsOptionalFeature -Online -FeatureName $FeatureName -NoRestart -ErrorAction Stop | Out-Null
 
-        Write-Status -Message (Get-LocalizedString -Key 'install.method.feature_enabled' -Parameters @{ Feature = $FeatureName }) -Level 'Success'
+        Write-Status -Message (Get-LogString -Key 'install.method.feature_enabled' -Parameters @{ Feature = $FeatureName }) -Level 'Success'
         return $true
 
     } catch {
-        Write-Status -Message (Get-LocalizedString -Key 'install.method.feature_failed' -Parameters @{ Feature = $FeatureName; Error = $_.Exception.Message }) -Level 'Error'
+        Write-Status -Message (Get-LogString -Key 'install.method.feature_failed' -Parameters @{ Feature = $FeatureName; Error = $_.Exception.Message }) -Level 'Error'
         return $false
     }
 }
@@ -1709,30 +1709,30 @@ function Install-WindowsCapability {
     )
 
     try {
-        Write-Status -Message (Get-LocalizedString -Key 'install.method.capability' -Parameters @{ Capability = $CapabilityName }) -Level 'Info'
+        Write-Status -Message (Get-LogString -Key 'install.method.capability' -Parameters @{ Capability = $CapabilityName }) -Level 'Info'
 
         $capabilities = Get-WindowsCapability -Online | Where-Object { $_.Name -like "*$CapabilityName*" }
 
         if ($null -eq $capabilities -or $capabilities.Count -eq 0) {
-            Write-Status -Message (Get-LocalizedString -Key 'install.method.capability_not_found' -Parameters @{ Capability = $CapabilityName }) -Level 'Error'
+            Write-Status -Message (Get-LogString -Key 'install.method.capability_not_found' -Parameters @{ Capability = $CapabilityName }) -Level 'Error'
             return $false
         }
 
         $capability = if ($capabilities -is [array]) { $capabilities[0] } else { $capabilities }
 
         if ($capability.State -eq 'Installed') {
-            Write-Status -Message (Get-LocalizedString -Key 'install.method.capability_already_installed' -Parameters @{ Capability = $CapabilityName }) -Level 'Success'
+            Write-Status -Message (Get-LogString -Key 'install.method.capability_already_installed' -Parameters @{ Capability = $CapabilityName }) -Level 'Success'
             return $true
         }
 
-        Write-Status -Message (Get-LocalizedString -Key 'install.method.capability_installing' -Parameters @{ Capability = $capability.Name }) -Level 'Verbose'
+        Write-Status -Message (Get-LogString -Key 'install.method.capability_installing' -Parameters @{ Capability = $capability.Name }) -Level 'Verbose'
         Add-WindowsCapability -Online -Name $capability.Name -ErrorAction Stop | Out-Null
 
-        Write-Status -Message (Get-LocalizedString -Key 'install.method.capability_success' -Parameters @{ Capability = $CapabilityName }) -Level 'Success'
+        Write-Status -Message (Get-LogString -Key 'install.method.capability_success' -Parameters @{ Capability = $CapabilityName }) -Level 'Success'
         return $true
 
     } catch {
-        Write-Status -Message (Get-LocalizedString -Key 'install.method.capability_failed' -Parameters @{ Capability = $CapabilityName; Error = $_.Exception.Message }) -Level 'Error'
+        Write-Status -Message (Get-LogString -Key 'install.method.capability_failed' -Parameters @{ Capability = $CapabilityName; Error = $_.Exception.Message }) -Level 'Error'
         return $false
     }
 }
@@ -1777,9 +1777,9 @@ function Invoke-CustomInstallMethod {
             $result.Method = 'WindowsFeature'
             if ($installed) {
                 $result.Success = $true
-                $result.Message = Get-LocalizedString -Key 'install.method.custom_installed' -Parameters @{ Method = 'WindowsFeature' }
+                $result.Message = Get-LogString -Key 'install.method.custom_installed' -Parameters @{ Method = 'WindowsFeature' }
             } else {
-                $result.Message = Get-LocalizedString -Key 'install.method.custom_failed' -Parameters @{ Method = 'WindowsFeature' }
+                $result.Message = Get-LogString -Key 'install.method.custom_failed' -Parameters @{ Method = 'WindowsFeature' }
             }
         }
         'WindowsCapability' {
@@ -1787,13 +1787,13 @@ function Invoke-CustomInstallMethod {
             $result.Method = 'WindowsCapability'
             if ($installed) {
                 $result.Success = $true
-                $result.Message = Get-LocalizedString -Key 'install.method.custom_installed' -Parameters @{ Method = 'WindowsCapability' }
+                $result.Message = Get-LogString -Key 'install.method.custom_installed' -Parameters @{ Method = 'WindowsCapability' }
             } else {
-                $result.Message = Get-LocalizedString -Key 'install.method.custom_failed' -Parameters @{ Method = 'WindowsCapability' }
+                $result.Message = Get-LogString -Key 'install.method.custom_failed' -Parameters @{ Method = 'WindowsCapability' }
             }
         }
         default {
-            $result.Message = Get-LocalizedString -Key 'install.method.custom_unknown' -Parameters @{ Method = $installMethod }
+            $result.Message = Get-LogString -Key 'install.method.custom_unknown' -Parameters @{ Method = $installMethod }
         }
     }
 
