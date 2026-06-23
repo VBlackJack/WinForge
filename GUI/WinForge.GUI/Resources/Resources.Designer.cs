@@ -1003,4 +1003,34 @@ public class Resources
     public static string Resume_Action_Resume => ResourceManager.GetString("Resume_Action_Resume", resourceCulture);
     public static string Resume_Action_Discard => ResourceManager.GetString("Resume_Action_Discard", resourceCulture);
     public static string Resume_Action_KeepForLater => ResourceManager.GetString("Resume_Action_KeepForLater", resourceCulture);
+
+    // Common (parameterized)
+    public static string Common_InstallingItem => ResourceManager.GetString("Common_InstallingItem", resourceCulture);
+    public static string Common_ErrorWithMessage => ResourceManager.GetString("Common_ErrorWithMessage", resourceCulture);
+    public static string Common_ExceptionWithMessage => ResourceManager.GetString("Common_ExceptionWithMessage", resourceCulture);
+
+    // Application management progress
+    public static string AppManagement_SimulatingInstall => ResourceManager.GetString("AppManagement_SimulatingInstall", resourceCulture);
+    public static string AppManagement_PreparingInstall => ResourceManager.GetString("AppManagement_PreparingInstall", resourceCulture);
+    public static string AppManagement_ProcessErrorReceived => ResourceManager.GetString("AppManagement_ProcessErrorReceived", resourceCulture);
+    public static string AppManagement_Completed => ResourceManager.GetString("AppManagement_Completed", resourceCulture);
+    public static string AppManagement_FailedReason => ResourceManager.GetString("AppManagement_FailedReason", resourceCulture);
+    public static string AppManagement_Failed => ResourceManager.GetString("AppManagement_Failed", resourceCulture);
+    public static string AppManagement_PreparingUninstall => ResourceManager.GetString("AppManagement_PreparingUninstall", resourceCulture);
+    public static string AppManagement_UninstallingViaWinget => ResourceManager.GetString("AppManagement_UninstallingViaWinget", resourceCulture);
+    public static string AppManagement_UninstallingViaChocolatey => ResourceManager.GetString("AppManagement_UninstallingViaChocolatey", resourceCulture);
+    public static string AppManagement_Uninstalled => ResourceManager.GetString("AppManagement_Uninstalled", resourceCulture);
+    public static string AppManagement_PreparingUpdate => ResourceManager.GetString("AppManagement_PreparingUpdate", resourceCulture);
+    public static string AppManagement_UpdatingViaWinget => ResourceManager.GetString("AppManagement_UpdatingViaWinget", resourceCulture);
+    public static string AppManagement_UpdatingViaChocolatey => ResourceManager.GetString("AppManagement_UpdatingViaChocolatey", resourceCulture);
+    public static string AppManagement_Updated => ResourceManager.GetString("AppManagement_Updated", resourceCulture);
+    public static string AppManagement_AlreadyUpToDate => ResourceManager.GetString("AppManagement_AlreadyUpToDate", resourceCulture);
+
+    // Severity indicator (accessibility)
+    public static string Severity_IndicatorNameFormat => ResourceManager.GetString("Severity_IndicatorNameFormat", resourceCulture);
+    public static string Severity_Info => ResourceManager.GetString("Severity_Info", resourceCulture);
+    public static string Severity_Success => ResourceManager.GetString("Severity_Success", resourceCulture);
+    public static string Severity_Warning => ResourceManager.GetString("Severity_Warning", resourceCulture);
+    public static string Severity_Error => ResourceManager.GetString("Severity_Error", resourceCulture);
+    public static string Severity_Critical => ResourceManager.GetString("Severity_Critical", resourceCulture);
 }

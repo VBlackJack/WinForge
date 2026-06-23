@@ -18,6 +18,7 @@
 
 using System.Security.Principal;
 using WinForge.GUI.Models;
+using Loc = WinForge.GUI.Resources.Resources;
 
 namespace WinForge.GUI.Services;
 
@@ -75,7 +76,7 @@ public class PrerequisitesService : IPrerequisitesService
             throw new ArgumentException($"Unknown prerequisite: {prerequisiteName}", nameof(prerequisiteName));
         }
 
-        progressCallback?.Invoke($"Installing {prerequisiteName}...");
+        progressCallback?.Invoke(string.Format(Loc.Common_InstallingItem, prerequisiteName));
 
         // For now, delegate to full prerequisites installation
         // In future, this could be expanded to install individual prerequisites

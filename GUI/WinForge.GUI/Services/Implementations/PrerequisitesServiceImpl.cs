@@ -280,13 +280,13 @@ try {{
             }
             else
             {
-                progressCallback?.Invoke($"Error: {result.ErrorMessage}");
+                progressCallback?.Invoke(string.Format(Loc.Common_ErrorWithMessage, result.ErrorMessage));
                 return false;
             }
         }
         catch (Exception ex)
         {
-            progressCallback?.Invoke($"Exception: {ex.Message}");
+            progressCallback?.Invoke(string.Format(Loc.Common_ExceptionWithMessage, ex.Message));
             return false;
         }
     }
@@ -314,7 +314,7 @@ try {{
             throw new ArgumentException($"Unknown prerequisite: {prerequisiteName}", nameof(prerequisiteName));
         }
 
-        progressCallback?.Invoke($"Installing {prerequisiteName}...");
+        progressCallback?.Invoke(string.Format(Loc.Common_InstallingItem, prerequisiteName));
 
         // For now, delegate to full prerequisites installation
         bool result = await InstallPrerequisitesAsync(progressCallback, cancellationToken);

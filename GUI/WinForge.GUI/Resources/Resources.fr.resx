@@ -3120,4 +3120,79 @@ Cette action est irréversible.</value>
   <data name="Resume_Action_KeepForLater" xml:space="preserve">
     <value>Décider plus tard</value>
   </data>
+  <!-- Common (parameterized) -->
+  <data name="Common_InstallingItem" xml:space="preserve">
+    <value>Installation de {0}...</value>
+  </data>
+  <data name="Common_ErrorWithMessage" xml:space="preserve">
+    <value>Erreur : {0}</value>
+  </data>
+  <data name="Common_ExceptionWithMessage" xml:space="preserve">
+    <value>Exception : {0}</value>
+  </data>
+  <!-- Application management progress -->
+  <data name="AppManagement_SimulatingInstall" xml:space="preserve">
+    <value>Simulation de l'installation de {0}...</value>
+  </data>
+  <data name="AppManagement_PreparingInstall" xml:space="preserve">
+    <value>Préparation de l'installation de {0}...</value>
+  </data>
+  <data name="AppManagement_ProcessErrorReceived" xml:space="preserve">
+    <value>Sortie d'erreur du processus reçue</value>
+  </data>
+  <data name="AppManagement_Completed" xml:space="preserve">
+    <value>Terminé : {0}</value>
+  </data>
+  <data name="AppManagement_FailedReason" xml:space="preserve">
+    <value>Échec : {0} - {1}</value>
+  </data>
+  <data name="AppManagement_Failed" xml:space="preserve">
+    <value>Échec : {0}</value>
+  </data>
+  <data name="AppManagement_PreparingUninstall" xml:space="preserve">
+    <value>Préparation de la désinstallation de {0}...</value>
+  </data>
+  <data name="AppManagement_UninstallingViaWinget" xml:space="preserve">
+    <value>Désinstallation via Winget : {0}</value>
+  </data>
+  <data name="AppManagement_UninstallingViaChocolatey" xml:space="preserve">
+    <value>Désinstallation via Chocolatey : {0}</value>
+  </data>
+  <data name="AppManagement_Uninstalled" xml:space="preserve">
+    <value>Désinstallé : {0}</value>
+  </data>
+  <data name="AppManagement_PreparingUpdate" xml:space="preserve">
+    <value>Préparation de la mise à jour de {0}...</value>
+  </data>
+  <data name="AppManagement_UpdatingViaWinget" xml:space="preserve">
+    <value>Mise à jour via Winget : {0}</value>
+  </data>
+  <data name="AppManagement_UpdatingViaChocolatey" xml:space="preserve">
+    <value>Mise à jour via Chocolatey : {0}</value>
+  </data>
+  <data name="AppManagement_Updated" xml:space="preserve">
+    <value>Mis à jour : {0}</value>
+  </data>
+  <data name="AppManagement_AlreadyUpToDate" xml:space="preserve">
+    <value>Déjà à jour : {0}</value>
+  </data>
+  <!-- Severity indicator (accessibility) -->
+  <data name="Severity_IndicatorNameFormat" xml:space="preserve">
+    <value>Indicateur {0}</value>
+  </data>
+  <data name="Severity_Info" xml:space="preserve">
+    <value>Info</value>
+  </data>
+  <data name="Severity_Success" xml:space="preserve">
+    <value>Succès</value>
+  </data>
+  <data name="Severity_Warning" xml:space="preserve">
+    <value>Avertissement</value>
+  </data>
+  <data name="Severity_Error" xml:space="preserve">
+    <value>Erreur</value>
+  </data>
+  <data name="Severity_Critical" xml:space="preserve">
+    <value>Critique</value>
+  </data>
 </root>
