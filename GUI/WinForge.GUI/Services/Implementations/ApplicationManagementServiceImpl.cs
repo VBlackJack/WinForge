@@ -825,13 +825,22 @@ try {{
     }
 
     /// <inheritdoc/>
-    public async Task<UpdateCheckResult> CheckApplicationUpdateAsync(ApplicationModel app)
+    public Task<UpdateCheckResult> CheckApplicationUpdateAsync(ApplicationModel app)
+        => CheckApplicationUpdateAsync(app, forceRefresh: false);
+
+    /// <inheritdoc/>
+    public async Task<UpdateCheckResult> CheckApplicationUpdateAsync(ApplicationModel app, bool forceRefresh)
     {
         if (app.Status != ApplicationStatus.Installed &&
             app.Status != ApplicationStatus.AlreadyInstalled &&
             app.Status != ApplicationStatus.UpdateAvailable)
         {
             return UpdateCheckResult.UpToDate();
+        }
+
+        if (forceRefresh)
+        {
+            await InvalidateUpdateCacheAsync().ConfigureAwait(false);
         }
 
         await _cacheService.EnsureApplicationsCacheAsync();
@@ -887,6 +896,39 @@ try {{
                 return UpdateCheckResult.Failed(ex.Message);
             }
         });
+    }
+
+    /// <inheritdoc/>
+    public async Task InvalidateUpdateCacheAsync()
+    {
+        try
+        {
+            _detectionService.InvalidateAllCache(CacheInvalidationReason.UserRequested);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning($"[ApplicationManagementService] Detection cache invalidation failed: {ex.Message}");
+        }
+
+        try
+        {
+            string updateManagerPath = _pathService.GetPathForPowerShell("Modules", "UpdateManager.psm1");
+            string escapedUpdateManagerPath = PowerShellValidation.EscapeForPowerShell(updateManagerPath);
+            string script = $@"
+Import-Module '{escapedUpdateManagerPath}' -Force
+if (Get-Command -Name 'Clear-WingetUpdatesCache' -ErrorAction SilentlyContinue) {{
+    Clear-WingetUpdatesCache
+}} elseif (Get-Command -Name 'Clear-BatchUpdateCache' -ErrorAction SilentlyContinue) {{
+    Clear-BatchUpdateCache
+}}
+";
+
+            await _executionService.ExecutePowerShellScriptAsync(script).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning($"[ApplicationManagementService] Update cache invalidation failed: {ex.Message}");
+        }
     }
 
     /// <inheritdoc/>

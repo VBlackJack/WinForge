@@ -54,7 +54,7 @@ public partial class AppsViewModel
                 return;
             }
 
-            AppUpdateScanResult result = await _updateCoordinator.ScanForUpdatesAsync(installedApps);
+            AppUpdateScanResult result = await _updateCoordinator.ScanForUpdatesAsync(installedApps, forceRefresh: true);
             UpdatesAvailableCount = result.UpdatesAvailableCount;
 
             // Apply filter to refresh view

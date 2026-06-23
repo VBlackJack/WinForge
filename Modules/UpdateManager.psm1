@@ -554,11 +554,14 @@ function Get-ApplicationUpdateStatus {
         [string]$WingetId,
 
         [Parameter()]
-        [string]$CurrentVersion
+        [string]$CurrentVersion,
+
+        [Parameter()]
+        [switch]$Force
     )
 
     # Ensure batch cache is populated
-    $cache = Get-WingetUpdatesBatch
+    $cache = Get-WingetUpdatesBatch -Force:$Force
 
     # Check if app is in the update cache
     if ($cache.ContainsKey($WingetId)) {
@@ -605,6 +608,21 @@ function Clear-BatchUpdateCache {
     if (Get-Command -Name 'Get-LocalizedString' -ErrorAction SilentlyContinue) {
         Write-Verbose (Get-LocalizedString -Key 'optimization.batch_cache_cleared')
     }
+}
+
+function Clear-WingetUpdatesCache {
+    <#
+    .SYNOPSIS
+        Clears cached Winget update scan results.
+    .DESCRIPTION
+        Public semantic wrapper used by GUI refresh and post-operation invalidation paths.
+        Kept separate from Clear-BatchUpdateCache so callers do not need to know the
+        internal cache implementation name.
+    #>
+    [CmdletBinding()]
+    param()
+
+    Clear-BatchUpdateCache
 }
 
 # === UPDATE CHECK FUNCTIONS ===
@@ -1183,6 +1201,7 @@ Export-ModuleMember -Function @(
     'Get-WingetUpdatesBatch',
     'Get-ApplicationUpdateStatus',
     'Clear-BatchUpdateCache',
+    'Clear-WingetUpdatesCache',
     # Update check functions
     'Get-LatestReleaseInfo',
     'Test-UpdateAvailable',
