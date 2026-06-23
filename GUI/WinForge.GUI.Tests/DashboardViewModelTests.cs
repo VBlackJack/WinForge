@@ -16,6 +16,7 @@
 
 using WinForge.GUI.Models;
 using WinForge.GUI.Services;
+using WinForge.GUI.Services.Coordinators;
 using WinForge.GUI.ViewModels;
 
 namespace WinForge.GUI.Tests;
@@ -157,6 +158,66 @@ public class DashboardViewModelTests
         // Assert
         Assert.False(viewModel.IsLoading);
     }
+
+    [Fact]
+    public async Task ScanUpdatesCommand_ShouldRunFullScanAndInvalidateUpdateCache()
+    {
+        // Arrange
+        MockPowerShellBridge powerShellBridge = new MockPowerShellBridge();
+        TestAppScanCoordinator scanCoordinator = new TestAppScanCoordinator
+        {
+            Result = new AppScanResult(0, 3, 2, WasCancelled: false)
+        };
+        UpdateScanStateService updateScanStateService = new UpdateScanStateService();
+        int publishedUpdateCount = -1;
+        updateScanStateService.UpdateScanCompleted += (_, args) =>
+        {
+            publishedUpdateCount = args.UpdatesAvailableCount;
+        };
+        DashboardViewModel viewModel = new DashboardViewModel(
+            powerShellBridge,
+            new MockDashboardHistoryService(),
+            new MockDashboardAppSettingsService(),
+            scanCoordinator,
+            updateScanStateService)
+        {
+            CurrentState = DashboardState.Ready
+        };
+
+        // Act
+        await viewModel.ScanUpdatesCommand.ExecuteAsync(null);
+
+        // Assert
+        IReadOnlyCollection<ApplicationModel> call = Assert.Single(scanCoordinator.Calls);
+        Assert.Equal(powerShellBridge.Applications.Count, call.Count);
+        Assert.Equal(1, powerShellBridge.InvalidateUpdateCacheCallCount);
+        Assert.Equal(2, viewModel.UpdateCount);
+        Assert.Equal(2, publishedUpdateCount);
+        Assert.Equal(DashboardState.HasUpdates, viewModel.CurrentState);
+        Assert.False(viewModel.IsScanning);
+    }
+
+    [Fact]
+    public async Task ScanUpdatesCommand_WhenScanFails_ShouldResetScanningFlag()
+    {
+        // Arrange
+        MockPowerShellBridge powerShellBridge = new MockPowerShellBridge();
+        powerShellBridge.Applications[0].Status = ApplicationStatus.Installed;
+        DashboardViewModel viewModel = new DashboardViewModel(
+            powerShellBridge,
+            new MockDashboardHistoryService(),
+            new MockDashboardAppSettingsService(),
+            new ThrowingDashboardScanCoordinator())
+        {
+            CurrentState = DashboardState.Ready
+        };
+
+        // Act
+        await viewModel.ScanUpdatesCommand.ExecuteAsync(null);
+
+        // Assert
+        Assert.False(viewModel.IsScanning);
+    }
 }
 
 /// <summary>
@@ -210,4 +271,15 @@ internal class MockDashboardAppSettingsService : IAppSettingsService
     }
 
     public void ApplySettings(AppSettings settings) => Settings = settings;
+}
+
+internal sealed class ThrowingDashboardScanCoordinator : IAppScanCoordinator
+{
+    public Task<AppScanResult> ScanAsync(
+        IReadOnlyCollection<ApplicationModel> applications,
+        IProgress<AppOperationProgress>? progress = null,
+        CancellationToken cancellationToken = default)
+    {
+        throw new InvalidOperationException("Update scan failed for test.");
+    }
 }

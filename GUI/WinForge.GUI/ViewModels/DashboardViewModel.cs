@@ -25,6 +25,7 @@ using WinForge.GUI.Helpers;
 using WinForge.GUI.Messages;
 using WinForge.GUI.Models;
 using WinForge.GUI.Services;
+using WinForge.GUI.Services.Coordinators;
 
 namespace WinForge.GUI.ViewModels;
 
@@ -39,6 +40,8 @@ public partial class DashboardViewModel : ViewModelBase
     private readonly IPowerShellBridge _powerShellBridge;
     private readonly IDeploymentHistoryService _historyService;
     private readonly IAppSettingsService _settingsService;
+    private readonly IAppScanCoordinator? _scanCoordinator;
+    private readonly IUpdateScanStateService? _updateScanStateService;
     private readonly ILoggingService _logger;
 
     #region Hero Section Properties
@@ -302,11 +305,15 @@ public partial class DashboardViewModel : ViewModelBase
         IPowerShellBridge powerShellBridge,
         IDeploymentHistoryService historyService,
         IAppSettingsService settingsService,
+        IAppScanCoordinator? scanCoordinator = null,
+        IUpdateScanStateService? updateScanStateService = null,
         ILoggerFactory? loggerFactory = null)
     {
         _powerShellBridge = powerShellBridge;
         _historyService = historyService;
         _settingsService = settingsService;
+        _scanCoordinator = scanCoordinator;
+        _updateScanStateService = updateScanStateService;
         _logger = (loggerFactory ?? new LoggerFactory()).CreateLogger<DashboardViewModel>();
     }
 
@@ -495,56 +502,15 @@ public partial class DashboardViewModel : ViewModelBase
     /// Performs the update scan in the background without blocking initialization.
     /// Updates dashboard state when complete.
     /// </summary>
-    private async Task ScanForUpdatesInBackgroundAsync()
-    {
-        IsScanning = true;
-        UpdateCount = 0;
-        ScanProgress = 0;
-        ScanTotal = 0;
-
-        TaskCompletionSource<int> tcs = new TaskCompletionSource<int>();
-
-        WeakReferenceMessenger.Default.Send(new TriggerScanMessage(
-            progressCallback: (current, total) =>
-            {
-                ScanProgress = current;
-                ScanTotal = total;
-            },
-            completionCallback: (updateCount) =>
-            {
-                tcs.TrySetResult(updateCount);
-            }
-        ));
-
-        try
-        {
-            int timeoutMinutes = _settingsService.LoadSettings()?.UpdateScanTimeoutMinutes ?? 5;
-            int resultCount = await tcs.Task.WaitAsync(TimeSpan.FromMinutes(timeoutMinutes));
-            UpdateCount = resultCount;
-            LastScanTime = DateTime.Now;
-            OnPropertyChanged(nameof(LastScanDisplay));
-
-            CurrentState = resultCount > 0 ? DashboardState.HasUpdates : DashboardState.Ready;
-        }
-        catch (TimeoutException)
-        {
-            _logger.LogWarning("Background scan timed out");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning($"Background scan failed: {ex.Message}");
-        }
-        finally
-        {
-            IsScanning = false;
-        }
-    }
+    private Task ScanForUpdatesInBackgroundAsync() => ScanDashboardUpdatesAsync(forceRefresh: false);
 
     /// <summary>
-    /// Scans for available updates by triggering the scan in AppsViewModel.
+    /// Scans for available updates from the dashboard.
     /// </summary>
     [RelayCommand]
-    private void ScanUpdates()
+    private Task ScanUpdatesAsync() => ScanDashboardUpdatesAsync(forceRefresh: true);
+
+    private async Task ScanDashboardUpdatesAsync(bool forceRefresh)
     {
         if (IsScanning) return;
 
@@ -553,26 +519,81 @@ public partial class DashboardViewModel : ViewModelBase
         ScanProgress = 0;
         ScanTotal = 0;
 
-        WeakReferenceMessenger.Default.Send(new TriggerScanMessage(
-            progressCallback: (current, total) =>
+        try
+        {
+            if (_scanCoordinator is null)
             {
-                ScanProgress = current;
-                ScanTotal = total;
-            },
-            completionCallback: (updateCount) =>
-            {
-                UpdateCount = updateCount;
-                LastScanTime = DateTime.Now;
-                OnPropertyChanged(nameof(LastScanDisplay));
-                IsScanning = false;
-
-                // Update state based on scan results
-                if (CurrentState == DashboardState.Ready || CurrentState == DashboardState.HasUpdates)
-                {
-                    CurrentState = updateCount > 0 ? DashboardState.HasUpdates : DashboardState.Ready;
-                }
+                _logger.LogWarning("Dashboard update scan skipped because no scan coordinator is available");
+                ApplyDashboardScanResult(0);
+                return;
             }
-        ));
+
+            List<ApplicationModel> allApplications = await _powerShellBridge.GetAllApplicationsAsync();
+
+            if (allApplications.Count == 0)
+            {
+                ApplyDashboardScanResult(0);
+                _updateScanStateService?.PublishUpdateScanCompleted(allApplications, 0);
+                return;
+            }
+
+            int timeoutMinutes = Math.Clamp(_settingsService.LoadSettings().UpdateScanTimeoutMinutes, 1, 30);
+            using CancellationTokenSource timeoutSource = new CancellationTokenSource(TimeSpan.FromMinutes(timeoutMinutes));
+            if (forceRefresh)
+            {
+                await InvalidateUpdateCacheBestEffortAsync();
+            }
+
+            Progress<AppOperationProgress> progress = new Progress<AppOperationProgress>(operationProgress =>
+            {
+                ScanProgress = operationProgress.Completed;
+                ScanTotal = operationProgress.Total;
+            });
+
+            AppScanResult result = await _scanCoordinator.ScanAsync(
+                allApplications,
+                progress,
+                timeoutSource.Token);
+
+            ApplyDashboardScanResult(result.UpdatesAvailableCount);
+            _updateScanStateService?.PublishUpdateScanCompleted(allApplications, result.UpdatesAvailableCount);
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogWarning("Dashboard update scan timed out or was cancelled");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning($"Dashboard update scan failed: {ex.Message}");
+        }
+        finally
+        {
+            IsScanning = false;
+        }
+    }
+
+    private async Task InvalidateUpdateCacheBestEffortAsync()
+    {
+        try
+        {
+            await _powerShellBridge.InvalidateUpdateCacheAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning($"Dashboard update cache invalidation failed: {ex.Message}");
+        }
+    }
+
+    private void ApplyDashboardScanResult(int updateCount)
+    {
+        UpdateCount = updateCount;
+        LastScanTime = DateTime.Now;
+        OnPropertyChanged(nameof(LastScanDisplay));
+
+        if (CurrentState == DashboardState.Ready || CurrentState == DashboardState.HasUpdates)
+        {
+            CurrentState = updateCount > 0 ? DashboardState.HasUpdates : DashboardState.Ready;
+        }
     }
 
     /// <summary>
