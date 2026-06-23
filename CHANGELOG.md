@@ -4,6 +4,9 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 
 ## [Unreleased]
 
+### Changed
+- Updated GitHub Actions workflow dependencies to maintained Node 24-ready major versions and aligned the GUI coverage threshold with the current tested baseline.
+
 ## [2026062301] - 2026-06-23
 
 ### Changed

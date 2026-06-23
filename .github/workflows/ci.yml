@@ -23,10 +23,10 @@ jobs:
       security-events: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Checkout ThemeForge (sibling dependency)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: VBlackJack/ThemeForge
           path: ThemeForge
@@ -42,7 +42,7 @@ jobs:
           queries: security-extended, security-and-quality
 
       - name: Setup .NET 10
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 10.0.x
 
@@ -75,7 +75,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install PSScriptAnalyzer
         shell: pwsh
@@ -138,7 +138,7 @@ jobs:
     needs: lint
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install Pester
         shell: pwsh
@@ -200,14 +200,14 @@ jobs:
           }
 
       - name: Upload Pester Test Results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: pester-test-results
           path: TestResults-Pester.xml
 
       - name: Upload Pester Coverage Report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: pester-coverage
@@ -223,16 +223,16 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Checkout ThemeForge (sibling dependency)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: VBlackJack/ThemeForge
           path: ThemeForge
 
       - name: Setup .NET 10
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 10.0.x
 
@@ -266,8 +266,8 @@ jobs:
               $summary = Get-Content 'coverage-report-gui/Summary.json' | ConvertFrom-Json
               $lineCoverage = $summary.summary.linecoverage
               $branchCoverage = $summary.summary.branchcoverage
-              $minCoverage = 10
-              $targetCoverage = 80
+              $minCoverage = 35
+              $targetCoverage = 35
 
               Write-Host "=== .NET GUI Code Coverage ===" -ForegroundColor Cyan
               Write-Host "Line Coverage: $lineCoverage% (minimum: $minCoverage%, target: $targetCoverage%)" -ForegroundColor $(if ($lineCoverage -ge $targetCoverage) { 'Green' } elseif ($lineCoverage -ge $minCoverage) { 'Yellow' } else { 'Red' })
@@ -277,8 +277,6 @@ jobs:
               if ($lineCoverage -lt $minCoverage) {
                 Write-Host "::error::Line coverage ($lineCoverage%) is below minimum threshold ($minCoverage%)" -ForegroundColor Red
                 exit 1
-              } elseif ($lineCoverage -lt $targetCoverage) {
-                Write-Host "::warning::Line coverage ($lineCoverage%) is below target threshold ($targetCoverage%)" -ForegroundColor Yellow
               }
 
               # Create coverage summary JSON
@@ -297,14 +295,14 @@ jobs:
           }
 
       - name: Upload GUI Test Results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: gui-test-results
           path: GUI/WinForge.GUI.Tests/TestResults/TestResults-GUI.trx
 
       - name: Upload GUI Coverage Report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: gui-coverage
@@ -322,14 +320,14 @@ jobs:
     if: always()
     steps:
       - name: Download Pester Coverage
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: pester-coverage
           path: pester-coverage
         continue-on-error: true
 
       - name: Download GUI Coverage
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: gui-coverage
           path: gui-coverage
@@ -339,7 +337,7 @@ jobs:
         shell: pwsh
         run: |
           Write-Host "========================================" -ForegroundColor Cyan
-          Write-Host "       WIN11FORGE CODE COVERAGE         " -ForegroundColor Cyan
+          Write-Host "        WINFORGE CODE COVERAGE          " -ForegroundColor Cyan
           Write-Host "========================================" -ForegroundColor Cyan
           Write-Host ""
 
@@ -388,7 +386,7 @@ jobs:
           $combinedSummary | ConvertTo-Json -Depth 5 | Set-Content 'coverage-summary-combined.json'
 
       - name: Upload Combined Coverage Summary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-summary
           path: coverage-summary-combined.json
@@ -402,7 +400,7 @@ jobs:
     needs: lint
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Validate Version Consistency
         shell: pwsh
@@ -436,16 +434,16 @@ jobs:
     if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Checkout ThemeForge (sibling dependency)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: VBlackJack/ThemeForge
           path: ThemeForge
 
       - name: Setup .NET 10
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 10.0.x
 
@@ -472,7 +470,7 @@ jobs:
           echo "VERSION=$version" >> $env:GITHUB_OUTPUT
 
       - name: Upload Release Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: WinForge_v${{ steps.version.outputs.VERSION }}
           path: Dist/WinForge_v${{ steps.version.outputs.VERSION }}.zip
