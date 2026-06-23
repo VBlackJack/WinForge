@@ -17,6 +17,7 @@
 #nullable enable
 
 using System.Diagnostics;
+using System.Text;
 using System.Text.RegularExpressions;
 using WinForge.GUI.Configuration;
 
@@ -402,6 +403,8 @@ public partial class PackageSearchService : IPackageSearchService
                 Arguments = arguments,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
+                StandardOutputEncoding = Encoding.UTF8,
+                StandardErrorEncoding = Encoding.UTF8,
                 UseShellExecute = false,
                 CreateNoWindow = true
             }
@@ -427,6 +430,8 @@ public partial class PackageSearchService : IPackageSearchService
                 FileName = fileName,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
+                StandardOutputEncoding = Encoding.UTF8,
+                StandardErrorEncoding = Encoding.UTF8,
                 UseShellExecute = false,
                 CreateNoWindow = true
             }

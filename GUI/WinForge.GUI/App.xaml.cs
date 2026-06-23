@@ -18,7 +18,6 @@ using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using System.Windows;
-using System.Windows.Media;
 using Microsoft.Extensions.DependencyInjection;
 using WinForge.GUI.Configuration;
 using WinForge.GUI.Helpers;
@@ -573,10 +572,7 @@ public partial class App : Application
     }
 
     /// <summary>
-    /// Applies all theme-adaptive resources based on the current theme.
-    /// Centralized method called both at startup and on theme toggle.
-    /// Handles accent colors, status colors, error/warning/success colors,
-    /// skeleton brushes, and badge foreground brushes for both directions.
+    /// Restores standard theme resources through the ThemeForge palette bridge.
     /// </summary>
     internal static void ApplyThemeResources(bool isDark)
     {
@@ -585,164 +581,15 @@ public partial class App : Application
 
         try
         {
-            // Accent brush: Light blue for dark theme, Windows blue for light theme
-            SolidColorBrush accentBrush = isDark
-                ? new SolidColorBrush(Color.FromRgb(96, 205, 255))   // #60CDFF - Accent Blue
-                : new SolidColorBrush(Color.FromRgb(0, 95, 184));    // #005FB8 - Windows 11 Blue
-            app.Resources["ThemeAdaptiveAccentBrush"] = accentBrush;
-
-            if (isDark)
-            {
-                RestoreDarkThemeDefaults(app);
-            }
-            else
-            {
-                ApplyLightThemeEnhancements(app);
-            }
-
-            Log($"{(isDark ? "Dark" : "Light")} theme resources applied");
+            _ = isDark;
+            ThemeService.ClearPaletteBridgeResources(app.Resources);
+            ThemeService.ApplyPaletteBridgeResources(app.Resources);
+            Log("ThemeForge bridge resources applied");
         }
         catch (Exception ex)
         {
             Log($"Failed to apply theme resources: {ex.Message}");
         }
-    }
-
-    /// <summary>
-    /// Restores all brushes to their dark theme defaults (matching FluentThemeBridge.xaml).
-    /// Called when switching from light to dark theme.
-    /// </summary>
-    private static void RestoreDarkThemeDefaults(Application app)
-    {
-        // Status colors - restore dark theme originals
-        app.Resources["StatusInstalledBrush"] = new SolidColorBrush(Color.FromRgb(76, 175, 80));    // #4CAF50
-        app.Resources["StatusFailedBrush"] = new SolidColorBrush(Color.FromRgb(244, 67, 54));       // #F44336
-        app.Resources["StatusInstallingBrush"] = new SolidColorBrush(Color.FromRgb(33, 150, 243));   // #2196F3
-        app.Resources["StatusSkippedBrush"] = new SolidColorBrush(Color.FromRgb(245, 124, 0));      // #F57C00
-        app.Resources["StatusPendingBrush"] = new SolidColorBrush(Color.FromRgb(158, 158, 158));     // #9E9E9E
-
-        // Error/Warning/Success - restore dark theme originals (light text on dark backgrounds)
-        app.Resources["ErrorTextBrush"] = new SolidColorBrush(Color.FromRgb(239, 83, 80));          // #EF5350
-        app.Resources["ErrorIconBrush"] = new SolidColorBrush(Color.FromRgb(239, 83, 80));          // #EF5350
-        app.Resources["ErrorBorderBrush"] = new SolidColorBrush(Color.FromRgb(239, 83, 80));        // #EF5350
-        app.Resources["ErrorBackgroundBrush"] = new SolidColorBrush(Color.FromArgb(51, 244, 67, 54)); // #33F44336
-        app.Resources["WarningTextBrush"] = new SolidColorBrush(Color.FromRgb(255, 183, 77));       // #FFB74D
-        app.Resources["WarningIconBrush"] = new SolidColorBrush(Color.FromRgb(255, 183, 77));       // #FFB74D
-        app.Resources["WarningBorderBrush"] = new SolidColorBrush(Color.FromRgb(245, 124, 0));      // #F57C00
-        app.Resources["WarningBackgroundBrush"] = new SolidColorBrush(Color.FromArgb(51, 245, 124, 0)); // #33F57C00
-        app.Resources["SuccessTextBrush"] = new SolidColorBrush(Color.FromRgb(129, 199, 132));      // #81C784
-        app.Resources["SuccessIconBrush"] = new SolidColorBrush(Color.FromRgb(129, 199, 132));      // #81C784
-        app.Resources["SuccessBorderBrush"] = new SolidColorBrush(Color.FromRgb(76, 175, 80));      // #4CAF50
-        app.Resources["SuccessBackgroundBrush"] = new SolidColorBrush(Color.FromArgb(51, 76, 175, 80)); // #334CAF50
-
-        // Primary/Secondary hue - restore dark theme originals
-        app.Resources["PrimaryHueMidBrush"] = new SolidColorBrush(Color.FromRgb(96, 205, 255));       // #60CDFF
-        app.Resources["SecondaryHueMidBrush"] = new SolidColorBrush(Color.FromRgb(139, 195, 74));     // #8BC34A
-
-        // Accent text colors - restore dark theme (light variants for dark backgrounds)
-        app.Resources["AccentGreenTextBrush"] = new SolidColorBrush(Color.FromRgb(129, 199, 132));    // #81C784
-        app.Resources["AccentOrangeTextBrush"] = new SolidColorBrush(Color.FromRgb(255, 183, 77));    // #FFB74D
-
-        // Accent colors - restore dark theme (bright for dark backgrounds)
-        app.Resources["FavoriteActiveBrush"] = new SolidColorBrush(Color.FromRgb(255, 215, 0));       // #FFD700
-        app.Resources["FavoriteTextBrush"] = new SolidColorBrush(Color.FromRgb(255, 143, 0));         // #FF8F00
-        app.Resources["RequiredBrush"] = new SolidColorBrush(Color.FromRgb(255, 193, 7));             // #FFC107
-        app.Resources["ManualInstallBadgeBrush"] = new SolidColorBrush(Color.FromRgb(255, 138, 0));   // #FF8A00
-        app.Resources["SubtleDataGridLineBrush"] = new SolidColorBrush(Color.FromArgb(51, 138, 144, 168)); // #338A90A8
-
-        // Skeleton - restore dark theme (white-based opacity)
-        app.Resources["SkeletonBaseBrush"] = new SolidColorBrush(Color.FromArgb(26, 255, 255, 255));   // #1AFFFFFF
-        app.Resources["SkeletonHighlightBrush"] = new SolidColorBrush(Color.FromArgb(51, 255, 255, 255)); // #33FFFFFF
-
-        // Badge foregrounds - white text on saturated dark-theme backgrounds
-        app.Resources["BadgePrimaryForegroundBrush"] = new SolidColorBrush(Colors.White);
-        app.Resources["BadgeSecondaryForegroundBrush"] = new SolidColorBrush(Colors.White);
-        app.Resources["PrimaryHueLightForegroundBrush"] = new SolidColorBrush(Colors.White);
-        app.Resources["SecondaryHueLightForegroundBrush"] = new SolidColorBrush(Colors.White);
-
-        app.Resources["SourceWingetBadgeBackgroundBrush"] = new SolidColorBrush(Color.FromArgb(38, 59, 130, 246));      // #263B82F6
-        app.Resources["SourceWingetBadgeBorderBrush"] = new SolidColorBrush(Color.FromRgb(59, 130, 246));              // #3B82F6
-        app.Resources["SourceWingetBadgeForegroundBrush"] = new SolidColorBrush(Color.FromRgb(147, 197, 253));         // #93C5FD
-        app.Resources["SourceChocolateyBadgeBackgroundBrush"] = new SolidColorBrush(Color.FromArgb(38, 22, 163, 74));  // #2616A34A
-        app.Resources["SourceChocolateyBadgeBorderBrush"] = new SolidColorBrush(Color.FromRgb(34, 197, 94));           // #22C55E
-        app.Resources["SourceChocolateyBadgeForegroundBrush"] = new SolidColorBrush(Color.FromRgb(134, 239, 172));     // #86EFAC
-        app.Resources["SourceStoreBadgeBackgroundBrush"] = new SolidColorBrush(Color.FromArgb(38, 20, 184, 166));      // #2614B8A6
-        app.Resources["SourceStoreBadgeBorderBrush"] = new SolidColorBrush(Color.FromRgb(20, 184, 166));               // #14B8A6
-        app.Resources["SourceStoreBadgeForegroundBrush"] = new SolidColorBrush(Color.FromRgb(94, 234, 212));           // #5EEAD4
-        app.Resources["SourceDirectBadgeBackgroundBrush"] = new SolidColorBrush(Color.FromArgb(42, 249, 115, 22));     // #2AF97316
-        app.Resources["SourceDirectBadgeBorderBrush"] = new SolidColorBrush(Color.FromRgb(249, 115, 22));              // #F97316
-        app.Resources["SourceDirectBadgeForegroundBrush"] = new SolidColorBrush(Color.FromRgb(253, 186, 116));         // #FDBA74
-    }
-
-    /// <summary>
-    /// Applies enhanced contrast colors for light theme to improve readability.
-    /// Updates status, error/warning/success, skeleton, and badge colors
-    /// to use darker variants that meet WCAG AA contrast ratios on light backgrounds.
-    /// </summary>
-    private static void ApplyLightThemeEnhancements(Application app)
-    {
-        // Status colors - darker variants for light backgrounds
-        SwapIfExists(app, "StatusInstalledBrush", "StatusInstalledLightBrush");
-        SwapIfExists(app, "StatusFailedBrush", "StatusFailedLightBrush");
-        SwapIfExists(app, "StatusInstallingBrush", "StatusInstallingLightBrush");
-        SwapIfExists(app, "StatusSkippedBrush", "StatusSkippedLightBrush");
-        SwapIfExists(app, "StatusPendingBrush", "StatusPendingLightBrush");
-
-        // Error/Warning/Success - darker text for light backgrounds
-        SwapIfExists(app, "ErrorTextBrush", "ErrorTextLightBrush");
-        SwapIfExists(app, "ErrorIconBrush", "ErrorIconLightBrush");
-        SwapIfExists(app, "ErrorBorderBrush", "ErrorBorderLightBrush");
-        SwapIfExists(app, "ErrorBackgroundBrush", "ErrorBackgroundLightBrush");
-        SwapIfExists(app, "WarningTextBrush", "WarningTextLightBrush");
-        SwapIfExists(app, "WarningIconBrush", "WarningIconLightBrush");
-        SwapIfExists(app, "WarningBorderBrush", "WarningBorderLightBrush");
-        SwapIfExists(app, "WarningBackgroundBrush", "WarningBackgroundLightBrush");
-        SwapIfExists(app, "SuccessTextBrush", "SuccessTextLightBrush");
-        SwapIfExists(app, "SuccessIconBrush", "SuccessIconLightBrush");
-        SwapIfExists(app, "SuccessBorderBrush", "SuccessBorderLightBrush");
-        SwapIfExists(app, "SuccessBackgroundBrush", "SuccessBackgroundLightBrush");
-
-        // Primary/Secondary hue - muted for light backgrounds
-        SwapIfExists(app, "PrimaryHueMidBrush", "PrimaryHueMidLightBrush");
-        SwapIfExists(app, "SecondaryHueMidBrush", "SecondaryHueMidLightBrush");
-
-        // Accent text colors - darker variants for light backgrounds
-        SwapIfExists(app, "AccentGreenTextBrush", "AccentGreenTextLightBrush");
-        SwapIfExists(app, "AccentOrangeTextBrush", "AccentOrangeTextLightBrush");
-
-        // Accent colors - toned down for light backgrounds
-        SwapIfExists(app, "FavoriteActiveBrush", "FavoriteActiveLightBrush");
-        SwapIfExists(app, "FavoriteTextBrush", "FavoriteTextLightBrush");
-        SwapIfExists(app, "RequiredBrush", "RequiredLightBrush");
-        SwapIfExists(app, "ManualInstallBadgeBrush", "ManualInstallBadgeLightBrush");
-        SwapIfExists(app, "SubtleDataGridLineBrush", "SubtleDataGridLineLightBrush");
-
-        // Card/control borders - stronger for light theme visual hierarchy
-        app.Resources["ControlElevationBorderBrush"] = new SolidColorBrush(Color.FromRgb(200, 200, 200));  // #C8C8C8
-        app.Resources["ControlStrokeColorDefaultBrush"] = new SolidColorBrush(Color.FromRgb(200, 200, 200));
-
-        // Skeleton - black-based opacity for light backgrounds
-        app.Resources["SkeletonBaseBrush"] = new SolidColorBrush(Color.FromArgb(26, 0, 0, 0));        // 10% black
-        app.Resources["SkeletonHighlightBrush"] = new SolidColorBrush(Color.FromArgb(51, 0, 0, 0));   // 20% black
-
-        // Badge foregrounds - keep white for saturated primary badges, use dark text for lighter badges.
-        app.Resources["BadgePrimaryForegroundBrush"] = new SolidColorBrush(Colors.White);
-        app.Resources["BadgeSecondaryForegroundBrush"] = new SolidColorBrush(Color.FromRgb(33, 33, 33)); // #212121
-        app.Resources["PrimaryHueLightForegroundBrush"] = new SolidColorBrush(Color.FromRgb(33, 33, 33)); // #212121
-        app.Resources["SecondaryHueLightForegroundBrush"] = new SolidColorBrush(Color.FromRgb(33, 33, 33)); // #212121
-
-        SwapIfExists(app, "SourceWingetBadgeBackgroundBrush", "SourceWingetBadgeBackgroundLightBrush");
-        SwapIfExists(app, "SourceWingetBadgeBorderBrush", "SourceWingetBadgeBorderLightBrush");
-        SwapIfExists(app, "SourceWingetBadgeForegroundBrush", "SourceWingetBadgeForegroundLightBrush");
-        SwapIfExists(app, "SourceChocolateyBadgeBackgroundBrush", "SourceChocolateyBadgeBackgroundLightBrush");
-        SwapIfExists(app, "SourceChocolateyBadgeBorderBrush", "SourceChocolateyBadgeBorderLightBrush");
-        SwapIfExists(app, "SourceChocolateyBadgeForegroundBrush", "SourceChocolateyBadgeForegroundLightBrush");
-        SwapIfExists(app, "SourceStoreBadgeBackgroundBrush", "SourceStoreBadgeBackgroundLightBrush");
-        SwapIfExists(app, "SourceStoreBadgeBorderBrush", "SourceStoreBadgeBorderLightBrush");
-        SwapIfExists(app, "SourceStoreBadgeForegroundBrush", "SourceStoreBadgeForegroundLightBrush");
-        SwapIfExists(app, "SourceDirectBadgeBackgroundBrush", "SourceDirectBadgeBackgroundLightBrush");
-        SwapIfExists(app, "SourceDirectBadgeBorderBrush", "SourceDirectBadgeBorderLightBrush");
-        SwapIfExists(app, "SourceDirectBadgeForegroundBrush", "SourceDirectBadgeForegroundLightBrush");
     }
 
     /// <summary>

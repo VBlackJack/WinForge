@@ -40,7 +40,8 @@ $script:CoreModulePath = Join-Path $script:RepositoryRoot 'Core\Core.psm1'
 $script:VersionPath = Join-Path $script:RepositoryRoot 'Config\version.json'
 
 # Import Core module for logging
-if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue) -or
+    -not (Get-Command -Name Invoke-NativeCommandUtf8 -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:CoreModulePath) {
         Import-Module -Name $script:CoreModulePath -Force
     }
@@ -404,7 +405,8 @@ function Get-WingetUpdatesBatch {
 
     try {
         # Run winget upgrade once to get all available updates
-        $output = & winget upgrade --include-unknown --accept-source-agreements 2>&1 | Out-String
+        $result = Invoke-NativeCommandUtf8 -FilePath 'winget' -ArgumentList @('upgrade', '--include-unknown', '--accept-source-agreements')
+        $output = $result.Output
 
         # Parse the output - format is typically:
         # Name                            Id                           Version      Available      Source
