@@ -77,7 +77,7 @@
                                     <ui:SymbolIcon Symbol="Wrench24"
                                                    Width="20" Height="20"
                                                    VerticalAlignment="Center"
-                                                   Margin="0,0,8,0"/>
+                                                   Margin="{StaticResource InlineGapSmall}"/>
                                     <TextBlock Text="{loc:Loc Dashboard_Btn_FixPrereqs}" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </ui:Button>
@@ -110,7 +110,7 @@
                                  <ui:Button Command="{Binding StartDeploymentCommand}"
                                            Style="{StaticResource HeroPrimaryButton}"
                                            ToolTip="{loc:Loc Dashboard_StartDeployment_Hint}"
-                                           Margin="0,0,12,0"
+                                           Margin="{StaticResource InlineGapMedium}"
                                            AutomationProperties.Name="{loc:Loc A11y_Dashboard_StartDeployment}">
                                      <StackPanel Orientation="Horizontal">
                                          <ui:SymbolIcon Symbol="Rocket24"
@@ -130,7 +130,7 @@
                                         <ui:SymbolIcon Symbol="ArrowDownload24"
                                                        Width="20" Height="20"
                                                        VerticalAlignment="Center"
-                                                       Margin="0,0,8,0"/>
+                                                       Margin="{StaticResource InlineGapSmall}"/>
                                         <TextBlock Text="{loc:Loc Dashboard_Btn_ViewUpdates}" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </ui:Button>
@@ -281,7 +281,7 @@
                                            Width="24" Height="24"
                                            VerticalAlignment="Center"
                                            Foreground="{DynamicResource PrimaryHueMidBrush}"
-                                           Margin="0,0,12,0"/>
+                                           Margin="{StaticResource InlineGapMedium}"/>
                             <TextBlock Text="{loc:Loc Dashboard_SystemInfo_Title}"
                                        FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"/>
                         </StackPanel>
@@ -406,7 +406,7 @@
                                                Width="24" Height="24"
                                                VerticalAlignment="Center"
                                                Foreground="{DynamicResource AccentGreenTextBrush}"
-                                               Margin="0,0,12,0"/>
+                                               Margin="{StaticResource InlineGapMedium}"/>
                                 <TextBlock Text="{loc:Loc Dashboard_Updates_Title}"
                                            FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"/>
                             </StackPanel>
@@ -421,11 +421,11 @@
                                     <ui:SymbolIcon Symbol="Search24"
                                                    Width="18" Height="18"
                                                    VerticalAlignment="Center"
-                                                   Margin="0,0,8,0"
+                                                   Margin="{StaticResource InlineGapSmall}"
                                                    Visibility="{Binding IsNotScanning, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                                     <ui:ProgressRing IsIndeterminate="True"
                                                      Width="18" Height="18"
-                                                     Margin="0,0,8,0"
+                                                     Margin="{StaticResource InlineGapSmall}"
                                                      Visibility="{Binding IsScanning, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                                     <TextBlock Text="{Binding ScanButtonText}" VerticalAlignment="Center"/>
                                 </StackPanel>
@@ -462,7 +462,7 @@
                                                    Symbol="CheckmarkCircle24"
                                                    Width="24" Height="24"
                                                    VerticalAlignment="Center"
-                                                   Margin="0,0,12,0"/>
+                                                   Margin="{StaticResource InlineGapMedium}"/>
                                     <TextBlock Grid.Column="1"
                                                Text="{loc:Loc Nav_Prerequisites}"
                                                VerticalAlignment="Center"/>
@@ -489,7 +489,7 @@
                                                    Symbol="Apps24"
                                                    Width="24" Height="24"
                                                    VerticalAlignment="Center"
-                                                   Margin="0,0,12,0"/>
+                                                   Margin="{StaticResource InlineGapMedium}"/>
                                     <TextBlock Grid.Column="1"
                                                Text="{loc:Loc Nav_Apps}"
                                                VerticalAlignment="Center"/>
@@ -522,7 +522,7 @@
                                        Width="24" Height="24"
                                        VerticalAlignment="Center"
                                        Foreground="{DynamicResource PrimaryHueMidBrush}"
-                                       Margin="0,0,12,0"/>
+                                       Margin="{StaticResource InlineGapMedium}"/>
                         <TextBlock Text="{loc:Loc Dashboard_History_Title}"
                                    FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"/>
                     </StackPanel>

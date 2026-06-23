@@ -5,4 +5,7 @@
     <Thickness x:Key="SectionPadding">16</Thickness>
     <Thickness x:Key="SectionGap">0,0,0,16</Thickness>
     <Thickness x:Key="BlockGap">0,0,0,12</Thickness>
+    <!-- Inline (horizontal) gaps for spacing adjacent elements within a row. -->
+    <Thickness x:Key="InlineGapSmall">0,0,8,0</Thickness>
+    <Thickness x:Key="InlineGapMedium">0,0,12,0</Thickness>
 </ResourceDictionary>
