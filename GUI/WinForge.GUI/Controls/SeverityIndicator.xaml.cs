@@ -18,6 +18,7 @@ using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Media;
+using WinForge.GUI.Resources;
 using Wpf.Ui.Controls;
 
 namespace WinForge.GUI.Controls;
@@ -111,29 +112,29 @@ public partial class SeverityIndicator : UserControl
         {
             SeverityLevel.Success => (
                 SymbolRegular.CheckmarkCircle24,
-                app?.TryFindResource("SuccessBackgroundBrush") as Brush ?? CachedBrushes.SuccessBackground,
-                app?.TryFindResource("SuccessBorderBrush") as Brush ?? CachedBrushes.SuccessBorder,
-                app?.TryFindResource("SuccessIconBrush") as Brush ?? CachedBrushes.SuccessBorder),
+                app?.TryFindResource("SuccessBackgroundBrush") as Brush ?? ThemeFallbackBrushes.SuccessSubtleBackground,
+                app?.TryFindResource("SuccessBorderBrush") as Brush ?? ThemeFallbackBrushes.Success,
+                app?.TryFindResource("SuccessIconBrush") as Brush ?? ThemeFallbackBrushes.Success),
             SeverityLevel.Warning => (
                 SymbolRegular.Warning24,
-                app?.TryFindResource("WarningBackgroundBrush") as Brush ?? CachedBrushes.WarningBackground,
-                app?.TryFindResource("WarningBorderBrush") as Brush ?? CachedBrushes.WarningBorder,
-                app?.TryFindResource("WarningIconBrush") as Brush ?? CachedBrushes.WarningForeground),
+                app?.TryFindResource("WarningBackgroundBrush") as Brush ?? ThemeFallbackBrushes.WarningSubtleBackground,
+                app?.TryFindResource("WarningBorderBrush") as Brush ?? ThemeFallbackBrushes.Warning,
+                app?.TryFindResource("WarningIconBrush") as Brush ?? ThemeFallbackBrushes.Warning),
             SeverityLevel.Error => (
                 SymbolRegular.DismissCircle24,
-                app?.TryFindResource("ErrorBackgroundBrush") as Brush ?? CachedBrushes.ErrorBackground,
-                app?.TryFindResource("ErrorBorderBrush") as Brush ?? CachedBrushes.ErrorBorder,
-                app?.TryFindResource("ErrorIconBrush") as Brush ?? CachedBrushes.ErrorForeground),
+                app?.TryFindResource("ErrorBackgroundBrush") as Brush ?? ThemeFallbackBrushes.ErrorSubtleBackground,
+                app?.TryFindResource("ErrorBorderBrush") as Brush ?? ThemeFallbackBrushes.Error,
+                app?.TryFindResource("ErrorIconBrush") as Brush ?? ThemeFallbackBrushes.Error),
             SeverityLevel.Critical => (
                 SymbolRegular.ShieldError24,
-                CachedBrushes.CriticalBackground,
-                CachedBrushes.CriticalBorder,
-                CachedBrushes.CriticalForeground),
+                ThemeFallbackBrushes.CriticalBackground,
+                ThemeFallbackBrushes.Error,
+                ThemeFallbackBrushes.Error),
             _ => (
                 SymbolRegular.Info24,
-                CachedBrushes.InfoBackground,
-                CachedBrushes.InfoBorder,
-                CachedBrushes.InfoBorder)
+                ThemeFallbackBrushes.InfoSubtleBackground,
+                ThemeFallbackBrushes.Info,
+                ThemeFallbackBrushes.Info)
         };
 
         SeverityIcon.Symbol = icon;
@@ -143,28 +144,5 @@ public partial class SeverityIndicator : UserControl
 
         // Set AutomationProperties for accessibility
         AutomationProperties.SetName(this, $"{Severity} indicator");
-    }
-
-    private static class CachedBrushes
-    {
-        internal static readonly SolidColorBrush SuccessBackground = Freeze(new SolidColorBrush(Color.FromArgb(0x1E, 0x4C, 0xAF, 0x50)));
-        internal static readonly SolidColorBrush SuccessBorder = Freeze(new SolidColorBrush(Color.FromRgb(0x4C, 0xAF, 0x50)));
-        internal static readonly SolidColorBrush WarningBackground = Freeze(new SolidColorBrush(Color.FromArgb(0x33, 0xFF, 0x98, 0x00)));
-        internal static readonly SolidColorBrush WarningBorder = Freeze(new SolidColorBrush(Color.FromRgb(0xFF, 0x98, 0x00)));
-        internal static readonly SolidColorBrush WarningForeground = Freeze(new SolidColorBrush(Color.FromRgb(0xFF, 0xB7, 0x4D)));
-        internal static readonly SolidColorBrush ErrorBackground = Freeze(new SolidColorBrush(Color.FromArgb(0x33, 0xF4, 0x43, 0x36)));
-        internal static readonly SolidColorBrush ErrorBorder = Freeze(new SolidColorBrush(Color.FromRgb(0xF4, 0x43, 0x36)));
-        internal static readonly SolidColorBrush ErrorForeground = Freeze(new SolidColorBrush(Color.FromRgb(0xEF, 0x53, 0x50)));
-        internal static readonly SolidColorBrush CriticalBackground = Freeze(new SolidColorBrush(Color.FromArgb(0x4D, 0xF4, 0x43, 0x36)));
-        internal static readonly SolidColorBrush CriticalBorder = Freeze(new SolidColorBrush(Color.FromRgb(0xD3, 0x2F, 0x2F)));
-        internal static readonly SolidColorBrush CriticalForeground = Freeze(new SolidColorBrush(Colors.White));
-        internal static readonly SolidColorBrush InfoBackground = Freeze(new SolidColorBrush(Color.FromArgb(0x1E, 0x21, 0x96, 0xF3)));
-        internal static readonly SolidColorBrush InfoBorder = Freeze(new SolidColorBrush(Color.FromRgb(0x21, 0x96, 0xF3)));
-
-        private static SolidColorBrush Freeze(SolidColorBrush brush)
-        {
-            brush.Freeze();
-            return brush;
-        }
     }
 }

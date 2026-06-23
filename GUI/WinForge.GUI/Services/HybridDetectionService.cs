@@ -17,6 +17,7 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Management.Automation;
+using System.Text;
 using WinForge.GUI.Models;
 using WinForge.GUI.Services.PowerShell;
 using PS = System.Management.Automation.PowerShell;
@@ -602,6 +603,8 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
+            StandardOutputEncoding = Encoding.UTF8,
+            StandardErrorEncoding = Encoding.UTF8,
             CreateNoWindow = true
         };
 
