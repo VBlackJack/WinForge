@@ -122,6 +122,11 @@
           "type": "string",
           "description": "Override installation method (e.g. WindowsFeature)"
         },
+        "PreferredUpdateSource": {
+          "type": "string",
+          "description": "Preferred package source for update operations when it differs from install order",
+          "enum": ["Winget", "Chocolatey"]
+        },
         "InstallationOptions": {
           "type": "object",
           "description": "Additional installation options (exit codes, flags, etc.)",

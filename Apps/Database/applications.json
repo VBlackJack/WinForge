@@ -4622,10 +4622,11 @@
       "Description": "Package manager for Windows - alternative installation source",
       "Sources": {
         "Winget": "Chocolatey.Chocolatey",
-        "Chocolatey": null,
+        "Chocolatey": "chocolatey",
         "Store": null,
         "DirectUrl": null
       },
+      "PreferredUpdateSource": "Chocolatey",
       "Detection": {
         "Method": "Command",
         "Command": "choco --version",

@@ -9,6 +9,9 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 - Added startup migration from `%LOCALAPPDATA%\Win11Forge` to `%LOCALAPPDATA%\WinForge`, with graceful fallback to legacy data when migration is blocked.
 - Scheduled deployments now use WinForge task names while continuing to discover and manage legacy Win11Forge scheduled tasks.
 
+### Fixed
+- Chocolatey now self-updates through `choco upgrade chocolatey` instead of trying the WinGet bootstrap package during update operations.
+
 ## [2026062201] - 2026-06-22
 
 ### Added

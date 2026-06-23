@@ -120,6 +120,28 @@ public class AppUpdateCoordinatorTests
     }
 
     [Fact]
+    public async Task UpdateAsync_WithChocolateyUpdateCandidate_ShouldDelegateToBridgeUpdate()
+    {
+        ApplicationModel app = new ApplicationModel
+        {
+            AppId = "Chocolatey",
+            Name = "Chocolatey",
+            Status = ApplicationStatus.UpdateAvailable
+        };
+        Mock<IPowerShellBridge> bridge = CreateBridge();
+        AppUpdateCoordinator coordinator = CreateCoordinator(bridge.Object);
+
+        AppUpdateResult result = await coordinator.UpdateAsync([app]);
+
+        Assert.Equal(1, result.UpdatedCount);
+        bridge.Verify(
+            x => x.UpdateApplicationAsync(
+                It.Is<ApplicationModel>(candidate => candidate.AppId == "Chocolatey"),
+                It.IsAny<Action<string>?>()),
+            Times.Once);
+    }
+
+    [Fact]
     public async Task UpdateAsync_WithMixedResults_ShouldAggregateSuccessAndFailure()
     {
         List<ApplicationModel> apps = CreateApps("Updated", "Failed");
