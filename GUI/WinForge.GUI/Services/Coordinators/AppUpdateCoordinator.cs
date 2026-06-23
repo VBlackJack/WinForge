@@ -48,6 +48,7 @@ public sealed class AppUpdateCoordinator : IAppUpdateCoordinator
     /// <inheritdoc/>
     public async Task<AppUpdateScanResult> ScanForUpdatesAsync(
         IReadOnlyCollection<ApplicationModel> installedApps,
+        bool forceRefresh = false,
         IProgress<AppOperationProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
@@ -56,6 +57,11 @@ public sealed class AppUpdateCoordinator : IAppUpdateCoordinator
         if (installedApps.Count == 0)
         {
             return new AppUpdateScanResult(0, 0, WasCancelled: false);
+        }
+
+        if (forceRefresh)
+        {
+            await InvalidateUpdateCacheBestEffortAsync().ConfigureAwait(false);
         }
 
         List<ApplicationModel> apps = installedApps.ToList();
@@ -234,7 +240,7 @@ public sealed class AppUpdateCoordinator : IAppUpdateCoordinator
 
             if (result.Success)
             {
-                await RefreshUpdatedApplicationAsync(app).ConfigureAwait(false);
+                await RefreshUpdatedApplicationAsync(app, forceRefresh: true).ConfigureAwait(false);
                 return AppUpdateItemResult.Updated();
             }
 
@@ -258,9 +264,9 @@ public sealed class AppUpdateCoordinator : IAppUpdateCoordinator
         }
     }
 
-    private async Task RefreshUpdatedApplicationAsync(ApplicationModel app)
+    private async Task RefreshUpdatedApplicationAsync(ApplicationModel app, bool forceRefresh)
     {
-        UpdateCheckResult updateCheck = await _powerShellBridge.CheckApplicationUpdateAsync(app).ConfigureAwait(false);
+        UpdateCheckResult updateCheck = await _powerShellBridge.CheckApplicationUpdateAsync(app, forceRefresh).ConfigureAwait(false);
 
         if (!string.IsNullOrEmpty(updateCheck.CurrentVersion))
         {
@@ -271,9 +277,29 @@ public sealed class AppUpdateCoordinator : IAppUpdateCoordinator
             app.CurrentVersion = app.AvailableVersion;
         }
 
+        if (updateCheck.HasUpdate)
+        {
+            app.AvailableVersion = updateCheck.AvailableVersion;
+            app.Status = ApplicationStatus.UpdateAvailable;
+            app.StatusMessage = Resources.Resources.Status_UpdateAvailable;
+            return;
+        }
+
         app.AvailableVersion = string.Empty;
         app.Status = ApplicationStatus.Installed;
         app.StatusMessage = Resources.Resources.Status_Installed;
+    }
+
+    private async Task InvalidateUpdateCacheBestEffortAsync()
+    {
+        try
+        {
+            await _powerShellBridge.InvalidateUpdateCacheAsync().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning($"[AppUpdateCoordinator] Update cache invalidation failed: {ex.Message}");
+        }
     }
 
     private sealed record AppUpdateScanItemResult(bool HasUpdate);

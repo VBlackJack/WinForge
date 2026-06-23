@@ -57,17 +57,44 @@ public partial class AppsViewModel
         finally
         {
             _deploymentStateService.EndDeployment();
+            RefreshSelectionActionState();
         }
     }
 
     /// <summary>
     /// Whether the InstallSelected command can execute.
     /// </summary>
-    private bool CanInstallSelected => SelectedCount > 0 && !IsInstalling && !IsUninstalling;
+    private bool CanInstallSelected =>
+        _allApplications.Any(app => app.IsSelected && IsPrimarySelectionActionable(app)) &&
+        !IsInstalling &&
+        !IsUninstalling;
 
     /// <summary>
-    /// Installs all selected applications with ForceUpdate enabled.
-    /// Uses parallel execution with semaphore-controlled concurrency.
+    /// Display text for the primary selected-app action.
+    /// </summary>
+    public string SelectedPrimaryActionText
+    {
+        get
+        {
+            bool hasInstallableSelection = _allApplications.Any(app => app.IsSelected && IsInstallCandidate(app));
+            bool hasUpdateSelection = _allApplications.Any(app => app.IsSelected && IsUpdateCandidate(app));
+
+            if (hasInstallableSelection && hasUpdateSelection)
+            {
+                return Resources.Resources.Apps_InstallUpdateSelected;
+            }
+
+            if (hasUpdateSelection)
+            {
+                return Resources.Resources.Btn_UpdateSelected;
+            }
+
+            return Resources.Resources.Apps_InstallSelected;
+        }
+    }
+
+    /// <summary>
+    /// Applies the correct operation to all selected applications.
     /// </summary>
     [RelayCommand(CanExecute = nameof(CanInstallSelected))]
     private async Task InstallSelectedAsync()
@@ -75,8 +102,15 @@ public partial class AppsViewModel
         List<ApplicationModel> selectedApps = _allApplications.Where(a => a.IsSelected).ToList();
         if (selectedApps.Count == 0) return;
 
+        List<ApplicationModel> installApps = selectedApps.Where(IsInstallCandidate).ToList();
+        List<ApplicationModel> updateApps = selectedApps.Where(IsUpdateCandidate).ToList();
+        int alreadyCurrentCount = selectedApps.Count(IsAlreadyCurrentCandidate);
+
+        if (installApps.Count == 0 && updateApps.Count == 0) return;
+
         _lastOperationType = "install";
         IsInstalling = true;
+        IsUpdating = updateApps.Count > 0;
         IsPaused = false;
         _pauseGate.Resume();
         _batchCancellationTokenSource = new CancellationTokenSource();
@@ -95,20 +129,42 @@ public partial class AppsViewModel
 
         try
         {
-            AppInstallationResult result = await _installationCoordinator.InstallAsync(
-                selectedApps,
-                new AppInstallationOptions(ForceUpdate: true),
-                new Progress<AppOperationProgress>(ApplyBatchProgress),
-                _batchCancellationTokenSource.Token);
+            int completedOffset = 0;
+            if (alreadyCurrentCount > 0)
+            {
+                completedOffset = alreadyCurrentCount;
+                ApplyBatchProgress(new AppOperationProgress(completedOffset, selectedApps.Count, Current: null));
+            }
 
-            CompleteBatchProgress(new AppOperationProgress(result.Total, result.Total, Current: null));
-            InstalledCount += result.InstalledCount;
-            SuccessCount = result.InstalledCount + result.AlreadyInstalledCount;
-            FailedCount = result.FailedCount;
-            SkippedCount = result.SkippedCount;
+            AppInstallationResult installResult = new(0, 0, 0, 0, 0, WasCancelled: false);
+            if (installApps.Count > 0)
+            {
+                installResult = await _installationCoordinator.InstallAsync(
+                    installApps,
+                    new AppInstallationOptions(ForceUpdate: false),
+                    CreateOffsetProgress(completedOffset, selectedApps.Count),
+                    _batchCancellationTokenSource.Token);
+                completedOffset += installApps.Count;
+            }
+
+            AppUpdateResult updateResult = new(0, 0, 0, 0, WasCancelled: false);
+            if (updateApps.Count > 0)
+            {
+                updateResult = await _updateCoordinator.UpdateAsync(
+                    updateApps,
+                    CreateOffsetProgress(completedOffset, selectedApps.Count),
+                    _batchCancellationTokenSource.Token);
+            }
+
+            CompleteBatchProgress(new AppOperationProgress(selectedApps.Count, selectedApps.Count, Current: null));
+            InstalledCount += installResult.InstalledCount;
+            UpdatesAvailableCount = Math.Max(0, UpdatesAvailableCount - updateResult.UpdatedCount);
+            SuccessCount = installResult.InstalledCount + installResult.AlreadyInstalledCount + updateResult.UpdatedCount;
+            FailedCount = installResult.FailedCount + updateResult.FailedCount;
+            SkippedCount = alreadyCurrentCount + installResult.SkippedCount + updateResult.SkippedCount;
 
             // Determine final result
-            if (result.WasCancelled)
+            if (installResult.WasCancelled || updateResult.WasCancelled)
             {
                 LastDeploymentResult = DeploymentResult.Cancelled;
             }
@@ -130,6 +186,7 @@ public partial class AppsViewModel
         }
         finally
         {
+            IsUpdating = false;
             IsInstalling = false;
             IsPaused = false;
             _batchCancellationTokenSource?.Dispose();
@@ -137,7 +194,43 @@ public partial class AppsViewModel
 
             // Notify deployment state service
             _deploymentStateService.EndDeployment();
+            RefreshSelectionActionState();
+            ApplyFilter();
         }
+    }
+
+    private IProgress<AppOperationProgress> CreateOffsetProgress(int completedOffset, int total)
+    {
+        return new Progress<AppOperationProgress>(progress =>
+        {
+            ApplyBatchProgress(new AppOperationProgress(
+                completedOffset + progress.Completed,
+                total,
+                progress.Current));
+        });
+    }
+
+    private static bool IsPrimarySelectionActionable(ApplicationModel app)
+    {
+        return IsInstallCandidate(app) || IsUpdateCandidate(app);
+    }
+
+    private static bool IsInstallCandidate(ApplicationModel app)
+    {
+        return app.Status is ApplicationStatus.Pending or
+            ApplicationStatus.Failed or
+            ApplicationStatus.Skipped or
+            ApplicationStatus.Uninstalled;
+    }
+
+    private static bool IsUpdateCandidate(ApplicationModel app)
+    {
+        return app.Status == ApplicationStatus.UpdateAvailable;
+    }
+
+    private static bool IsAlreadyCurrentCandidate(ApplicationModel app)
+    {
+        return app.Status is ApplicationStatus.Installed or ApplicationStatus.AlreadyInstalled;
     }
 
     private void ApplyBatchProgress(AppOperationProgress progress)

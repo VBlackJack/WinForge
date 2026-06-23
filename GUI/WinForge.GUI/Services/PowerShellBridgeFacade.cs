@@ -120,6 +120,13 @@ public class PowerShellBridgeFacade : IPowerShellBridge, IDisposable
         => _appService.CheckApplicationUpdateAsync(app);
 
     /// <inheritdoc/>
+    public Task<UpdateCheckResult> CheckApplicationUpdateAsync(ApplicationModel app, bool forceRefresh)
+        => _appService.CheckApplicationUpdateAsync(app, forceRefresh);
+
+    /// <inheritdoc/>
+    public Task InvalidateUpdateCacheAsync() => _appService.InvalidateUpdateCacheAsync();
+
+    /// <inheritdoc/>
     public Task<InstallResult> UpdateApplicationAsync(ApplicationModel app, Action<string>? progressCallback = null)
         => _appService.UpdateApplicationAsync(app, progressCallback);
 

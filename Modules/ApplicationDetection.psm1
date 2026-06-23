@@ -43,7 +43,8 @@ $script:CoreModulePath = Join-Path $script:RepositoryRoot 'Core\Core.psm1'
 $script:LocalizationModulePath = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
 $script:EnvironmentDetectionPath = Join-Path $script:ModuleRoot 'EnvironmentDetection.psm1'
 
-if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue) -or
+    -not (Get-Command -Name Invoke-NativeCommandUtf8 -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:CoreModulePath) {
         Import-Module -Name $script:CoreModulePath -Force
     }
@@ -357,7 +358,8 @@ function Get-InstalledAppVersion {
     # Try Winget first
     if ($WingetId -and (Get-Command -Name 'winget' -ErrorAction SilentlyContinue)) {
         try {
-            $output = & winget list --id $WingetId --accept-source-agreements 2>&1 | Out-String
+            $result = Invoke-NativeCommandUtf8 -FilePath 'winget' -ArgumentList @('list', '--id', $WingetId, '--accept-source-agreements')
+            $output = $result.Output
             # Parse version from winget list output (format: Name  Id  Version  Available  Source)
             # Version is typically after the ID column
             $lines = $output -split "`n" | Where-Object { $_ -match [regex]::Escape($WingetId) }
@@ -375,7 +377,8 @@ function Get-InstalledAppVersion {
     # Try Chocolatey
     if ($ChocolateyId -and (Get-Command -Name 'choco' -ErrorAction SilentlyContinue)) {
         try {
-            $output = & choco list --local-only --exact $ChocolateyId 2>&1 | Out-String
+            $result = Invoke-NativeCommandUtf8 -FilePath 'choco' -ArgumentList @('list', '--local-only', '--exact', $ChocolateyId)
+            $output = $result.Output
             if ($output -match "$ChocolateyId\s+([\d\.]+)") {
                 return $Matches[1]
             }
@@ -501,7 +504,8 @@ function Test-ApplicationByName {
 
     try {
         if (Test-CommandExists -Name 'choco') {
-            $chocoList = & choco list --local-only --exact $Name 2>&1 | Out-String
+            $result = Invoke-NativeCommandUtf8 -FilePath 'choco' -ArgumentList @('list', '--local-only', '--exact', $Name)
+            $chocoList = $result.Output
             if ($chocoList -match $Name -and $chocoList -notmatch '0 packages installed') {
                 return $true
             }
@@ -622,18 +626,15 @@ function Test-ApplicationInstalled {
                         if ($expectedPattern) {
                             # Run command and capture output for pattern matching
                             # Security: Use array splatting to prevent argument injection
-                            $output = if ($argArray.Count -gt 0) {
-                                & $executable @argArray 2>&1 | Out-String
-                            } else {
-                                & $executable 2>&1 | Out-String
-                            }
+                            $commandResult = Invoke-NativeCommandUtf8 -FilePath $executable -ArgumentList $argArray
+                            $output = $commandResult.Output
                             $detected = $output -match [regex]::Escape($expectedPattern)
                         } else {
                             # Execute securely with Start-Process for simple exit code check
                             $process = if ($argArray.Count -gt 0) {
-                                Start-Process -FilePath $executable -ArgumentList $argArray -Wait -NoNewWindow -PassThru -ErrorAction Stop
+                                Start-Process -FilePath $executable -ArgumentList $argArray -Wait -WindowStyle Hidden -PassThru -ErrorAction Stop
                             } else {
-                                Start-Process -FilePath $executable -Wait -NoNewWindow -PassThru -ErrorAction Stop
+                                Start-Process -FilePath $executable -Wait -WindowStyle Hidden -PassThru -ErrorAction Stop
                             }
                             $detected = $process.ExitCode -eq 0
                         }
@@ -701,7 +702,8 @@ function Test-ApplicationInstalled {
         if (Get-Command -Name 'winget' -ErrorAction SilentlyContinue) {
             try {
                 $wingetId = $Application.Sources.Winget
-                $wingetResult = & winget list --id $wingetId --accept-source-agreements 2>&1 | Out-String
+                $wingetCommand = Invoke-NativeCommandUtf8 -FilePath 'winget' -ArgumentList @('list', '--id', $wingetId, '--accept-source-agreements')
+                $wingetResult = $wingetCommand.Output
                 if ($wingetResult -match [regex]::Escape($wingetId) -and $wingetResult -notmatch "No installed package") {
                     $detected = $true
                 }
@@ -839,7 +841,8 @@ function Get-InstalledApplicationsCache {
 
         foreach ($command in $definition.Commands) {
             try {
-                $commandOutputs[$command.Key] = & $executable @($command.Args) 2>&1 | Out-String
+                $commandResult = Invoke-NativeCommandUtf8 -FilePath $executable -ArgumentList @($command.Args)
+                $commandOutputs[$command.Key] = $commandResult.Output
             } catch {
                 Write-Verbose "Failed to cache $executable info: $($_.Exception.Message)"
             }
@@ -1012,11 +1015,8 @@ function Test-ApplicationInstalledFast {
                             # Fallback: execute command if not cached. Split arguments into
                             # an array and splat so the shell never re-interprets them (I4).
                             $argArray = @(ConvertTo-DetectionArgumentArray -Arguments $arguments)
-                            $output = if ($argArray.Count -gt 0) {
-                                & $executable @argArray 2>&1 | Out-String
-                            } else {
-                                & $executable 2>&1 | Out-String
-                            }
+                            $commandResult = Invoke-NativeCommandUtf8 -FilePath $executable -ArgumentList $argArray
+                            $output = $commandResult.Output
                             if ($expectedPattern) {
                                 $detected = $output -match [regex]::Escape($expectedPattern)
                             } else {

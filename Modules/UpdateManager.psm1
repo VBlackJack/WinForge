@@ -40,7 +40,8 @@ $script:CoreModulePath = Join-Path $script:RepositoryRoot 'Core\Core.psm1'
 $script:VersionPath = Join-Path $script:RepositoryRoot 'Config\version.json'
 
 # Import Core module for logging
-if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue) -or
+    -not (Get-Command -Name Invoke-NativeCommandUtf8 -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:CoreModulePath) {
         Import-Module -Name $script:CoreModulePath -Force
     }
@@ -321,8 +322,9 @@ function Test-IsNewerVersion {
     .SYNOPSIS
         Compares two version strings and returns true if $Available is newer than $Current.
     .DESCRIPTION
-        Uses [System.Version]::Parse() for proper semantic version comparison.
-        Handles common edge cases like "v1.0" vs "1.0", missing patch versions, etc.
+        Uses Compare-SemanticVersions for normalized version comparison.
+        Handles common edge cases like "v1.0" vs "1.0", missing patch versions,
+        prerelease suffixes, and equivalent trailing-zero forms like "2.7.3" vs "2.7.3.0".
     .PARAMETER Current
         The currently installed version string.
     .PARAMETER Available
@@ -349,57 +351,7 @@ function Test-IsNewerVersion {
     if ([string]::IsNullOrWhiteSpace($Current)) { return $true }
     if ([string]::IsNullOrWhiteSpace($Available)) { return $false }
 
-    # Clean version strings - remove common prefixes (v, V, version)
-    $cleanedCurrent = $Current -replace '^[vV]', '' -replace '^version\s*', ''
-    $cleanedAvailable = $Available -replace '^[vV]', '' -replace '^version\s*', ''
-
-    # Detect prerelease suffixes (e.g., -alpha, -beta, -rc)
-    $currentHasPrerelease = $cleanedCurrent -match '-[a-zA-Z]'
-    $availableHasPrerelease = $cleanedAvailable -match '-[a-zA-Z]'
-
-    # Extract base version (numeric parts only)
-    $cleanCurrent = $cleanedCurrent -replace '[^\d\.].*$', ''
-    $cleanAvailable = $cleanedAvailable -replace '[^\d\.].*$', ''
-
-    # Ensure we have at least major.minor.patch format
-    $currentParts = $cleanCurrent -split '\.'
-    $availableParts = $cleanAvailable -split '\.'
-
-    # Pad to 4 parts (major.minor.patch.build) for System.Version compatibility
-    while ($currentParts.Count -lt 2) { $currentParts += '0' }
-    while ($availableParts.Count -lt 2) { $availableParts += '0' }
-
-    # Limit to 4 parts max (System.Version constraint)
-    if ($currentParts.Count -gt 4) { $currentParts = $currentParts[0..3] }
-    if ($availableParts.Count -gt 4) { $availableParts = $availableParts[0..3] }
-
-    $normalizedCurrent = $currentParts -join '.'
-    $normalizedAvailable = $availableParts -join '.'
-
-    try {
-        $versionCurrent = [System.Version]::Parse($normalizedCurrent)
-        $versionAvailable = [System.Version]::Parse($normalizedAvailable)
-
-        # If base versions are equal, check prerelease status
-        # Stable (no prerelease) is newer than prerelease of same version
-        if ($versionCurrent -eq $versionAvailable) {
-            if ($currentHasPrerelease -and -not $availableHasPrerelease) {
-                return $true  # Available stable is newer than Current prerelease
-            }
-            if (-not $currentHasPrerelease -and $availableHasPrerelease) {
-                return $false  # Available prerelease is not newer than Current stable
-            }
-            return $false  # Same version, same prerelease status
-        }
-
-        return $versionAvailable -gt $versionCurrent
-    } catch {
-        # Fallback to string comparison if parsing fails
-        if (Get-Command -Name 'Get-LogString' -ErrorAction SilentlyContinue) {
-            Write-Verbose (Get-LogString -Key 'optimization.version_compare_fallback' -Parameters @{ Current = $Current; Available = $Available })
-        }
-        return (Compare-SemanticVersions -Version1 $Available -Version2 $Current) -gt 0
-    }
+    return (Compare-SemanticVersions -Version1 $Available -Version2 $Current) -gt 0
 }
 
 function Get-WingetUpdatesBatch {
@@ -453,7 +405,8 @@ function Get-WingetUpdatesBatch {
 
     try {
         # Run winget upgrade once to get all available updates
-        $output = & winget upgrade --include-unknown --accept-source-agreements 2>&1 | Out-String
+        $result = Invoke-NativeCommandUtf8 -FilePath 'winget' -ArgumentList @('upgrade', '--include-unknown', '--accept-source-agreements')
+        $output = $result.Output
 
         # Parse the output - format is typically:
         # Name                            Id                           Version      Available      Source
@@ -554,11 +507,14 @@ function Get-ApplicationUpdateStatus {
         [string]$WingetId,
 
         [Parameter()]
-        [string]$CurrentVersion
+        [string]$CurrentVersion,
+
+        [Parameter()]
+        [switch]$Force
     )
 
     # Ensure batch cache is populated
-    $cache = Get-WingetUpdatesBatch
+    $cache = Get-WingetUpdatesBatch -Force:$Force
 
     # Check if app is in the update cache
     if ($cache.ContainsKey($WingetId)) {
@@ -605,6 +561,21 @@ function Clear-BatchUpdateCache {
     if (Get-Command -Name 'Get-LogString' -ErrorAction SilentlyContinue) {
         Write-Verbose (Get-LogString -Key 'optimization.batch_cache_cleared')
     }
+}
+
+function Clear-WingetUpdatesCache {
+    <#
+    .SYNOPSIS
+        Clears cached Winget update scan results.
+    .DESCRIPTION
+        Public semantic wrapper used by GUI refresh and post-operation invalidation paths.
+        Kept separate from Clear-BatchUpdateCache so callers do not need to know the
+        internal cache implementation name.
+    #>
+    [CmdletBinding()]
+    param()
+
+    Clear-BatchUpdateCache
 }
 
 # === UPDATE CHECK FUNCTIONS ===
@@ -1183,6 +1154,7 @@ Export-ModuleMember -Function @(
     'Get-WingetUpdatesBatch',
     'Get-ApplicationUpdateStatus',
     'Clear-BatchUpdateCache',
+    'Clear-WingetUpdatesCache',
     # Update check functions
     'Get-LatestReleaseInfo',
     'Test-UpdateAvailable',

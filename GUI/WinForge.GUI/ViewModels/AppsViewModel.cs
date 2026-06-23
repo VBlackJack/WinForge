@@ -505,6 +505,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
 
             // Notify that Scan command can now execute (applications loaded)
             ScanCommand.NotifyCanExecuteChanged();
+            ScanUpdatesCommand.NotifyCanExecuteChanged();
             _lastOperationType = string.Empty;
         }
         catch (PowerShellBridgeException ex)
@@ -535,6 +536,15 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     {
         SelectedCount = _allApplications.Count(a => a.IsSelected);
         FavoritesCount = _allApplications.Count(a => a.IsFavorite);
+        RefreshSelectionActionState();
+    }
+
+    private void RefreshSelectionActionState()
+    {
+        OnPropertyChanged(nameof(SelectedPrimaryActionText));
+        ScanUpdatesCommand.NotifyCanExecuteChanged();
+        InstallSelectedCommand.NotifyCanExecuteChanged();
+        UpdateSelectedCommand.NotifyCanExecuteChanged();
     }
 
     /// <summary>

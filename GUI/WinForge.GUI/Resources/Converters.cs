@@ -163,17 +163,14 @@ public class BoolToRequiredIconConverter : IValueConverter
 /// </summary>
 public class BoolToRequiredColorConverter : IValueConverter
 {
-    private static readonly SolidColorBrush FallbackRequiredBrush = new(Color.FromRgb(255, 193, 7));
-    private static readonly SolidColorBrush FallbackOptionalBrush = new(Color.FromRgb(158, 158, 158));
-
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         Application app = Application.Current;
         if (value is true)
         {
-            return app?.TryFindResource("RequiredBrush") ?? FallbackRequiredBrush;
+            return app?.TryFindResource("RequiredBrush") ?? ThemeFallbackBrushes.Warning;
         }
-        return app?.TryFindResource("OptionalBrush") ?? FallbackOptionalBrush;
+        return app?.TryFindResource("OptionalBrush") ?? ThemeFallbackBrushes.TextDisabled;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -225,28 +222,28 @@ public class StatusToColorConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        // Try to get brushes from App.xaml resources first, fallback to hardcoded
+        // Try to get brushes from App.xaml resources first, fallback to the ThemeForge-aligned palette.
         Application app = Application.Current;
 
         return value switch
         {
             // ApplicationStatus
-            ApplicationStatus.Pending => app?.TryFindResource("StatusPendingBrush") ?? new SolidColorBrush(Color.FromRgb(158, 158, 158)),
-            ApplicationStatus.Installing => app?.TryFindResource("StatusInstallingBrush") ?? new SolidColorBrush(Color.FromRgb(33, 150, 243)),
-            ApplicationStatus.Installed => app?.TryFindResource("StatusInstalledBrush") ?? new SolidColorBrush(Color.FromRgb(76, 175, 80)),
-            ApplicationStatus.Failed => app?.TryFindResource("StatusFailedBrush") ?? new SolidColorBrush(Color.FromRgb(244, 67, 54)),
-            ApplicationStatus.Skipped => app?.TryFindResource("StatusSkippedBrush") ?? new SolidColorBrush(Color.FromRgb(255, 152, 0)),
-            ApplicationStatus.AlreadyInstalled => app?.TryFindResource("StatusAlreadyInstalledBrush") ?? new SolidColorBrush(Color.FromRgb(139, 195, 74)),
-            ApplicationStatus.Uninstalling => app?.TryFindResource("StatusUninstallingBrush") ?? new SolidColorBrush(Color.FromRgb(156, 39, 176)),
-            ApplicationStatus.Uninstalled => app?.TryFindResource("StatusUninstalledBrush") ?? new SolidColorBrush(Color.FromRgb(121, 134, 203)),
-            ApplicationStatus.UpdateAvailable => app?.TryFindResource("SecondaryHueMidBrush") ?? new SolidColorBrush(Color.FromRgb(255, 152, 0)),
-            ApplicationStatus.Updating => app?.TryFindResource("StatusInstallingBrush") ?? new SolidColorBrush(Color.FromRgb(33, 150, 243)),
+            ApplicationStatus.Pending => app?.TryFindResource("StatusPendingBrush") ?? ThemeFallbackBrushes.TextDisabled,
+            ApplicationStatus.Installing => app?.TryFindResource("StatusInstallingBrush") ?? ThemeFallbackBrushes.Info,
+            ApplicationStatus.Installed => app?.TryFindResource("StatusInstalledBrush") ?? ThemeFallbackBrushes.Success,
+            ApplicationStatus.Failed => app?.TryFindResource("StatusFailedBrush") ?? ThemeFallbackBrushes.Error,
+            ApplicationStatus.Skipped => app?.TryFindResource("StatusSkippedBrush") ?? ThemeFallbackBrushes.Warning,
+            ApplicationStatus.AlreadyInstalled => app?.TryFindResource("StatusAlreadyInstalledBrush") ?? ThemeFallbackBrushes.AlreadyInstalled,
+            ApplicationStatus.Uninstalling => app?.TryFindResource("StatusUninstallingBrush") ?? ThemeFallbackBrushes.Accent,
+            ApplicationStatus.Uninstalled => app?.TryFindResource("StatusUninstalledBrush") ?? ThemeFallbackBrushes.TextDisabled,
+            ApplicationStatus.UpdateAvailable => app?.TryFindResource("SecondaryHueMidBrush") ?? ThemeFallbackBrushes.Info,
+            ApplicationStatus.Updating => app?.TryFindResource("StatusInstallingBrush") ?? ThemeFallbackBrushes.Info,
             // DeploymentResult
-            DeploymentResult.Success => app?.TryFindResource("StatusInstalledBrush") ?? new SolidColorBrush(Color.FromRgb(76, 175, 80)),
-            DeploymentResult.PartialSuccess => app?.TryFindResource("StatusSkippedBrush") ?? new SolidColorBrush(Color.FromRgb(255, 152, 0)),
-            DeploymentResult.Failed => app?.TryFindResource("StatusFailedBrush") ?? new SolidColorBrush(Color.FromRgb(244, 67, 54)),
-            DeploymentResult.Cancelled => app?.TryFindResource("StatusPendingBrush") ?? new SolidColorBrush(Color.FromRgb(158, 158, 158)),
-            _ => app?.TryFindResource("StatusPendingBrush") ?? new SolidColorBrush(Color.FromRgb(158, 158, 158))
+            DeploymentResult.Success => app?.TryFindResource("StatusInstalledBrush") ?? ThemeFallbackBrushes.Success,
+            DeploymentResult.PartialSuccess => app?.TryFindResource("StatusSkippedBrush") ?? ThemeFallbackBrushes.Warning,
+            DeploymentResult.Failed => app?.TryFindResource("StatusFailedBrush") ?? ThemeFallbackBrushes.Error,
+            DeploymentResult.Cancelled => app?.TryFindResource("StatusPendingBrush") ?? ThemeFallbackBrushes.TextDisabled,
+            _ => app?.TryFindResource("StatusPendingBrush") ?? ThemeFallbackBrushes.TextDisabled
         };
     }
 
@@ -334,17 +331,14 @@ public class BoolToInstalledIconConverter : IValueConverter
 /// </summary>
 public class BoolToInstalledColorConverter : IValueConverter
 {
-    private static readonly SolidColorBrush FallbackInstalledBrush = new(Color.FromRgb(76, 175, 80));
-    private static readonly SolidColorBrush FallbackNotInstalledBrush = new(Color.FromRgb(255, 152, 0));
-
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         Application app = Application.Current;
         if (value is true)
         {
-            return app?.TryFindResource("StatusInstalledBrush") ?? FallbackInstalledBrush;
+            return app?.TryFindResource("StatusInstalledBrush") ?? ThemeFallbackBrushes.Success;
         }
-        return app?.TryFindResource("StatusSkippedBrush") ?? FallbackNotInstalledBrush;
+        return app?.TryFindResource("StatusSkippedBrush") ?? ThemeFallbackBrushes.Warning;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -418,17 +412,14 @@ public class BoolToFavoriteIconConverter : IValueConverter
 /// </summary>
 public class BoolToFavoriteColorConverter : IValueConverter
 {
-    private static readonly SolidColorBrush FallbackFavoriteBrush = new(Color.FromRgb(255, 215, 0));
-    private static readonly SolidColorBrush FallbackNotFavoriteBrush = new(Color.FromRgb(158, 158, 158));
-
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         Application app = Application.Current;
         if (value is true)
         {
-            return app?.TryFindResource("FavoriteActiveBrush") ?? FallbackFavoriteBrush;
+            return app?.TryFindResource("FavoriteActiveBrush") ?? ThemeFallbackBrushes.Warning;
         }
-        return app?.TryFindResource("FavoriteInactiveBrush") ?? FallbackNotFavoriteBrush;
+        return app?.TryFindResource("FavoriteInactiveBrush") ?? ThemeFallbackBrushes.TextDisabled;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -443,23 +434,21 @@ public class BoolToFavoriteColorConverter : IValueConverter
 /// </summary>
 public class StatusToRowBackgroundConverter : IValueConverter
 {
-    private static readonly SolidColorBrush TransparentBrush = new(Colors.Transparent);
-
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         Application app = Application.Current;
 
         return value switch
         {
-            ApplicationStatus.Installed => app?.TryFindResource("RowInstalledBackground") ?? new SolidColorBrush(Color.FromArgb(30, 76, 175, 80)),
-            ApplicationStatus.AlreadyInstalled => app?.TryFindResource("RowInstalledBackground") ?? new SolidColorBrush(Color.FromArgb(30, 76, 175, 80)),
-            ApplicationStatus.UpdateAvailable => app?.TryFindResource("RowUpdateAvailableBackground") ?? new SolidColorBrush(Color.FromArgb(40, 255, 152, 0)),
-            ApplicationStatus.Updating => app?.TryFindResource("RowInstallingBackground") ?? new SolidColorBrush(Color.FromArgb(30, 33, 150, 243)),
-            ApplicationStatus.Failed => app?.TryFindResource("RowFailedBackground") ?? new SolidColorBrush(Color.FromArgb(30, 244, 67, 54)),
-            ApplicationStatus.Installing => app?.TryFindResource("RowInstallingBackground") ?? new SolidColorBrush(Color.FromArgb(30, 33, 150, 243)),
-            ApplicationStatus.Uninstalling => app?.TryFindResource("RowInstallingBackground") ?? new SolidColorBrush(Color.FromArgb(30, 33, 150, 243)),
-            ApplicationStatus.Uninstalled => app?.TryFindResource("RowUninstalledBackground") ?? new SolidColorBrush(Color.FromArgb(30, 121, 134, 203)),
-            _ => TransparentBrush
+            ApplicationStatus.Installed => app?.TryFindResource("RowInstalledBackground") ?? ThemeFallbackBrushes.SuccessSubtleBackground,
+            ApplicationStatus.AlreadyInstalled => app?.TryFindResource("RowInstalledBackground") ?? ThemeFallbackBrushes.SuccessSubtleBackground,
+            ApplicationStatus.UpdateAvailable => app?.TryFindResource("RowUpdateAvailableBackground") ?? ThemeFallbackBrushes.WarningSubtleBackground,
+            ApplicationStatus.Updating => app?.TryFindResource("RowInstallingBackground") ?? ThemeFallbackBrushes.InfoSubtleBackground,
+            ApplicationStatus.Failed => app?.TryFindResource("RowFailedBackground") ?? ThemeFallbackBrushes.ErrorSubtleBackground,
+            ApplicationStatus.Installing => app?.TryFindResource("RowInstallingBackground") ?? ThemeFallbackBrushes.InfoSubtleBackground,
+            ApplicationStatus.Uninstalling => app?.TryFindResource("RowInstallingBackground") ?? ThemeFallbackBrushes.InfoSubtleBackground,
+            ApplicationStatus.Uninstalled => app?.TryFindResource("RowUninstalledBackground") ?? ThemeFallbackBrushes.NeutralSubtleBackground,
+            _ => ThemeFallbackBrushes.Transparent
         };
     }
 
@@ -564,9 +553,9 @@ public class BooleanToPhaseColorConverter : IValueConverter
         Application app = Application.Current;
         if (value is true)
         {
-            return app?.TryFindResource("PrimaryHueMidBrush") ?? new SolidColorBrush(Color.FromRgb(33, 150, 243));
+            return app?.TryFindResource("PrimaryHueMidBrush") ?? ThemeFallbackBrushes.Accent;
         }
-        return app?.TryFindResource("StatusSuccessBrush") ?? new SolidColorBrush(Color.FromRgb(76, 175, 80));
+        return app?.TryFindResource("StatusSuccessBrush") ?? ThemeFallbackBrushes.Success;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -625,7 +614,7 @@ public class ThemeAdaptiveBrushConverter : IValueConverter
         Application? app = Application.Current;
         if (app is null)
         {
-            return new SolidColorBrush(Color.FromRgb(96, 205, 255));
+            return ThemeFallbackBrushes.Accent;
         }
 
         try
@@ -648,9 +637,9 @@ public class ThemeAdaptiveBrushConverter : IValueConverter
         bool isDark = ApplicationThemeManager.GetAppTheme() == ApplicationTheme.Dark;
         if (isDark)
         {
-            return app.TryFindResource("SecondaryHueMidBrush") ?? new SolidColorBrush(Color.FromRgb(205, 220, 57));
+            return app.TryFindResource("SecondaryHueMidBrush") ?? ThemeFallbackBrushes.Info;
         }
-        return app.TryFindResource("PrimaryHueMidBrush") ?? new SolidColorBrush(Color.FromRgb(103, 58, 183));
+        return app.TryFindResource("PrimaryHueMidBrush") ?? ThemeFallbackBrushes.Accent;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

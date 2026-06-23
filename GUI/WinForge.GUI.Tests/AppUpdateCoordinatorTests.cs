@@ -62,6 +62,34 @@ public class AppUpdateCoordinatorTests
     }
 
     [Fact]
+    public async Task ScanForUpdatesAsync_WithForceRefresh_ShouldInvalidateUpdateCacheBeforeScan()
+    {
+        List<ApplicationModel> apps = CreateApps("App1", "App2");
+        Mock<IPowerShellBridge> bridge = CreateBridge();
+        bridge
+            .Setup(x => x.CheckApplicationUpdateAsync(It.IsAny<ApplicationModel>()))
+            .ReturnsAsync(UpdateCheckResult.UpToDate("1.0"));
+        AppUpdateCoordinator coordinator = CreateCoordinator(bridge.Object);
+
+        await coordinator.ScanForUpdatesAsync(apps, forceRefresh: true);
+
+        bridge.Verify(x => x.InvalidateUpdateCacheAsync(), Times.Once);
+        bridge.Verify(x => x.CheckApplicationUpdateAsync(It.IsAny<ApplicationModel>()), Times.Exactly(2));
+    }
+
+    [Fact]
+    public async Task ScanForUpdatesAsync_WithoutForceRefresh_ShouldKeepPassiveCache()
+    {
+        List<ApplicationModel> apps = CreateApps("App1");
+        Mock<IPowerShellBridge> bridge = CreateBridge();
+        AppUpdateCoordinator coordinator = CreateCoordinator(bridge.Object);
+
+        await coordinator.ScanForUpdatesAsync(apps);
+
+        bridge.Verify(x => x.InvalidateUpdateCacheAsync(), Times.Never);
+    }
+
+    [Fact]
     public async Task ScanForUpdatesAsync_ShouldRespectMaxParallelScans()
     {
         List<ApplicationModel> apps = CreateApps("App1", "App2", "App3", "App4", "App5");
@@ -120,6 +148,28 @@ public class AppUpdateCoordinatorTests
     }
 
     [Fact]
+    public async Task UpdateAsync_WithChocolateyUpdateCandidate_ShouldDelegateToBridgeUpdate()
+    {
+        ApplicationModel app = new ApplicationModel
+        {
+            AppId = "Chocolatey",
+            Name = "Chocolatey",
+            Status = ApplicationStatus.UpdateAvailable
+        };
+        Mock<IPowerShellBridge> bridge = CreateBridge();
+        AppUpdateCoordinator coordinator = CreateCoordinator(bridge.Object);
+
+        AppUpdateResult result = await coordinator.UpdateAsync([app]);
+
+        Assert.Equal(1, result.UpdatedCount);
+        bridge.Verify(
+            x => x.UpdateApplicationAsync(
+                It.Is<ApplicationModel>(candidate => candidate.AppId == "Chocolatey"),
+                It.IsAny<Action<string>?>()),
+            Times.Once);
+    }
+
+    [Fact]
     public async Task UpdateAsync_WithMixedResults_ShouldAggregateSuccessAndFailure()
     {
         List<ApplicationModel> apps = CreateApps("Updated", "Failed");
@@ -143,6 +193,65 @@ public class AppUpdateCoordinatorTests
         Assert.Equal(ApplicationStatus.Installed, apps[0].Status);
         Assert.Equal(ApplicationStatus.Failed, apps[1].Status);
         Assert.Equal("Update failed", apps[1].ErrorMessage);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_OnSuccess_ShouldForceRefreshUpdatedApplicationState()
+    {
+        ApplicationModel app = new ApplicationModel
+        {
+            AppId = "App1",
+            Name = "App1",
+            Status = ApplicationStatus.UpdateAvailable,
+            CurrentVersion = "1.0",
+            AvailableVersion = "2.0"
+        };
+        Mock<IPowerShellBridge> bridge = CreateBridge();
+        bridge
+            .Setup(x => x.UpdateApplicationAsync(
+                app,
+                It.IsAny<Action<string>?>()))
+            .ReturnsAsync(InstallResult.Successful("Updated", "updated-log"));
+        bridge
+            .Setup(x => x.CheckApplicationUpdateAsync(app, true))
+            .ReturnsAsync(UpdateCheckResult.UpToDate("2.0"));
+        AppUpdateCoordinator coordinator = CreateCoordinator(bridge.Object);
+
+        AppUpdateResult result = await coordinator.UpdateAsync([app]);
+
+        Assert.Equal(1, result.UpdatedCount);
+        Assert.Equal(ApplicationStatus.Installed, app.Status);
+        Assert.Equal("2.0", app.CurrentVersion);
+        Assert.Equal(string.Empty, app.AvailableVersion);
+        bridge.Verify(x => x.CheckApplicationUpdateAsync(app, true), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_WhenForcedRefreshStillFindsUpdate_ShouldKeepUpdateAvailableStatus()
+    {
+        ApplicationModel app = new ApplicationModel
+        {
+            AppId = "App1",
+            Name = "App1",
+            Status = ApplicationStatus.UpdateAvailable,
+            CurrentVersion = "1.0",
+            AvailableVersion = "2.0"
+        };
+        Mock<IPowerShellBridge> bridge = CreateBridge();
+        bridge
+            .Setup(x => x.UpdateApplicationAsync(
+                app,
+                It.IsAny<Action<string>?>()))
+            .ReturnsAsync(InstallResult.Successful("Updated", "updated-log"));
+        bridge
+            .Setup(x => x.CheckApplicationUpdateAsync(app, true))
+            .ReturnsAsync(UpdateCheckResult.UpdateAvailable("1.0", "2.0"));
+        AppUpdateCoordinator coordinator = CreateCoordinator(bridge.Object);
+
+        await coordinator.UpdateAsync([app]);
+
+        Assert.Equal(ApplicationStatus.UpdateAvailable, app.Status);
+        Assert.Equal("2.0", app.AvailableVersion);
     }
 
     [Fact]
@@ -188,10 +297,16 @@ public class AppUpdateCoordinatorTests
             .Setup(x => x.CheckApplicationUpdateAsync(It.IsAny<ApplicationModel>()))
             .ReturnsAsync(UpdateCheckResult.UpToDate("1.0"));
         bridge
+            .Setup(x => x.CheckApplicationUpdateAsync(It.IsAny<ApplicationModel>(), It.IsAny<bool>()))
+            .ReturnsAsync(UpdateCheckResult.UpToDate("1.0"));
+        bridge
             .Setup(x => x.UpdateApplicationAsync(
                 It.IsAny<ApplicationModel>(),
                 It.IsAny<Action<string>?>()))
             .ReturnsAsync(InstallResult.Successful("Updated", "log"));
+        bridge
+            .Setup(x => x.InvalidateUpdateCacheAsync())
+            .Returns(Task.CompletedTask);
         return bridge;
     }
 

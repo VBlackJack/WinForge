@@ -101,6 +101,13 @@ internal sealed class DesignTimePowerShellBridge : IPowerShellBridge
         => Task.FromResult(new UpdateCheckResult { HasUpdate = false, CurrentVersion = "0.0.0", AvailableVersion = "0.0.0" });
 
     /// <inheritdoc/>
+    public Task<UpdateCheckResult> CheckApplicationUpdateAsync(ApplicationModel app, bool forceRefresh)
+        => CheckApplicationUpdateAsync(app);
+
+    /// <inheritdoc/>
+    public Task InvalidateUpdateCacheAsync() => Task.CompletedTask;
+
+    /// <inheritdoc/>
     public Task<InstallResult> UpdateApplicationAsync(ApplicationModel app, Action<string>? progressCallback = null)
         => Task.FromResult(new InstallResult { Success = false, Message = "Design-time mode" });
 

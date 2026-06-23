@@ -52,7 +52,8 @@ $script:CoreModulePath = Join-Path $script:RepositoryRoot 'Core\Core.psm1'
 $script:LocalizationModulePath = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
 $script:EnvironmentDetectionPath = Join-Path $script:ModuleRoot 'EnvironmentDetection.psm1'
 
-if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue) -or
+    -not (Get-Command -Name Invoke-NativeCommandUtf8 -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:CoreModulePath) {
         Import-Module -Name $script:CoreModulePath -Force
     }
@@ -195,14 +196,14 @@ function Invoke-Rollback {
                 'Winget' {
                     if ($app.Identifier -and (Get-Command winget -ErrorAction SilentlyContinue)) {
                         $wingetArgs = @('uninstall', '--id', $app.Identifier, '--silent', '--accept-source-agreements')
-                        $process = Start-Process -FilePath 'winget' -ArgumentList $wingetArgs -Wait -PassThru -NoNewWindow -ErrorAction SilentlyContinue
+                        $process = Invoke-NativeCommandUtf8 -FilePath 'winget' -ArgumentList $wingetArgs -TimeoutSeconds $script:DefaultInstallTimeoutSeconds
                         $uninstalled = ($null -ne $process -and $process.ExitCode -eq 0)
                     }
                 }
                 'Chocolatey' {
                     if ($app.Identifier -and (Get-Command choco -ErrorAction SilentlyContinue)) {
                         $chocoArgs = @('uninstall', $app.Identifier, '-y')
-                        $process = Start-Process -FilePath 'choco' -ArgumentList $chocoArgs -Wait -PassThru -NoNewWindow -ErrorAction SilentlyContinue
+                        $process = Invoke-NativeCommandUtf8 -FilePath 'choco' -ArgumentList $chocoArgs -TimeoutSeconds $script:DefaultInstallTimeoutSeconds
                         $uninstalled = ($null -ne $process -and $process.ExitCode -eq 0)
                     }
                 }
@@ -631,7 +632,7 @@ function Invoke-ApplicationUpgrade {
                 '--silent'
             )
 
-            $process = Start-ProcessWithTimeout -FilePath 'winget' -ArgumentList $arguments -NoNewWindow -PassThru -TimeoutSeconds $script:DefaultInstallTimeoutSeconds
+            $process = Invoke-NativeCommandUtf8 -FilePath 'winget' -ArgumentList $arguments -TimeoutSeconds $script:DefaultInstallTimeoutSeconds
 
             if ($process.ExitCode -eq 0) {
                 Write-Status -Message (Get-LogString -Key 'orchestrator.upgrade.success_winget' -Parameters @{ AppName = $Application.Name }) -Level 'Success'
@@ -660,7 +661,7 @@ function Invoke-ApplicationUpgrade {
                 '--no-progress'
             )
 
-            $process = Start-ProcessWithTimeout -FilePath 'choco' -ArgumentList $arguments -NoNewWindow -PassThru -TimeoutSeconds $script:DefaultInstallTimeoutSeconds
+            $process = Invoke-NativeCommandUtf8 -FilePath 'choco' -ArgumentList $arguments -TimeoutSeconds $script:DefaultInstallTimeoutSeconds
 
             if ($process.ExitCode -eq 0) {
                 Write-Status -Message (Get-LogString -Key 'orchestrator.upgrade.success_choco' -Parameters @{ AppName = $Application.Name }) -Level 'Success'
@@ -1067,7 +1068,7 @@ function Install-ApplicationsParallel {
                         Write-ParallelLog "Retry $attempt/$maxRetries for Winget: $($sources.Winget)" 'Info'
                     }
 
-                    $process = Start-Process -FilePath 'winget' -ArgumentList $arguments -NoNewWindow -PassThru
+                    $process = Start-Process -FilePath 'winget' -ArgumentList $arguments -WindowStyle Hidden -PassThru
                     $timeoutMs = $installTimeoutMs
 
                     if (-not $process.WaitForExit($timeoutMs)) {
@@ -1094,7 +1095,7 @@ function Install-ApplicationsParallel {
                         if ($forceOnHashMismatch) {
                             Write-ParallelLog (Get-LogString -Key 'install.orchestrator.parallel.winget_hash_mismatch_retrying_force' -Parameters @{ PackageId = $sources.Winget }) 'Warning'
                             $forceArguments = $arguments + @('--force')
-                            $forceProcess = Start-Process -FilePath 'winget' -ArgumentList $forceArguments -NoNewWindow -PassThru
+                            $forceProcess = Start-Process -FilePath 'winget' -ArgumentList $forceArguments -WindowStyle Hidden -PassThru
                             if (-not $forceProcess.WaitForExit($installTimeoutMs)) {
                                 Write-ParallelLog "Force install timed out - terminating" 'Warning'
                                 $forceProcess.Kill()
@@ -1143,7 +1144,7 @@ function Install-ApplicationsParallel {
                         Write-ParallelLog "Retry $attempt/$maxRetries for Chocolatey: $($sources.Chocolatey)" 'Info'
                     }
 
-                    $process = Start-Process -FilePath 'choco' -ArgumentList $arguments -NoNewWindow -PassThru
+                    $process = Start-Process -FilePath 'choco' -ArgumentList $arguments -WindowStyle Hidden -PassThru
                     $timeoutMs = $installTimeoutMs
 
                     if (-not $process.WaitForExit($timeoutMs)) {
@@ -1189,7 +1190,7 @@ function Install-ApplicationsParallel {
                         '--silent'
                     )
 
-                    $process = Start-Process -FilePath 'winget' -ArgumentList $arguments -NoNewWindow -PassThru
+                    $process = Start-Process -FilePath 'winget' -ArgumentList $arguments -WindowStyle Hidden -PassThru
                     $timeoutMs = $installTimeoutMs
 
                     if (-not $process.WaitForExit($timeoutMs)) {

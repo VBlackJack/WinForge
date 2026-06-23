@@ -350,7 +350,8 @@ function Test-WingetSource {
     )
 
     try {
-        $output = & winget search --id $PackageId --exact --accept-source-agreements 2>&1 | Out-String
+        $result = Invoke-NativeCommandUtf8 -FilePath 'winget' -ArgumentList @('search', '--id', $PackageId, '--exact', '--accept-source-agreements')
+        $output = $result.Output
         if ($output -match [regex]::Escape($PackageId)) {
             return @{
                 Status  = 'OK'
@@ -388,7 +389,8 @@ function Test-ChocolateySource {
     )
 
     try {
-        $output = & choco search $PackageName --exact --limit-output 2>&1 | Out-String
+        $result = Invoke-NativeCommandUtf8 -FilePath 'choco' -ArgumentList @('search', $PackageName, '--exact', '--limit-output')
+        $output = $result.Output
         if ($output -match [regex]::Escape($PackageName)) {
             return @{
                 Status  = 'OK'

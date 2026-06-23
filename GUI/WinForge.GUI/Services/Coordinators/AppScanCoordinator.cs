@@ -18,6 +18,7 @@ using System.Text;
 using WinForge.GUI.Models;
 using WinForge.GUI.Resources;
 using WinForge.GUI.Services.Coordinators.Internal;
+using WinForge.GUI.Services.Implementations;
 
 namespace WinForge.GUI.Services.Coordinators;
 
@@ -273,7 +274,7 @@ public sealed class AppScanCoordinator : IAppScanCoordinator
             : updateInfo.CurrentVersion;
 
         if (string.IsNullOrEmpty(updateInfo.NewVersion) ||
-            string.Equals(currentVersion, updateInfo.NewVersion, StringComparison.OrdinalIgnoreCase))
+            VersionServiceImpl.CompareVersions(currentVersion, updateInfo.NewVersion) >= 0)
         {
             return false;
         }

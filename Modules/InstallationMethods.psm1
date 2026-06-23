@@ -47,7 +47,8 @@ $script:EnvironmentDetectionPath = Join-Path $script:ModuleRoot 'EnvironmentDete
 $script:FeatureFlagsPath = Join-Path $script:RepositoryRoot 'Core\FeatureFlags.psm1'
 $script:DirectoryConstantsPath = Join-Path $script:RepositoryRoot 'Core\DirectoryConstants.psm1'
 
-if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue) -or
+    -not (Get-Command -Name Invoke-NativeCommandUtf8 -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:CoreModulePath) {
         Import-Module -Name $script:CoreModulePath -Force
     }
@@ -976,9 +977,10 @@ function Install-ViaWinget {
                 Write-Status -Message "$(Get-LogString -Key 'install.retry.attempt' -Parameters @{ Current = $attempt; Max = $MaxRetries }) - Winget: $PackageId" -Level 'Info'
             }
 
-            # Execute winget and capture output to detect "already installed" patterns
-            $wingetOutput = & winget @arguments 2>&1 | Out-String
-            $exitCode = $LASTEXITCODE
+            # Execute winget and capture output to detect "already installed" patterns.
+            $wingetResult = Invoke-NativeCommandUtf8 -FilePath 'winget' -ArgumentList $arguments
+            $wingetOutput = $wingetResult.Output
+            $exitCode = $wingetResult.ExitCode
 
             # Check for "already installed" patterns in output - treat as success
             # Winget may say "already installed", "No available upgrade", "No newer package versions"
@@ -1028,8 +1030,9 @@ function Install-ViaWinget {
                     Write-Status -Message $retryMsg -Level 'Warning'
 
                     $forceArguments = $arguments + @('--force')
-                    $forceOutput = & winget @forceArguments 2>&1 | Out-String
-                    $forceExitCode = $LASTEXITCODE
+                    $forceResult = Invoke-NativeCommandUtf8 -FilePath 'winget' -ArgumentList $forceArguments
+                    $forceOutput = $forceResult.Output
+                    $forceExitCode = $forceResult.ExitCode
 
                     if ($forceExitCode -eq 0 -or $forceOutput -match 'Successfully installed' -or $forceOutput -match 'already installed') {
                         $version = Get-InstalledAppVersion -WingetId $PackageId
@@ -1074,7 +1077,8 @@ function Install-ViaWinget {
             # Post-install verification: Check if package is actually installed despite non-zero exit code
             # This handles cases where winget returns unexpected exit codes but installation succeeded
             Write-Output "[INFO] $(Get-LogString -Key 'install.method.verifying')"
-            $verifyResult = & winget list --id $PackageId --accept-source-agreements 2>&1 | Out-String
+            $verifyCommand = Invoke-NativeCommandUtf8 -FilePath 'winget' -ArgumentList @('list', '--id', $PackageId, '--accept-source-agreements')
+            $verifyResult = $verifyCommand.Output
             if ($verifyResult -match [regex]::Escape($PackageId) -and $verifyResult -notmatch "No installed package") {
                 $version = Get-InstalledAppVersion -WingetId $PackageId
                 $versionInfo = if ($version) { " v$version" } else { "" }
@@ -1146,9 +1150,10 @@ function Install-ViaChocolatey {
                 Write-Status -Message "$(Get-LogString -Key 'install.retry.attempt' -Parameters @{ Current = $attempt; Max = $MaxRetries }) - Chocolatey: $PackageName" -Level 'Info'
             }
 
-            # Execute choco and capture output to detect "already installed"
-            $chocoOutput = & choco @arguments 2>&1 | Out-String
-            $exitCode = $LASTEXITCODE
+            # Execute choco and capture output to detect "already installed".
+            $chocoResult = Invoke-NativeCommandUtf8 -FilePath 'choco' -ArgumentList $arguments
+            $chocoOutput = $chocoResult.Output
+            $exitCode = $chocoResult.ExitCode
 
             # Check for "already installed" pattern in output - treat as success
             if ($chocoOutput -match 'already installed' -or $chocoOutput -match 'has been installed') {
@@ -1176,7 +1181,8 @@ function Install-ViaChocolatey {
             if ($transientErrors -contains $exitCode -and $attempt -lt $MaxRetries) {
                 # Before retrying, check if package is already installed
                 Write-Output "[INFO] $(Get-LogString -Key 'install.method.verifying')"
-                $chocoList = & choco list --local-only --exact $PackageName 2>&1 | Out-String
+                $chocoListResult = Invoke-NativeCommandUtf8 -FilePath 'choco' -ArgumentList @('list', '--local-only', '--exact', $PackageName)
+                $chocoList = $chocoListResult.Output
                 if ($chocoList -match $PackageName -and $chocoList -notmatch "0 packages installed") {
                     $version = Get-InstalledAppVersion -ChocolateyId $PackageName
                     $versionInfo = if ($version) { " v$version" } else { "" }
@@ -1198,7 +1204,8 @@ function Install-ViaChocolatey {
             # Post-install verification: Check if package is actually installed despite non-zero exit code
             # Chocolatey may return non-zero codes even when installation succeeded
             Write-Output "[INFO] $(Get-LogString -Key 'install.method.verifying')"
-            $chocoList = & choco list --local-only --exact $PackageName 2>&1 | Out-String
+            $chocoListResult = Invoke-NativeCommandUtf8 -FilePath 'choco' -ArgumentList @('list', '--local-only', '--exact', $PackageName)
+            $chocoList = $chocoListResult.Output
             if ($chocoList -match $PackageName -and $chocoList -notmatch "0 packages installed") {
                 $version = Get-InstalledAppVersion -ChocolateyId $PackageName
                 $versionInfo = if ($version) { " v$version" } else { "" }
@@ -1265,8 +1272,9 @@ function Install-ViaStore {
             )
 
             # Execute winget and capture output to detect "already installed" patterns
-            $storeOutput = & winget @arguments 2>&1 | Out-String
-            $exitCode = $LASTEXITCODE
+            $storeResult = Invoke-NativeCommandUtf8 -FilePath 'winget' -ArgumentList $arguments
+            $storeOutput = $storeResult.Output
+            $exitCode = $storeResult.ExitCode
 
             # Check for "already installed" patterns in output - treat as success
             if ($storeOutput -match 'already installed' -or

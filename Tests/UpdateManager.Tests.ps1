@@ -64,6 +64,10 @@ Describe 'UpdateManager Module' {
         It 'Should export Set-UpdateConfiguration function' {
             Get-Command Set-UpdateConfiguration -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
         }
+
+        It 'Should export Clear-WingetUpdatesCache function' {
+            Get-Command Clear-WingetUpdatesCache -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+        }
     }
 
     Context 'Get-CurrentVersion' {
@@ -239,6 +243,44 @@ Describe 'Test-UpdateAvailable' {
     }
 }
 
+Describe 'Winget update batch cache' {
+    Context 'Forced refresh and invalidation' {
+        It 'Get-ApplicationUpdateStatus should pass Force to batch cache lookup' {
+            Mock -CommandName Get-WingetUpdatesBatch -ModuleName UpdateManager -MockWith {
+                param([switch]$Force)
+
+                return @{}
+            }
+
+            $result = Get-ApplicationUpdateStatus -WingetId 'Vendor.Package' -Force
+
+            $result.HasUpdate | Should -BeFalse
+            Should -Invoke -CommandName Get-WingetUpdatesBatch -ModuleName UpdateManager -Times 1 -ParameterFilter {
+                $Force.IsPresent
+            }
+        }
+
+        It 'Clear-WingetUpdatesCache should clear cached batch results' {
+            InModuleScope UpdateManager {
+                $script:BatchUpdateCache = @{
+                    'Vendor.Package' = [PSCustomObject]@{
+                        Name             = 'Package'
+                        PackageId        = 'Vendor.Package'
+                        CurrentVersion   = '1.0.0'
+                        AvailableVersion = '2.0.0'
+                    }
+                }
+                $script:BatchUpdateCacheTime = Get-Date
+
+                Clear-WingetUpdatesCache
+
+                $script:BatchUpdateCache.Count | Should -Be 0
+                $script:BatchUpdateCacheTime | Should -BeNullOrEmpty
+            }
+        }
+    }
+}
+
 Describe 'Test-IsNewerVersion' {
     Context 'Direct Comparison' {
         It 'Should export Test-IsNewerVersion function' {
@@ -260,9 +302,35 @@ Describe 'Test-IsNewerVersion' {
             $result | Should -BeFalse
         }
 
+        It 'Should treat equivalent trailing-zero versions as not newer' {
+            $result = Test-IsNewerVersion -Current '2.7.3' -Available '2.7.3.0'
+            $result | Should -BeFalse
+        }
+
         It 'Should handle prerelease comparison' {
             $result = Test-IsNewerVersion -Current '1.0.0-beta' -Available '1.0.0'
             $result | Should -BeTrue
+        }
+    }
+
+    Context 'Batch cache reconciliation' {
+        It 'Get-ApplicationUpdateStatus should suppress trailing-zero false positives from winget' {
+            Mock -CommandName Get-WingetUpdatesBatch -ModuleName UpdateManager -MockWith {
+                return @{
+                    'Chocolatey.Chocolatey' = [PSCustomObject]@{
+                        Name             = 'Chocolatey'
+                        PackageId        = 'Chocolatey.Chocolatey'
+                        CurrentVersion   = '2.7.3'
+                        AvailableVersion = '2.7.3.0'
+                    }
+                }
+            }
+
+            $result = Get-ApplicationUpdateStatus -WingetId 'Chocolatey.Chocolatey' -CurrentVersion '2.7.3' -Force
+
+            $result.HasUpdate | Should -BeFalse
+            $result.CurrentVersion | Should -Be '2.7.3'
+            $result.AvailableVersion | Should -Be '2.7.3.0'
         }
     }
 }
@@ -314,6 +382,7 @@ Describe 'UpdateManager Export Completeness' {
             @{ FunctionName = 'Get-UpdateConfiguration' }
             @{ FunctionName = 'Set-UpdateConfiguration' }
             @{ FunctionName = 'Get-AvailableBackups' }
+            @{ FunctionName = 'Clear-WingetUpdatesCache' }
             @{ FunctionName = 'Backup-CurrentVersion' }
             @{ FunctionName = 'Restore-PreviousVersion' }
         ) {

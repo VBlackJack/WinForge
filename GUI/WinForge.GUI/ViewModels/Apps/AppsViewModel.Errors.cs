@@ -58,6 +58,9 @@ public partial class AppsViewModel
             case "install":
                 await InstallSelectedAsync();
                 break;
+            case "update":
+                await UpdateSelectedAsync();
+                break;
             case "uninstall":
                 await UninstallSelectedAsync();
                 break;

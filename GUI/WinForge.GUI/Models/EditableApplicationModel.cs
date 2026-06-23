@@ -67,6 +67,10 @@ public partial class EditableApplicationModel : ObservableValidator, IValidatabl
     [ObservableProperty]
     private string _installArguments = string.Empty;
 
+    /// <summary>Preferred package source for update operations, when it differs from install order.</summary>
+    [ObservableProperty]
+    private string _preferredUpdateSource = string.Empty;
+
     /// <summary>Detection configuration for checking if app is installed.</summary>
     [ObservableProperty]
     private ApplicationDetectionModel? _detection;
@@ -128,6 +132,7 @@ public partial class EditableApplicationModel : ObservableValidator, IValidatabl
             Description = this.Description,
             Sources = this.Sources.Clone(),
             InstallArguments = this.InstallArguments,
+            PreferredUpdateSource = this.PreferredUpdateSource,
             Detection = this.Detection?.Clone(),
             DefaultPriority = this.DefaultPriority,
             DefaultRequired = this.DefaultRequired,

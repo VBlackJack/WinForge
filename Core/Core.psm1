@@ -243,6 +243,106 @@ function Write-StatusProgress {
     Write-Progress -Activity $Activity -Status $Status -PercentComplete $PercentComplete
 }
 
+function Invoke-NativeCommandUtf8 {
+    <#
+    .SYNOPSIS
+        Runs a native command while temporarily decoding redirected output as UTF-8.
+    .DESCRIPTION
+        Native package managers may localize their messages, and WinForge cannot force
+        Winget to use English on a localized Windows display language. This helper only
+        fixes encoding for callers that need to parse command output; callers should still
+        log WinForge-owned English summaries instead of raw vendor text.
+    #>
+    [CmdletBinding()]
+    [OutputType([PSCustomObject])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$FilePath,
+
+        [Parameter()]
+        [string[]]$ArgumentList = @(),
+
+        [Parameter()]
+        [int]$TimeoutSeconds = 0
+    )
+
+    $previousConsoleEncoding = [Console]::OutputEncoding
+    $previousOutputEncoding = $OutputEncoding
+    $utf8NoBom = New-Object System.Text.UTF8Encoding -ArgumentList $false
+
+    try {
+        [Console]::OutputEncoding = $utf8NoBom
+        $OutputEncoding = $utf8NoBom
+
+        if ($TimeoutSeconds -gt 0) {
+            $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
+            $startInfo.FileName = $FilePath
+            $startInfo.UseShellExecute = $false
+            $startInfo.RedirectStandardOutput = $true
+            $startInfo.RedirectStandardError = $true
+            $startInfo.StandardOutputEncoding = $utf8NoBom
+            $startInfo.StandardErrorEncoding = $utf8NoBom
+            $startInfo.CreateNoWindow = $true
+
+            foreach ($argument in $ArgumentList) {
+                [void]$startInfo.ArgumentList.Add($argument)
+            }
+
+            $process = [System.Diagnostics.Process]::new()
+            $process.StartInfo = $startInfo
+            try {
+                [void]$process.Start()
+                $outputTask = $process.StandardOutput.ReadToEndAsync()
+                $errorTask = $process.StandardError.ReadToEndAsync()
+
+                if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
+                    try {
+                        $process.Kill($true)
+                    } catch {
+                        Write-Verbose "Process kill failed (best effort): $($_.Exception.Message)"
+                    }
+
+                    [PSCustomObject]@{
+                        Output   = "Native command timed out after $TimeoutSeconds seconds"
+                        ExitCode = -1
+                    }
+                    return
+                }
+
+                $output = $outputTask.GetAwaiter().GetResult()
+                $errorOutput = $errorTask.GetAwaiter().GetResult()
+                if (-not [string]::IsNullOrWhiteSpace($errorOutput)) {
+                    $output = "$output`n$errorOutput"
+                }
+
+                [PSCustomObject]@{
+                    Output   = $output
+                    ExitCode = $process.ExitCode
+                }
+                return
+            }
+            finally {
+                $process.Dispose()
+            }
+        }
+
+        $output = if ($ArgumentList.Count -gt 0) {
+            & $FilePath @ArgumentList 2>&1 | Out-String
+        } else {
+            & $FilePath 2>&1 | Out-String
+        }
+
+        [PSCustomObject]@{
+            Output   = $output
+            ExitCode = $LASTEXITCODE
+        }
+    }
+    finally {
+        [Console]::OutputEncoding = $previousConsoleEncoding
+        $OutputEncoding = $previousOutputEncoding
+    }
+}
+
 function Write-Section {
     <#
     .SYNOPSIS
@@ -753,6 +853,7 @@ Export-ModuleMember -Function @(
     'Get-StringHash',
     'ConvertTo-SafeFileName',
     'Test-CommandExists',
+    'Invoke-NativeCommandUtf8',
     'Get-DownloadedFileName',
     'Format-FileSize',
     'Get-ElapsedTime',

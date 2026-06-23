@@ -16,6 +16,8 @@
 
 #nullable enable
 
+using WinForge.GUI.Services.Implementations;
+
 namespace WinForge.GUI.Models;
 
 /// <summary>
@@ -43,7 +45,7 @@ public class InstalledPackageInfo
 
     /// <summary>Whether an update is available.</summary>
     public bool HasUpdate => !string.IsNullOrEmpty(AvailableVersion) &&
-                             AvailableVersion != InstalledVersion;
+                             VersionServiceImpl.CompareVersions(InstalledVersion, AvailableVersion) < 0;
 
     /// <summary>Installation location if known.</summary>
     public string? InstallLocation { get; init; }
