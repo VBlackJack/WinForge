@@ -64,7 +64,7 @@ $script:CachedEntropy = $null
 
 # Import Localization module for i18n support
 $script:LocalizationModulePath = Join-Path $script:ModuleRoot 'Localization.psm1'
-if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Get-LogString -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:LocalizationModulePath) {
         try {
             Import-Module -Name $script:LocalizationModulePath -Force -ErrorAction SilentlyContinue
@@ -118,9 +118,9 @@ function Set-SecureFileAcl {
         )
         $acl.AddAccessRule($rule)
         Set-Acl -Path $Path -AclObject $acl -ErrorAction Stop
-        Write-Verbose (t 'security.storage.acl_set' @{ Path = $Path })
+        Write-Verbose (Get-LogString 'security.storage.acl_set' @{ Path = $Path })
     } catch {
-        Write-Verbose (t 'security.storage.acl_failed' @{ Path = $Path; Error = $_.Exception.Message })
+        Write-Verbose (Get-LogString 'security.storage.acl_failed' @{ Path = $Path; Error = $_.Exception.Message })
     }
 }
 
@@ -186,7 +186,7 @@ function Get-DpapiEntropy {
         # Wait for exclusive access (2 second timeout to mitigate attack surface)
         $mutexAcquired = $mutex.WaitOne(2000)
         if (-not $mutexAcquired) {
-            Write-Warning (t 'security.storage.mutex_timeout')
+            Write-Warning (Get-LogString 'security.storage.mutex_timeout')
         }
 
         # Try to read existing entropy file atomically (no separate Test-Path check)
@@ -197,15 +197,15 @@ function Get-DpapiEntropy {
                 return $entropyBytes
             }
             # Invalid entropy file, will regenerate below
-            Write-Verbose (t 'security.storage.entropy_regenerating' @{ Length = $entropyBytes.Length })
+            Write-Verbose (Get-LogString 'security.storage.entropy_regenerating' @{ Length = $entropyBytes.Length })
         } catch [System.IO.FileNotFoundException] {
             # File doesn't exist, will create below
-            Write-Verbose (t 'security.storage.entropy_not_found')
+            Write-Verbose (Get-LogString 'security.storage.entropy_not_found')
         } catch [System.IO.DirectoryNotFoundException] {
             # Directory doesn't exist, will create below
-            Write-Verbose (t 'security.storage.entropy_dir_not_found')
+            Write-Verbose (Get-LogString 'security.storage.entropy_dir_not_found')
         } catch {
-            Write-Verbose (t 'security.storage.entropy_read_failed' @{ Error = $_.Exception.Message })
+            Write-Verbose (Get-LogString 'security.storage.entropy_read_failed' @{ Error = $_.Exception.Message })
         }
 
         # Generate new random entropy (32 bytes = 256 bits)
@@ -266,7 +266,7 @@ function Get-DpapiEntropy {
                 }
             }
         } catch {
-            Write-Verbose (t 'security.storage.entropy_persist_failed' @{ Error = $_.Exception.Message })
+            Write-Verbose (Get-LogString 'security.storage.entropy_persist_failed' @{ Error = $_.Exception.Message })
         }
 
         $script:CachedEntropy = $entropyBytes
@@ -335,7 +335,7 @@ function Protect-Data {
 
             return [Convert]::ToBase64String($encryptedBytes)
         } catch {
-            throw (New-SecurityException -Message (t 'security.storage.encrypt_failed' @{ Error = $_.Exception.Message }))
+            throw (New-SecurityException -Message (Get-LogString 'security.storage.encrypt_failed' @{ Error = $_.Exception.Message }))
         }
     }
 }
@@ -391,7 +391,7 @@ function Unprotect-Data {
 
             return [System.Text.Encoding]::UTF8.GetString($decryptedBytes)
         } catch {
-            throw (New-SecurityException -Message (t 'security.storage.decrypt_failed' @{ Error = $_.Exception.Message }))
+            throw (New-SecurityException -Message (Get-LogString 'security.storage.decrypt_failed' @{ Error = $_.Exception.Message }))
         }
     }
 }
@@ -468,10 +468,10 @@ function Save-SecureApiKey {
         $encryptedStorage = Protect-Data -PlainText $json
         Set-Content -Path $script:SecureApiKeysPath -Value $encryptedStorage -Force
 
-        Write-Verbose (t 'security.storage.api_key_saved' @{ KeyId = $KeyId })
+        Write-Verbose (Get-LogString 'security.storage.api_key_saved' @{ KeyId = $KeyId })
         return $true
     } catch {
-        Write-Error (t 'security.storage.api_key_save_failed' @{ Error = $_.Exception.Message })
+        Write-Error (Get-LogString 'security.storage.api_key_save_failed' @{ Error = $_.Exception.Message })
         return $false
     }
 }
@@ -532,7 +532,7 @@ function Get-SecureApiKeys {
 
         return $keys
     } catch {
-        Write-Verbose (t 'security.storage.api_keys_load_failed' @{ Error = $_.Exception.Message })
+        Write-Verbose (Get-LogString 'security.storage.api_keys_load_failed' @{ Error = $_.Exception.Message })
         return @{}
     }
 }
@@ -571,13 +571,13 @@ function Remove-SecureApiKey {
                 Set-Content -Path $script:SecureApiKeysPath -Value $encryptedStorage -Force
             }
 
-            Write-Verbose (t 'security.storage.api_key_removed' @{ KeyId = $KeyId })
+            Write-Verbose (Get-LogString 'security.storage.api_key_removed' @{ KeyId = $KeyId })
             return $true
         }
 
         return $false
     } catch {
-        Write-Error (t 'security.storage.api_key_remove_failed' @{ Error = $_.Exception.Message })
+        Write-Error (Get-LogString 'security.storage.api_key_remove_failed' @{ Error = $_.Exception.Message })
         return $false
     }
 }
@@ -619,7 +619,7 @@ function Get-SecureApiKeysForAuth {
             }
         }
     } catch {
-        Write-Verbose (t 'security.storage.api_keys_auth_failed' @{ Error = $_.Exception.Message })
+        Write-Verbose (Get-LogString 'security.storage.api_keys_auth_failed' @{ Error = $_.Exception.Message })
     }
 
     return $authKeys
@@ -662,7 +662,7 @@ function Save-SecureData {
                 $json = Unprotect-Data -EncryptedData $encryptedStorage
                 $storage = $json | ConvertFrom-Json -AsHashtable
             } catch {
-                Write-Verbose (t 'security.storage.read_failed' @{ Error = $_.Exception.Message })
+                Write-Verbose (Get-LogString 'security.storage.read_failed' @{ Error = $_.Exception.Message })
             }
         }
 
@@ -674,10 +674,10 @@ function Save-SecureData {
         $encryptedStorage = Protect-Data -PlainText $json
         Set-Content -Path $script:SecureStoragePath -Value $encryptedStorage -Force
 
-        Write-Verbose (t 'security.storage.data_saved' @{ Key = $Key })
+        Write-Verbose (Get-LogString 'security.storage.data_saved' @{ Key = $Key })
         return $true
     } catch {
-        Write-Error (t 'security.storage.data_save_failed' @{ Error = $_.Exception.Message })
+        Write-Error (Get-LogString 'security.storage.data_save_failed' @{ Error = $_.Exception.Message })
         return $false
     }
 }
@@ -721,7 +721,7 @@ function Get-SecureData {
 
         return $null
     } catch {
-        Write-Verbose (t 'security.storage.data_retrieve_failed' @{ Error = $_.Exception.Message })
+        Write-Verbose (Get-LogString 'security.storage.data_retrieve_failed' @{ Error = $_.Exception.Message })
         return $null
     }
 }
@@ -766,13 +766,13 @@ function Remove-SecureData {
                 Set-Content -Path $script:SecureStoragePath -Value $encryptedStorage -Force
             }
 
-            Write-Verbose (t 'security.storage.data_removed' @{ Key = $Key })
+            Write-Verbose (Get-LogString 'security.storage.data_removed' @{ Key = $Key })
             return $true
         }
 
         return $false
     } catch {
-        Write-Error (t 'security.storage.data_remove_failed' @{ Error = $_.Exception.Message })
+        Write-Error (Get-LogString 'security.storage.data_remove_failed' @{ Error = $_.Exception.Message })
         return $false
     }
 }

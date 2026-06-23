@@ -8,6 +8,7 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 - Rebranded public project identifiers, GUI assets, launchers, runtime data directory, and documentation from Win11Forge to WinForge.
 - Added startup migration from `%LOCALAPPDATA%\Win11Forge` to `%LOCALAPPDATA%\WinForge`, with graceful fallback to legacy data when migration is blocked.
 - Scheduled deployments now use WinForge task names while continuing to discover and manage legacy Win11Forge scheduled tasks.
+- Persisted logs and operation result messages now resolve WinForge-owned localized strings in English and file logs are written as explicit UTF-8 without BOM.
 
 ### Fixed
 - Chocolatey now self-updates through `choco upgrade chocolatey` instead of trying the WinGet bootstrap package during update operations.

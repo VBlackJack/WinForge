@@ -47,12 +47,12 @@ if (-not (Get-Command -Name Invoke-NativeCommandUtf8 -ErrorAction SilentlyContin
 
 # Import Localization module for i18n support (optional - don't fail if not available)
 $script:LocalizationModulePath = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
-if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Get-LogString -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:LocalizationModulePath) {
         try {
             Import-Module -Name $script:LocalizationModulePath -Force -ErrorAction SilentlyContinue
         } catch {
-            Write-Verbose (t 'database.localization.import_failed' @{ Error = $PSItem.Exception.Message })
+            Write-Verbose (Get-LogString 'database.localization.import_failed' @{ Error = $PSItem.Exception.Message })
         }
     }
 }
@@ -86,7 +86,7 @@ function Enable-DatabaseFileWatcher {
     param()
 
     if ($Script:FileWatcherEnabled) {
-        Write-Verbose (t 'database.filewatcher.already_enabled')
+        Write-Verbose (Get-LogString 'database.filewatcher.already_enabled')
         return
     }
 
@@ -103,13 +103,13 @@ function Enable-DatabaseFileWatcher {
         # Register event handler for file changes
         Register-ObjectEvent -InputObject $Script:FileWatcher -EventName Changed -Action {
             $Script:DatabaseCache = $null
-            Write-Verbose (t 'database.filewatcher.cache_invalidated')
+            Write-Verbose (Get-LogString 'database.filewatcher.cache_invalidated')
         } -SourceIdentifier 'WinForge.DatabaseWatcher' | Out-Null
 
         $Script:FileWatcherEnabled = $true
-        Write-Verbose (t 'database.filewatcher.enabled' @{ Path = $Script:DatabasePath })
+        Write-Verbose (Get-LogString 'database.filewatcher.enabled' @{ Path = $Script:DatabasePath })
     } catch {
-        Write-Warning (t 'database.filewatcher.enable_failed' @{ Error = $_.Exception.Message })
+        Write-Warning (Get-LogString 'database.filewatcher.enable_failed' @{ Error = $_.Exception.Message })
     }
 }
 
@@ -137,9 +137,9 @@ function Disable-DatabaseFileWatcher {
             $Script:FileWatcher = $null
         }
         $Script:FileWatcherEnabled = $false
-        Write-Verbose (t 'database.filewatcher.disabled')
+        Write-Verbose (Get-LogString 'database.filewatcher.disabled')
     } catch {
-        Write-Warning (t 'database.filewatcher.disable_failed' @{ Error = $_.Exception.Message })
+        Write-Warning (Get-LogString 'database.filewatcher.disable_failed' @{ Error = $_.Exception.Message })
     }
 }
 
@@ -184,7 +184,7 @@ function Clear-DatabaseCache {
 
     $Script:DatabaseCache = $null
     $Script:DatabaseLastModified = $null
-    Write-Verbose (t 'database.cache.cleared')
+    Write-Verbose (Get-LogString 'database.cache.cleared')
 }
 
 <#
@@ -214,7 +214,7 @@ function Get-ApplicationDatabase {
         }
 
         if (-not (Test-Path $Script:DatabasePath)) {
-            throw (New-ValidationException -Message (t 'database.load.not_found' @{ Path = $Script:DatabasePath }))
+            throw (New-ValidationException -Message (Get-LogString 'database.load.not_found' @{ Path = $Script:DatabasePath }))
         }
 
         $jsonContent = Get-Content -Path $Script:DatabasePath -Raw -Encoding UTF8
@@ -223,12 +223,12 @@ function Get-ApplicationDatabase {
 
         # PS5.1 compatible: PSCustomObject doesn't have .Count, use Measure-Object
         $appCount = ($Script:DatabaseCache.Applications.PSObject.Properties | Measure-Object).Count
-        Write-Verbose (t 'database.load.success' @{ Count = $appCount })
+        Write-Verbose (Get-LogString 'database.load.success' @{ Count = $appCount })
 
         return $Script:DatabaseCache
     }
     catch {
-        Write-Error (t 'database.load.failed' @{ Error = $_ })
+        Write-Error (Get-LogString 'database.load.failed' @{ Error = $_ })
         return $null
     }
 }
@@ -258,7 +258,7 @@ function Get-ApplicationById {
     $app = $database.Applications.PSObject.Properties | Where-Object { $_.Name -eq $AppId } | Select-Object -ExpandProperty Value -First 1
 
     if ($null -eq $app) {
-        Write-Warning (t 'database.application.not_found' @{ AppId = $AppId })
+        Write-Warning (Get-LogString 'database.application.not_found' @{ AppId = $AppId })
         return $null
     }
 
@@ -409,7 +409,7 @@ function ConvertTo-ProfileApplication {
             try {
                 $Priority = [int]$Priority
             } catch {
-                throw (New-ValidationException -Message (t 'database.validation.priority_invalid' @{ Value = $Priority; Type = $Priority.GetType().Name }))
+                throw (New-ValidationException -Message (Get-LogString 'database.validation.priority_invalid' @{ Value = $Priority; Type = $Priority.GetType().Name }))
             }
         }
     }
@@ -431,7 +431,7 @@ function ConvertTo-ProfileApplication {
                         $Required = [bool]::Parse($Required)
                     }
                 } catch {
-                    throw (New-ValidationException -Message (t 'database.validation.required_invalid' @{ Value = $Required; Type = $Required.GetType().Name }))
+                    throw (New-ValidationException -Message (Get-LogString 'database.validation.required_invalid' @{ Value = $Required; Type = $Required.GetType().Name }))
                 }
             }
         }
@@ -533,7 +533,7 @@ function Test-ApplicationSources {
 
     $database = Get-ApplicationDatabase
     if ($null -eq $database) {
-        Write-Error (t 'database.validate.not_loaded')
+        Write-Error (Get-LogString 'database.validate.not_loaded')
         return
     }
 
@@ -546,7 +546,7 @@ function Test-ApplicationSources {
         $app = $prop.Value
         $appId = $prop.Name
 
-        Write-Progress -Activity (t 'database.validate.progress_activity') -Status (t 'database.validate.progress_status' @{ AppName = $app.Name; Current = $current; Total = $totalApps }) -PercentComplete (($current / $totalApps) * 100)
+        Write-Progress -Activity (Get-LogString 'database.validate.progress_activity') -Status (Get-LogString 'database.validate.progress_status' @{ AppName = $app.Name; Current = $current; Total = $totalApps }) -PercentComplete (($current / $totalApps) * 100)
 
         $result = [PSCustomObject]@{
             AppId       = $appId
@@ -566,12 +566,12 @@ function Test-ApplicationSources {
                 # Winget returns 0 even when ID not found, must check output content
                 $result.WingetValid = ($wingetResult.ExitCode -eq 0 -and $wingetTest -match [regex]::Escape($app.Sources.Winget))
                 if (-not $result.WingetValid) {
-                    $result.Errors += (t 'database.validate.winget_not_found' @{ WingetId = $app.Sources.Winget })
+                    $result.Errors += (Get-LogString 'database.validate.winget_not_found' @{ WingetId = $app.Sources.Winget })
                 }
             }
             catch {
                 $result.WingetValid = $false
-                $result.Errors += (t 'database.validate.winget_test_failed' @{ Error = $_ })
+                $result.Errors += (Get-LogString 'database.validate.winget_test_failed' @{ Error = $_ })
             }
         }
         else {
@@ -585,12 +585,12 @@ function Test-ApplicationSources {
                 $chocoTest = $chocoResult.Output
                 $result.ChocoValid = ($chocoResult.ExitCode -eq 0 -and $chocoTest)
                 if (-not $result.ChocoValid) {
-                    $result.Errors += (t 'database.validate.choco_not_found' @{ ChocoId = $app.Sources.Chocolatey })
+                    $result.Errors += (Get-LogString 'database.validate.choco_not_found' @{ ChocoId = $app.Sources.Chocolatey })
                 }
             }
             catch {
                 $result.ChocoValid = $false
-                $result.Errors += (t 'database.validate.choco_test_failed' @{ Error = $_ })
+                $result.Errors += (Get-LogString 'database.validate.choco_test_failed' @{ Error = $_ })
             }
         }
         else {
@@ -625,7 +625,7 @@ function Reset-DatabaseCache {
     param()
 
     $Script:DatabaseCache = $null
-    Write-Verbose (t 'database.cache.cleared')
+    Write-Verbose (Get-LogString 'database.cache.cleared')
 }
 
 <#
@@ -690,7 +690,7 @@ function Get-ApplicationDependencies {
 
     $app = Get-ApplicationById -AppId $AppId
     if ($null -eq $app) {
-        Write-Warning (t 'database.application.not_found_short' @{ AppId = $AppId })
+        Write-Warning (Get-LogString 'database.application.not_found_short' @{ AppId = $AppId })
         return @()
     }
 
@@ -758,7 +758,7 @@ function Resolve-ApplicationDependencies {
         }
 
         if ($visiting.Contains($Id)) {
-            Write-Warning (t 'database.dependency.circular_detected' @{ AppId = $Id })
+            Write-Warning (Get-LogString 'database.dependency.circular_detected' @{ AppId = $Id })
             return
         }
 
@@ -1140,7 +1140,7 @@ function New-DatabaseBackup {
         # Copy current database to backup
         if (Test-Path $Script:DatabasePath) {
             Copy-Item -Path $Script:DatabasePath -Destination $backupPath -Force
-            Write-Verbose (t 'database.backup.created' @{ Path = $backupPath })
+            Write-Verbose (Get-LogString 'database.backup.created' @{ Path = $backupPath })
         }
 
         # Rotate old backups
@@ -1151,14 +1151,14 @@ function New-DatabaseBackup {
             $toDelete = $backups | Select-Object -Skip $MaxBackups
             foreach ($old in $toDelete) {
                 Remove-Item $old.FullName -Force
-                Write-Verbose (t 'database.backup.removed_old' @{ FileName = $old.Name })
+                Write-Verbose (Get-LogString 'database.backup.removed_old' @{ FileName = $old.Name })
             }
         }
 
         return $backupPath
     }
     catch {
-        Write-Warning (t 'database.backup.create_failed' @{ Error = $_.Exception.Message })
+        Write-Warning (Get-LogString 'database.backup.create_failed' @{ Error = $_.Exception.Message })
         return $null
     }
 }
@@ -1235,7 +1235,7 @@ function Restore-DatabaseFromBackup {
         if (-not (Test-Path $BackupPath)) {
             return [PSCustomObject]@{
                 Success = $false
-                Error = (t 'database.backup.file_not_found' @{ Path = $BackupPath })
+                Error = (Get-LogString 'database.backup.file_not_found' @{ Path = $BackupPath })
             }
         }
 
@@ -1247,7 +1247,7 @@ function Restore-DatabaseFromBackup {
         catch {
             return [PSCustomObject]@{
                 Success = $false
-                Error = (t 'database.backup.invalid_format' @{ Error = $_.Exception.Message })
+                Error = (Get-LogString 'database.backup.invalid_format' @{ Error = $_.Exception.Message })
             }
         }
 
@@ -1267,7 +1267,7 @@ function Restore-DatabaseFromBackup {
             Success = $true
             RestoredFrom = $BackupPath
             PreviousStateBackup = $currentBackup
-            Message = (t 'database.backup.restore_success')
+            Message = (Get-LogString 'database.backup.restore_success')
         }
     }
     catch {
@@ -1314,7 +1314,7 @@ function Invoke-BackupRotation {
         foreach ($old in $toDelete) {
             Remove-Item $old.FullName -Force
             $deletedCount++
-            Write-Verbose (t 'database.backup.removed_old' @{ FileName = $old.Name })
+            Write-Verbose (Get-LogString 'database.backup.removed_old' @{ FileName = $old.Name })
         }
     }
 
@@ -1350,27 +1350,27 @@ function Test-ApplicationConfiguration {
 
     # Validate AppId
     if ([string]::IsNullOrWhiteSpace($Application.AppId)) {
-        $errors += [PSCustomObject]@{ Field = 'AppId'; Message = (t 'database.validation.appid_required') }
+        $errors += [PSCustomObject]@{ Field = 'AppId'; Message = (Get-LogString 'database.validation.appid_required') }
     }
     elseif ($Application.AppId -notmatch '^[A-Za-z][A-Za-z0-9\.\-_]*$') {
-        $errors += [PSCustomObject]@{ Field = 'AppId'; Message = (t 'database.validation.appid_format') }
+        $errors += [PSCustomObject]@{ Field = 'AppId'; Message = (Get-LogString 'database.validation.appid_format') }
     }
     elseif ($IsNew) {
         # Check uniqueness for new applications
         $existing = Get-ApplicationById -AppId $Application.AppId
         if ($null -ne $existing) {
-            $errors += [PSCustomObject]@{ Field = 'AppId'; Message = (t 'database.validation.appid_exists' @{ AppId = $Application.AppId }) }
+            $errors += [PSCustomObject]@{ Field = 'AppId'; Message = (Get-LogString 'database.validation.appid_exists' @{ AppId = $Application.AppId }) }
         }
     }
 
     # Validate Name
     if ([string]::IsNullOrWhiteSpace($Application.Name)) {
-        $errors += [PSCustomObject]@{ Field = 'Name'; Message = (t 'database.validation.name_required') }
+        $errors += [PSCustomObject]@{ Field = 'Name'; Message = (Get-LogString 'database.validation.name_required') }
     }
 
     # Validate Category
     if ([string]::IsNullOrWhiteSpace($Application.Category)) {
-        $errors += [PSCustomObject]@{ Field = 'Category'; Message = (t 'database.validation.category_required') }
+        $errors += [PSCustomObject]@{ Field = 'Category'; Message = (Get-LogString 'database.validation.category_required') }
     }
 
     # Validate Sources
@@ -1383,26 +1383,26 @@ function Test-ApplicationConfiguration {
     }
 
     if (-not $hasSources) {
-        $errors += [PSCustomObject]@{ Field = 'Sources'; Message = (t 'database.validation.source_required') }
+        $errors += [PSCustomObject]@{ Field = 'Sources'; Message = (Get-LogString 'database.validation.source_required') }
     }
 
     # Validate DirectUrl format if provided
     if ($Application.Sources -and -not [string]::IsNullOrWhiteSpace($Application.Sources.DirectUrl)) {
         if ($Application.Sources.DirectUrl -notmatch '^https?://') {
-            $errors += [PSCustomObject]@{ Field = 'Sources.DirectUrl'; Message = (t 'database.validation.directurl_format') }
+            $errors += [PSCustomObject]@{ Field = 'Sources.DirectUrl'; Message = (Get-LogString 'database.validation.directurl_format') }
         }
     }
 
     # Validate Homepage format if provided
     if (-not [string]::IsNullOrWhiteSpace($Application.Homepage)) {
         if ($Application.Homepage -notmatch '^https?://') {
-            $errors += [PSCustomObject]@{ Field = 'Homepage'; Message = (t 'database.validation.homepage_format') }
+            $errors += [PSCustomObject]@{ Field = 'Homepage'; Message = (Get-LogString 'database.validation.homepage_format') }
         }
     }
 
     # Validate Priority
     if ($Application.DefaultPriority -and ($Application.DefaultPriority -lt 1 -or $Application.DefaultPriority -gt 100)) {
-        $errors += [PSCustomObject]@{ Field = 'DefaultPriority'; Message = (t 'database.validation.priority_range') }
+        $errors += [PSCustomObject]@{ Field = 'DefaultPriority'; Message = (Get-LogString 'database.validation.priority_range') }
     }
 
     return [PSCustomObject]@{
@@ -1455,7 +1455,7 @@ function Set-Application {
         if ($null -eq $database) {
             return [PSCustomObject]@{
                 Success = $false
-                Errors = @([PSCustomObject]@{ Field = 'Database'; Message = (t 'database.load.failed_short') })
+                Errors = @([PSCustomObject]@{ Field = 'Database'; Message = (Get-LogString 'database.load.failed_short') })
             }
         }
 
@@ -1528,7 +1528,7 @@ function Remove-Application {
         if ($null -eq $existing) {
             return [PSCustomObject]@{
                 Success = $false
-                Error = (t 'database.application.not_found' @{ AppId = $AppId })
+                Error = (Get-LogString 'database.application.not_found' @{ AppId = $AppId })
             }
         }
 
@@ -1537,7 +1537,7 @@ function Remove-Application {
         if ($null -eq $database) {
             return [PSCustomObject]@{
                 Success = $false
-                Error = (t 'database.load.failed_short')
+                Error = (Get-LogString 'database.load.failed_short')
             }
         }
 
@@ -1596,7 +1596,7 @@ function Import-ApplicationsFromFile {
         if (-not (Test-Path $Path)) {
             return [PSCustomObject]@{
                 Success = $false
-                Error = (t 'database.import.file_not_found' @{ Path = $Path })
+                Error = (Get-LogString 'database.import.file_not_found' @{ Path = $Path })
             }
         }
 
@@ -1607,7 +1607,7 @@ function Import-ApplicationsFromFile {
         if ($null -eq $importApps) {
             return [PSCustomObject]@{
                 Success = $false
-                Error = (t 'database.import.no_applications')
+                Error = (Get-LogString 'database.import.no_applications')
             }
         }
 
@@ -1704,7 +1704,7 @@ function Export-ApplicationsToFile {
     try {
         $database = Get-ApplicationDatabase
         if ($null -eq $database) {
-            Write-Error (t 'database.load.failed_short')
+            Write-Error (Get-LogString 'database.load.failed_short')
             return $false
         }
 
@@ -1730,7 +1730,7 @@ function Export-ApplicationsToFile {
         return $true
     }
     catch {
-        Write-Error (t 'database.export.failed' @{ Error = $_.Exception.Message })
+        Write-Error (Get-LogString 'database.export.failed' @{ Error = $_.Exception.Message })
         return $false
     }
 }

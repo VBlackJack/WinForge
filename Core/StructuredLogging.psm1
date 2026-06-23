@@ -49,7 +49,7 @@ if (-not (Get-Command -Name Get-WinForgeDirectory -ErrorAction SilentlyContinue)
 }
 
 # Import Localization module for i18n support
-if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Get-LogString -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:LocalizationModulePath) {
         Import-Module -Name $script:LocalizationModulePath -Force
     }
@@ -152,7 +152,7 @@ function Initialize-StructuredLogging {
         try {
             New-Item -Path $jsonDir -ItemType Directory -Force | Out-Null
         } catch {
-            Write-Warning (t 'core.logging.json_dir_create_failed' @{ Error = $_.Exception.Message })
+            Write-Warning (Get-LogString 'core.logging.json_dir_create_failed' @{ Error = $_.Exception.Message })
         }
     }
 
@@ -171,7 +171,7 @@ function Initialize-StructuredLogging {
     $script:LoggingState.Initialized = $true
 
     # Write initialization log entry
-    Write-StructuredLog -Level 'Info' -Category 'System' -Message (t 'core.logging.initialized') -Data @{
+    Write-StructuredLog -Level 'Info' -Category 'System' -Message (Get-LogString 'core.logging.initialized') -Data @{
         SessionId = $script:LoggingState.SessionId
         JsonLogPath = $script:LoggingState.JsonLogPath
         ComputerName = $env:COMPUTERNAME
@@ -426,7 +426,7 @@ function Invoke-LogRotationIfNeeded {
                 sessionId = $script:LoggingState.SessionId
                 level = 'Info'
                 category = 'System'
-                message = (t 'core.logging.log_rotated' @{ SizeMB = $maxSizeMB })
+                message = (Get-LogString 'core.logging.log_rotated' @{ SizeMB = $maxSizeMB })
                 data = @{
                     previousLogSize = $fileInfo.Length
                     newLogPath = $newLogPath
@@ -438,8 +438,8 @@ function Invoke-LogRotationIfNeeded {
             $script:LoggingState.JsonLogPath = $newLogPath
 
             # Write initialization entry to new file
-            Write-StructuredLog -Level 'Info' -Category 'System' -Message (t 'core.logging.log_file_rotated') -Data @{
-                reason = (t 'core.logging.reason_size_limit')
+            Write-StructuredLog -Level 'Info' -Category 'System' -Message (Get-LogString 'core.logging.log_file_rotated') -Data @{
+                reason = (Get-LogString 'core.logging.reason_size_limit')
                 previousLogSize = $fileInfo.Length
             }
         }
@@ -582,7 +582,7 @@ function Export-LogsToJson {
 
     $jsonDir = $script:LoggingState.Config.JsonLogging.Directory
     if (-not (Test-Path -Path $jsonDir)) {
-        Write-Warning (t 'core.logging.json_dir_not_found' @{ Path = $jsonDir })
+        Write-Warning (Get-LogString 'core.logging.json_dir_not_found' @{ Path = $jsonDir })
         return
     }
 
@@ -925,7 +925,7 @@ function Expand-ArchivedLog {
         $extractedFile = Join-Path $OutputPath ([System.IO.Path]::GetFileNameWithoutExtension($ArchivePath))
         return $extractedFile
     } catch {
-        Write-Error (t 'core.logging.expand_archive_failed' @{ Error = $_.Exception.Message })
+        Write-Error (Get-LogString 'core.logging.expand_archive_failed' @{ Error = $_.Exception.Message })
         return $null
     }
 }
@@ -949,7 +949,7 @@ function Close-StructuredLogging {
     }
 
     # Write close entry
-    Write-StructuredLog -Level 'Info' -Category 'System' -Message (t 'core.logging.session_closed') -Data @{
+    Write-StructuredLog -Level 'Info' -Category 'System' -Message (Get-LogString 'core.logging.session_closed') -Data @{
         SessionId = $script:LoggingState.SessionId
         Duration = ((Get-Date) - $script:LoggingState.StartTime).ToString()
     }

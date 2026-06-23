@@ -38,7 +38,7 @@ $script:RepositoryRoot = Split-Path $script:ModuleLoaderRoot -Parent
 
 # Import Localization module for i18n support
 $script:LocalizationModulePath = Join-Path $script:ModuleLoaderRoot 'Localization.psm1'
-if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Get-LogString -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:LocalizationModulePath) {
         try {
             Import-Module -Name $script:LocalizationModulePath -Force -ErrorAction SilentlyContinue
@@ -57,6 +57,7 @@ $script:CommandToModuleMap = @{
 
     # Localization.psm1 exports
     'Get-LocalizedString'    = 'Core\Localization.psm1'
+    'Get-LogString'          = 'Core\Localization.psm1'
 
     # DirectoryConstants.psm1 exports
     'Get-WinForgePath'     = 'Core\DirectoryConstants.psm1'
@@ -172,7 +173,7 @@ function Import-CoreDependency {
 
         # Look up the module for this command
         if (-not $script:CommandToModuleMap.ContainsKey($CommandName)) {
-            Write-Warning (t 'core.moduleLoader.unknown_command' @{ CommandName = $CommandName })
+            Write-Warning (Get-LogString 'core.moduleLoader.unknown_command' @{ CommandName = $CommandName })
             return $false
         }
 
@@ -191,11 +192,11 @@ function Import-CoreDependency {
                 $script:LoadedModules[$modulePath] = $true
                 return $true
             } catch {
-                Write-Warning (t 'core.moduleLoader.import_failed' @{ ModulePath = $modulePath; Error = $_.Exception.Message })
+                Write-Warning (Get-LogString 'core.moduleLoader.import_failed' @{ ModulePath = $modulePath; Error = $_.Exception.Message })
                 return $false
             }
         } else {
-            Write-Warning (t 'core.moduleLoader.not_found' @{ ModulePath = $modulePath })
+            Write-Warning (Get-LogString 'core.moduleLoader.not_found' @{ ModulePath = $modulePath })
             return $false
         }
     }
@@ -216,9 +217,9 @@ function Import-CoreDependencies {
     .OUTPUTS
         [bool] True if all commands are now available, false otherwise.
     .EXAMPLE
-        Import-CoreDependencies -CommandNames @('Write-Status', 'Get-LocalizedString')
+        Import-CoreDependencies -CommandNames @('Write-Status', 'Get-LogString')
     .EXAMPLE
-        Import-CoreDependencies -CommandNames @('Write-Status', 'Get-LocalizedString') -ThrowOnFailure
+        Import-CoreDependencies -CommandNames @('Write-Status', 'Get-LogString') -ThrowOnFailure
     #>
     [CmdletBinding()]
     [OutputType([bool])]
@@ -243,7 +244,7 @@ function Import-CoreDependencies {
     }
 
     if (-not $allSuccess -and $ThrowOnFailure) {
-        throw (New-ValidationException -Message (t 'core.moduleLoader.dependencies_failed' @{ Commands = ($failedCommands -join ', ') }))
+        throw (New-ValidationException -Message (Get-LogString 'core.moduleLoader.dependencies_failed' @{ Commands = ($failedCommands -join ', ') }))
     }
 
     return $allSuccess
@@ -255,7 +256,7 @@ function Initialize-WinForgeModule {
         Initializes a WinForge feature module with standard dependencies.
     .DESCRIPTION
         Convenience function that imports the most commonly used core
-        dependencies (Write-Status, Get-LocalizedString) and optionally
+        dependencies (Write-Status, Get-LogString for backend logs) and optionally
         additional specified commands.
 
         This function should be called at the top of feature modules
@@ -288,7 +289,7 @@ function Initialize-WinForgeModule {
     )
 
     # Build list of commands to import
-    $commands = @('Write-Status', 'Get-LocalizedString')
+    $commands = @('Write-Status', 'Get-LogString')
 
     if ($IncludeFeatureFlags) {
         $commands += 'Test-FeatureEnabled'
@@ -341,4 +342,3 @@ Export-ModuleMember -Function @(
     'Initialize-WinForgeModule',
     'Get-ModuleLoadStatus'
 )
-

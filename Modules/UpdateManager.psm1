@@ -49,7 +49,7 @@ if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue) -or
 
 # Import Localization module for i18n support
 $script:LocalizationModulePath = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
-if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Get-LogString -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:LocalizationModulePath) {
         Import-Module -Name $script:LocalizationModulePath -Force
     }
@@ -384,8 +384,8 @@ function Get-WingetUpdatesBatch {
         ((Get-Date) - $script:BatchUpdateCacheTime).TotalMinutes -gt $script:BatchUpdateCacheMaxAgeMinutes
 
     if (-not $Force -and $script:BatchUpdateCache.Count -gt 0 -and -not $cacheExpired) {
-        if (Get-Command -Name 'Get-LocalizedString' -ErrorAction SilentlyContinue) {
-            Write-Verbose (Get-LocalizedString -Key 'optimization.batch_cache_hit' -Parameters @{ Count = $script:BatchUpdateCache.Count })
+        if (Get-Command -Name 'Get-LogString' -ErrorAction SilentlyContinue) {
+            Write-Verbose (Get-LogString -Key 'optimization.batch_cache_hit' -Parameters @{ Count = $script:BatchUpdateCache.Count })
         }
         return $script:BatchUpdateCache
     }
@@ -399,8 +399,8 @@ function Get-WingetUpdatesBatch {
         return $script:BatchUpdateCache
     }
 
-    if (Get-Command -Name 'Get-LocalizedString' -ErrorAction SilentlyContinue) {
-        Write-Status -Message (Get-LocalizedString -Key 'optimization.batch_cache_building') -Level 'Info'
+    if (Get-Command -Name 'Get-LogString' -ErrorAction SilentlyContinue) {
+        Write-Status -Message (Get-LogString -Key 'optimization.batch_cache_building') -Level 'Info'
     }
 
     try {
@@ -471,11 +471,11 @@ function Get-WingetUpdatesBatch {
             }
         }
 
-        if (Get-Command -Name 'Get-LocalizedString' -ErrorAction SilentlyContinue) {
-            Write-Status -Message (Get-LocalizedString -Key 'optimization.batch_cache_built' -Parameters @{ Count = $script:BatchUpdateCache.Count }) -Level 'Success'
+        if (Get-Command -Name 'Get-LogString' -ErrorAction SilentlyContinue) {
+            Write-Status -Message (Get-LogString -Key 'optimization.batch_cache_built' -Parameters @{ Count = $script:BatchUpdateCache.Count }) -Level 'Success'
         }
     } catch {
-        Write-Status -Message (Get-LocalizedString -Key 'update.batch_cache_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Warning'
+        Write-Status -Message (Get-LogString -Key 'update.batch_cache_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Warning'
     }
 
     return $script:BatchUpdateCache
@@ -558,8 +558,8 @@ function Clear-BatchUpdateCache {
     $script:BatchUpdateCache = @{}
     $script:BatchUpdateCacheTime = $null
 
-    if (Get-Command -Name 'Get-LocalizedString' -ErrorAction SilentlyContinue) {
-        Write-Verbose (Get-LocalizedString -Key 'optimization.batch_cache_cleared')
+    if (Get-Command -Name 'Get-LogString' -ErrorAction SilentlyContinue) {
+        Write-Verbose (Get-LogString -Key 'optimization.batch_cache_cleared')
     }
 }
 
@@ -650,7 +650,7 @@ function Get-LatestReleaseInfo {
             }
         }
     } catch {
-        Write-Status -Message (Get-LocalizedString -Key 'update.fetch_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error' -Category 'Update'
+        Write-Status -Message (Get-LogString -Key 'update.fetch_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error' -Category 'Update'
         return $null
     }
 }
@@ -687,7 +687,7 @@ function Test-UpdateAvailable {
     if (-not $latestRelease) {
         return [PSCustomObject]@{
             UpdateAvailable = $false
-            Error = (Get-LocalizedString -Key 'update.fetch_release_failed')
+            Error = (Get-LogString -Key 'update.fetch_release_failed')
             CurrentVersion = $currentVersion
             LatestVersion = $null
             CheckedAt = Get-Date
@@ -808,7 +808,7 @@ function Invoke-DownloadUpdate {
     )
 
     if (-not $ReleaseInfo.Assets -or $ReleaseInfo.Assets.Count -eq 0) {
-        Write-Status -Message (Get-LocalizedString -Key 'update.no_assets') -Level 'Error' -Category 'Update'
+        Write-Status -Message (Get-LogString -Key 'update.no_assets') -Level 'Error' -Category 'Update'
         return $null
     }
 
@@ -822,7 +822,7 @@ function Invoke-DownloadUpdate {
     }
 
     if (-not $asset) {
-        Write-Status -Message (Get-LocalizedString -Key 'update.no_suitable_asset') -Level 'Error' -Category 'Update'
+        Write-Status -Message (Get-LogString -Key 'update.no_suitable_asset') -Level 'Error' -Category 'Update'
         return $null
     }
 
@@ -833,7 +833,7 @@ function Invoke-DownloadUpdate {
 
     $downloadPath = Join-Path $script:UpdateConfig.DownloadDirectory $asset.Name
 
-    Write-Status -Message (Get-LocalizedString -Key 'update.downloading_asset' -Parameters @{ FileName = $asset.Name }) -Level 'Info' -Category 'Update' -StructuredData @{
+    Write-Status -Message (Get-LogString -Key 'update.downloading_asset' -Parameters @{ FileName = $asset.Name }) -Level 'Info' -Category 'Update' -StructuredData @{
         AssetName = $asset.Name
         Size = $asset.Size
         DownloadUrl = $asset.DownloadUrl
@@ -842,10 +842,10 @@ function Invoke-DownloadUpdate {
     try {
         Invoke-WebRequest -Uri $asset.DownloadUrl -OutFile $downloadPath -UseBasicParsing
 
-        Write-Status -Message (Get-LocalizedString -Key 'update.download_completed_path' -Parameters @{ Path = $downloadPath }) -Level 'Success' -Category 'Update'
+        Write-Status -Message (Get-LogString -Key 'update.download_completed_path' -Parameters @{ Path = $downloadPath }) -Level 'Success' -Category 'Update'
         return $downloadPath
     } catch {
-        Write-Status -Message (Get-LocalizedString -Key 'update.download_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error' -Category 'Update'
+        Write-Status -Message (Get-LogString -Key 'update.download_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error' -Category 'Update'
         return $null
     }
 }
@@ -891,16 +891,16 @@ function Backup-CurrentVersion {
 
     $backupPath = Join-Path $script:UpdateConfig.BackupDirectory "$BackupName.zip"
 
-    Write-Status -Message (Get-LocalizedString -Key 'update.backup_creating' -Parameters @{ Name = $BackupName }) -Level 'Info' -Category 'Update'
+    Write-Status -Message (Get-LogString -Key 'update.backup_creating' -Parameters @{ Name = $BackupName }) -Level 'Info' -Category 'Update'
 
     try {
         # Compress the current installation
         Compress-Archive -Path $script:RepositoryRoot -DestinationPath $backupPath -Force
 
-        Write-Status -Message (Get-LocalizedString -Key 'update.backup_created' -Parameters @{ Path = $backupPath }) -Level 'Success' -Category 'Update'
+        Write-Status -Message (Get-LogString -Key 'update.backup_created' -Parameters @{ Path = $backupPath }) -Level 'Success' -Category 'Update'
         return $backupPath
     } catch {
-        Write-Status -Message (Get-LocalizedString -Key 'update.backup_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error' -Category 'Update'
+        Write-Status -Message (Get-LogString -Key 'update.backup_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error' -Category 'Update'
         return $null
     }
 }
@@ -927,7 +927,7 @@ function Restore-PreviousVersion {
         [string]$BackupPath
     )
 
-    Write-Status -Message (Get-LocalizedString -Key 'update.restoring' -Parameters @{ Path = $BackupPath }) -Level 'Info' -Category 'Update'
+    Write-Status -Message (Get-LogString -Key 'update.restoring' -Parameters @{ Path = $BackupPath }) -Level 'Info' -Category 'Update'
 
     try {
         # Extract backup to a temp directory first
@@ -940,9 +940,9 @@ function Restore-PreviousVersion {
         # Cleanup temp directory
         Remove-Item -Path $tempDir -Recurse -Force
 
-        Write-Status -Message (Get-LocalizedString -Key 'update.restore_complete') -Level 'Success' -Category 'Update'
+        Write-Status -Message (Get-LogString -Key 'update.restore_complete') -Level 'Success' -Category 'Update'
     } catch {
-        Write-Status -Message (Get-LocalizedString -Key 'update.restore_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error' -Category 'Update'
+        Write-Status -Message (Get-LogString -Key 'update.restore_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error' -Category 'Update'
         throw
     }
 }
@@ -1014,13 +1014,13 @@ function Install-Update {
         [switch]$CreateBackup = $true
     )
 
-    Write-Status -Message (Get-LocalizedString -Key 'update.installing_from' -Parameters @{ Path = $UpdatePath }) -Level 'Info' -Category 'Update'
+    Write-Status -Message (Get-LogString -Key 'update.installing_from' -Parameters @{ Path = $UpdatePath }) -Level 'Info' -Category 'Update'
 
     # Create backup first
     if ($CreateBackup) {
         $backupPath = Backup-CurrentVersion
         if (-not $backupPath) {
-            Write-Status -Message (Get-LocalizedString -Key 'update.backup_abort') -Level 'Error' -Category 'Update'
+            Write-Status -Message (Get-LogString -Key 'update.backup_abort') -Level 'Error' -Category 'Update'
             return $false
         }
     }
@@ -1036,18 +1036,18 @@ function Install-Update {
         # Cleanup
         Remove-Item -Path $tempDir -Recurse -Force
 
-        Write-Status -Message (Get-LocalizedString -Key 'update.install_success') -Level 'Success' -Category 'Update'
+        Write-Status -Message (Get-LogString -Key 'update.install_success') -Level 'Success' -Category 'Update'
         return $true
     } catch {
-        Write-Status -Message (Get-LocalizedString -Key 'update.install_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error' -Category 'Update'
+        Write-Status -Message (Get-LogString -Key 'update.install_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error' -Category 'Update'
 
         # Attempt restore if backup was created
         if ($CreateBackup -and $backupPath) {
-            Write-Status -Message (Get-LocalizedString -Key 'update.restore_attempt') -Level 'Warning' -Category 'Update'
+            Write-Status -Message (Get-LogString -Key 'update.restore_attempt') -Level 'Warning' -Category 'Update'
             try {
                 Restore-PreviousVersion -BackupPath $backupPath
             } catch {
-                Write-Status -Message (Get-LocalizedString -Key 'update.restore_also_failed') -Level 'Error' -Category 'Update'
+                Write-Status -Message (Get-LogString -Key 'update.restore_also_failed') -Level 'Error' -Category 'Update'
             }
         }
 

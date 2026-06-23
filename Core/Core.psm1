@@ -37,6 +37,7 @@ $script:LogFile = $null
 $script:VerboseLogging = $false
 $script:LoggingEnabled = $true
 $script:StructuredLoggingEnabled = $false
+$script:LocalizationModulePath = Join-Path (Split-Path -Parent $PSCommandPath) 'Localization.psm1'
 
 # === STRUCTURED LOGGING IMPORT ===
 $script:StructuredLoggingPath = Join-Path (Split-Path -Parent $PSCommandPath) 'StructuredLogging.psm1'
@@ -48,6 +49,12 @@ if (Test-Path -Path $script:StructuredLoggingPath) {
         $script:StructuredLoggingEnabled = $false
         # Bootstrap: intentional exception - localization not yet loaded
         Write-Warning "Failed to load StructuredLogging module: $($_.Exception.Message)"
+    }
+}
+
+if (-not (Get-Command -Name Get-LogString -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:LocalizationModulePath) {
+        Import-Module -Name $script:LocalizationModulePath -Force
     }
 }
 
@@ -99,12 +106,12 @@ function Initialize-Logging {
 
     # Initialize log file with header
     $separator = '=' * 80
-    $headerLine = Get-LocalizedString -Key 'log.header' -Parameters @{ Version = $frameworkVersion }
-    $startedLine = Get-LocalizedString -Key 'log.started' -Parameters @{ DateTime = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') }
-    $computerLine = Get-LocalizedString -Key 'log.computer' -Parameters @{ Name = $env:COMPUTERNAME }
-    $userLine = Get-LocalizedString -Key 'log.user' -Parameters @{ Name = $env:USERNAME }
-    $psLine = Get-LocalizedString -Key 'log.powershell_version' -Parameters @{ Version = "$($PSVersionTable.PSVersion)" }
-    $osLine = Get-LocalizedString -Key 'log.os_version' -Parameters @{ OS = [System.Environment]::OSVersion.VersionString }
+    $headerLine = Get-LogString -Key 'log.header' -Parameters @{ Version = $frameworkVersion }
+    $startedLine = Get-LogString -Key 'log.started' -Parameters @{ DateTime = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') }
+    $computerLine = Get-LogString -Key 'log.computer' -Parameters @{ Name = $env:COMPUTERNAME }
+    $userLine = Get-LogString -Key 'log.user' -Parameters @{ Name = $env:USERNAME }
+    $psLine = Get-LogString -Key 'log.powershell_version' -Parameters @{ Version = "$($PSVersionTable.PSVersion)" }
+    $osLine = Get-LogString -Key 'log.os_version' -Parameters @{ OS = [System.Environment]::OSVersion.VersionString }
     $header = @"
 $separator
 $headerLine
@@ -390,7 +397,7 @@ function Invoke-SafeCommand {
         [scriptblock]$ScriptBlock,
 
         [Parameter()]
-        [string]$ErrorMessage = (t 'core.error.operation_failed'),
+        [string]$ErrorMessage = (Get-LogString 'core.error.operation_failed'),
 
         [Parameter()]
         [switch]$ContinueOnError
@@ -405,7 +412,7 @@ function Invoke-SafeCommand {
         Write-Status -Message "$ErrorMessage : $errorDetail" -Level 'Error'
 
         if ($script:VerboseLogging) {
-            Write-Status -Message (t 'core.error.stack_trace' @{ StackTrace = $_.ScriptStackTrace }) -Level 'Verbose'
+            Write-Status -Message (Get-LogString 'core.error.stack_trace' @{ StackTrace = $_.ScriptStackTrace }) -Level 'Verbose'
         }
 
         if (-not $ContinueOnError) {
@@ -459,7 +466,7 @@ function Test-InternetConnection {
         return $result
     }
     catch {
-        Write-Status -Message (Get-LocalizedString -Key 'core.internet_check_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
+        Write-Status -Message (Get-LogString -Key 'core.internet_check_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
         return $false
     }
 }
@@ -476,9 +483,9 @@ function Assert-Administrator {
     param()
 
     if (-not (Test-Administrator)) {
-        Write-Status -Message (Get-LocalizedString -Key 'core.admin_required') -Level 'Error'
-        Write-Status -Message (Get-LocalizedString -Key 'core.admin_run_as') -Level 'Error'
-        throw (Get-LocalizedString -Key 'core.admin_required')
+        Write-Status -Message (Get-LogString -Key 'core.admin_required') -Level 'Error'
+        Write-Status -Message (Get-LogString -Key 'core.admin_run_as') -Level 'Error'
+        throw (Get-LogString -Key 'core.admin_required')
     }
 }
 
@@ -493,15 +500,15 @@ function Assert-InternetConnection {
     [CmdletBinding()]
     param()
 
-    Write-Status -Message (Get-LocalizedString -Key 'core.internet_checking') -Level 'Info'
+    Write-Status -Message (Get-LogString -Key 'core.internet_checking') -Level 'Info'
 
     if (-not (Test-InternetConnection)) {
-        Write-Status -Message (Get-LocalizedString -Key 'core.internet_no_connection') -Level 'Error'
-        Write-Status -Message (Get-LocalizedString -Key 'core.internet_ensure_connection') -Level 'Error'
-        throw (Get-LocalizedString -Key 'core.internet_no_connection')
+        Write-Status -Message (Get-LogString -Key 'core.internet_no_connection') -Level 'Error'
+        Write-Status -Message (Get-LogString -Key 'core.internet_ensure_connection') -Level 'Error'
+        throw (Get-LogString -Key 'core.internet_no_connection')
     }
 
-    Write-Status -Message (Get-LocalizedString -Key 'core.internet_verified') -Level 'Success'
+    Write-Status -Message (Get-LogString -Key 'core.internet_verified') -Level 'Success'
 }
 
 # === UTILITY FUNCTIONS ===
@@ -781,7 +788,7 @@ function Clear-TemporaryFiles {
     )
 
     if (-not (Test-Path -Path $Path)) {
-        Write-Status -Message (t 'core.cleanup.path_not_found' @{ Path = $Path }) -Level 'Verbose'
+        Write-Status -Message (Get-LogString 'core.cleanup.path_not_found' @{ Path = $Path }) -Level 'Verbose'
         return
     }
 
@@ -797,23 +804,23 @@ function Clear-TemporaryFiles {
                 $count++
             }
             catch {
-                Write-Status -Message (t 'core.cleanup.could_not_remove' @{ FileName = $file.Name }) -Level 'Verbose'
+                Write-Status -Message (Get-LogString 'core.cleanup.could_not_remove' @{ FileName = $file.Name }) -Level 'Verbose'
             }
         }
 
         if ($count -gt 0) {
-            Write-Status -Message (Get-LocalizedString -Key 'core.cleaned_temp_files' -Parameters @{ Count = $count }) -Level 'Info'
+            Write-Status -Message (Get-LogString -Key 'core.cleaned_temp_files' -Parameters @{ Count = $count }) -Level 'Info'
         }
     }
     catch {
-        Write-Status -Message (t 'core.cleanup.error' @{ Error = $_.Exception.Message }) -Level 'Verbose'
+        Write-Status -Message (Get-LogString 'core.cleanup.error' @{ Error = $_.Exception.Message }) -Level 'Verbose'
     }
 }
 
 # === LOCALIZATION INTEGRATION ===
 
 $script:LocalizationModulePath = Join-Path -Path $PSScriptRoot -ChildPath 'Localization.psm1'
-if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Get-LogString -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:LocalizationModulePath) {
         try {
             Import-Module -Name $script:LocalizationModulePath -Force -ErrorAction Stop

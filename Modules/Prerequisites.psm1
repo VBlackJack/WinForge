@@ -67,7 +67,7 @@ if (Test-Path -Path $script:ModuleLoaderPath) {
     }
 }
 
-if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Get-LogString -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:LocalizationModulePath) {
         Import-Module -Name $script:LocalizationModulePath -Force -ErrorAction SilentlyContinue
     }
@@ -125,11 +125,11 @@ function Get-DownloadSources {
                 $script:DownloadSources = $content | ConvertFrom-Json -ErrorAction Stop
             }
             catch {
-                throw (Get-LocalizedString -Key 'prerequisites.config.load_failed' -Parameters @{ Error = $_.Exception.Message })
+                throw (Get-LogString -Key 'prerequisites.config.load_failed' -Parameters @{ Error = $_.Exception.Message })
             }
         }
         else {
-            throw (Get-LocalizedString -Key 'prerequisites.config.not_found' -Parameters @{ Path = $script:DownloadSourcesPath })
+            throw (Get-LogString -Key 'prerequisites.config.not_found' -Parameters @{ Path = $script:DownloadSourcesPath })
         }
     }
 
@@ -220,7 +220,7 @@ function Invoke-EnvironmentRefresh {
     # Force Get-Command cache refresh
     Get-Command -All | Out-Null
 
-    Write-Status -Message (Get-LocalizedString -Key 'prerequisites.environment.refreshed') -Level 'Success'
+    Write-Status -Message (Get-LogString -Key 'prerequisites.environment.refreshed') -Level 'Success'
 }
 
 # === HELPER FUNCTIONS ===
@@ -296,12 +296,12 @@ function Install-Chocolatey {
     $chocolateyAvailable = Test-CommandAvailable -Name 'choco'
 
     if ($chocolateyAvailable -and -not $Force) {
-        Write-Status -Message (Get-LocalizedString -Key 'prerequisites.chocolatey.already_installed') -Level 'Info'
+        Write-Status -Message (Get-LogString -Key 'prerequisites.chocolatey.already_installed') -Level 'Info'
         return $true
     }
 
     try {
-        Write-Status -Message (Get-LocalizedString -Key 'prerequisites.chocolatey.installing') -Level 'Info'
+        Write-Status -Message (Get-LogString -Key 'prerequisites.chocolatey.installing') -Level 'Info'
 
         Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
@@ -321,7 +321,7 @@ function Install-Chocolatey {
 
         try {
             # Download latest Chocolatey nupkg
-            Write-Status -Message (Get-LocalizedString -Key 'prerequisites.chocolatey.downloading') -Level 'Info'
+            Write-Status -Message (Get-LogString -Key 'prerequisites.chocolatey.downloading') -Level 'Info'
             $chocoNupkg = Join-Path $chocoTempPath 'chocolatey.nupkg'
             $sources = Get-DownloadSources
             $chocoUrl = $sources.prerequisites.chocolatey.downloadUrl
@@ -332,7 +332,7 @@ function Install-Chocolatey {
             Invoke-WebRequest -Uri $chocoUrl -OutFile $chocoNupkg -UseBasicParsing -ErrorAction Stop
 
             # Extract nupkg (it's just a ZIP file)
-            Write-Status -Message (Get-LocalizedString -Key 'prerequisites.chocolatey.extracting') -Level 'Info'
+            Write-Status -Message (Get-LogString -Key 'prerequisites.chocolatey.extracting') -Level 'Info'
             $chocoExtractPath = Join-Path $chocoTempPath 'chocolatey'
             [System.IO.Compression.ZipFile]::ExtractToDirectory($chocoNupkg, $chocoExtractPath)
 
@@ -344,14 +344,14 @@ function Install-Chocolatey {
 
             $expectedPublisher = $sources.prerequisites.chocolatey.expectedPublisher
             if ([string]::IsNullOrWhiteSpace($expectedPublisher) -or -not (Test-InstallerSignature -FilePath $installScript -ExpectedPublisher $expectedPublisher)) {
-                throw (New-InstallationException -Message (Get-LocalizedString -Key 'prerequisites.chocolatey.signature_failed' -Parameters @{ Path = $installScript; ExpectedPublisher = $expectedPublisher }) -AppName 'Chocolatey')
+                throw (New-InstallationException -Message (Get-LogString -Key 'prerequisites.chocolatey.signature_failed' -Parameters @{ Path = $installScript; ExpectedPublisher = $expectedPublisher }) -AppName 'Chocolatey')
             }
 
             # Set environment variable for Chocolatey install path
             $env:ChocolateyInstall = $chocoInstallPath
 
             # Create Chocolatey directory structure
-            Write-Status -Message (Get-LocalizedString -Key 'prerequisites.chocolatey.setup_dirs') -Level 'Info'
+            Write-Status -Message (Get-LogString -Key 'prerequisites.chocolatey.setup_dirs') -Level 'Info'
             $chocoLibPath = Join-Path $chocoInstallPath 'lib'
             $chocoBinPath = Join-Path $chocoInstallPath 'bin'
             New-Item -ItemType Directory -Path $chocoLibPath -Force | Out-Null
@@ -365,7 +365,7 @@ function Install-Chocolatey {
             Copy-Item $chocoExtractPath -Destination $chocoLibChoco -Recurse
 
             # Run the chocolatey install script
-            Write-Status -Message (Get-LocalizedString -Key 'prerequisites.chocolatey.running_setup') -Level 'Info'
+            Write-Status -Message (Get-LogString -Key 'prerequisites.chocolatey.running_setup') -Level 'Info'
             & $installScript
 
             # Add Chocolatey to PATH if not already there
@@ -388,16 +388,16 @@ function Install-Chocolatey {
         Invoke-EnvironmentRefresh
 
     } catch {
-        Write-Status -Message (Get-LocalizedString -Key 'prerequisites.chocolatey.install_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
+        Write-Status -Message (Get-LogString -Key 'prerequisites.chocolatey.install_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
         throw (New-InstallationException -Message "Chocolatey installation failed: $($_.Exception.Message)" -AppName 'Chocolatey')
     }
 
     if (Test-CommandAvailable -Name 'choco') {
-        Write-Status -Message (Get-LocalizedString -Key 'prerequisites.chocolatey.installed_success') -Level 'Success'
+        Write-Status -Message (Get-LogString -Key 'prerequisites.chocolatey.installed_success') -Level 'Success'
         return $true
     }
 
-    Write-Status -Message (Get-LocalizedString -Key 'prerequisites.chocolatey.install_failed_unknown') -Level 'Error'
+    Write-Status -Message (Get-LogString -Key 'prerequisites.chocolatey.install_failed_unknown') -Level 'Error'
     return $false
 }
 
@@ -418,11 +418,11 @@ function Install-PowerShell7 {
     $currentVersion = $PSVersionTable.PSVersion
 
     if ($currentVersion.Major -ge 7 -and -not $Force) {
-        Write-Status -Message (Get-LocalizedString -Key 'prerequisites.powershell.already_installed' -Parameters @{ Version = $currentVersion }) -Level 'Info'
+        Write-Status -Message (Get-LogString -Key 'prerequisites.powershell.already_installed' -Parameters @{ Version = $currentVersion }) -Level 'Info'
         return $true
     }
 
-    Write-Status -Message (Get-LocalizedString -Key 'prerequisites.powershell.installing') -Level 'Info'
+    Write-Status -Message (Get-LogString -Key 'prerequisites.powershell.installing') -Level 'Info'
 
     # Try Winget first
     if (Test-CommandAvailable -Name 'winget') {
@@ -431,8 +431,8 @@ function Install-PowerShell7 {
             if ($Force) { $arguments += '--force' }
 
             if (Invoke-ExternalProcess -FilePath 'winget' -ArgumentList $arguments -RefreshEnvironment) {
-                Write-Status -Message (Get-LocalizedString -Key 'prerequisites.powershell.completed') -Level 'Success'
-                Write-Status -Message (Get-LocalizedString -Key 'prerequisites.powershell.restart_required') -Level 'Warning'
+                Write-Status -Message (Get-LogString -Key 'prerequisites.powershell.completed') -Level 'Success'
+                Write-Status -Message (Get-LogString -Key 'prerequisites.powershell.restart_required') -Level 'Warning'
                 return $true
             }
         } catch {
@@ -447,8 +447,8 @@ function Install-PowerShell7 {
             if ($Force) { $arguments += '--force' }
 
             if (Invoke-ExternalProcess -FilePath 'choco' -ArgumentList $arguments -RefreshEnvironment) {
-                Write-Status -Message (Get-LocalizedString -Key 'prerequisites.powershell.completed') -Level 'Success'
-                Write-Status -Message (Get-LocalizedString -Key 'prerequisites.powershell.restart_required') -Level 'Warning'
+                Write-Status -Message (Get-LogString -Key 'prerequisites.powershell.completed') -Level 'Success'
+                Write-Status -Message (Get-LogString -Key 'prerequisites.powershell.restart_required') -Level 'Warning'
                 return $true
             }
         } catch {
@@ -458,7 +458,7 @@ function Install-PowerShell7 {
 
     # Direct download as last resort
     try {
-        Write-Status -Message (Get-LocalizedString -Key 'prerequisites.powershell.direct_download') -Level 'Info'
+        Write-Status -Message (Get-LogString -Key 'prerequisites.powershell.direct_download') -Level 'Info'
 
         $sources = Get-DownloadSources
         $downloadUrl = $sources.prerequisites.powershell7.downloadUrl
@@ -470,23 +470,23 @@ function Install-PowerShell7 {
 
         # SHA256 checksum validation
         if ($expectedHash -and $expectedHash -ne 'SKIP_VALIDATION') {
-            Write-Status -Message (Get-LocalizedString -Key 'download.validating_checksum') -Level 'Info'
+            Write-Status -Message (Get-LogString -Key 'download.validating_checksum') -Level 'Info'
             if (-not (Assert-FileChecksum -Path $tempPath -ExpectedSHA256 $expectedHash)) {
                 $actualHash = (Get-FileHash -Path $tempPath -Algorithm SHA256).Hash
-                Write-Status -Message (Get-LocalizedString -Key 'download.checksum_failed' -Parameters @{ Expected = $expectedHash; Got = $actualHash }) -Level 'Error'
+                Write-Status -Message (Get-LogString -Key 'download.checksum_failed' -Parameters @{ Expected = $expectedHash; Got = $actualHash }) -Level 'Error'
                 Remove-Item -Path $tempPath -Force -ErrorAction SilentlyContinue
-                throw (New-InstallationException -Message (Get-LocalizedString -Key 'download.checksum_failed' -Parameters @{ Expected = $expectedHash; Got = $actualHash }) -AppName 'PowerShell 7')
+                throw (New-InstallationException -Message (Get-LogString -Key 'download.checksum_failed' -Parameters @{ Expected = $expectedHash; Got = $actualHash }) -AppName 'PowerShell 7')
             }
 
             $actualHash = (Get-FileHash -Path $tempPath -Algorithm SHA256).Hash
-            Write-Status -Message (Get-LocalizedString -Key 'download.checksum_passed' -Parameters @{ Hash = $actualHash }) -Level 'Success'
+            Write-Status -Message (Get-LogString -Key 'download.checksum_passed' -Parameters @{ Hash = $actualHash }) -Level 'Success'
         }
 
         $arguments = @('/i', "`"$tempPath`"", '/qn', '/norestart', 'ADD_PATH=1', 'ENABLE_MU=1')
         if (Invoke-ExternalProcess -FilePath 'msiexec.exe' -ArgumentList $arguments -RefreshEnvironment) {
             Remove-Item -Path $tempPath -Force -ErrorAction SilentlyContinue
-            Write-Status -Message (Get-LocalizedString -Key 'prerequisites.powershell.completed') -Level 'Success'
-            Write-Status -Message (Get-LocalizedString -Key 'prerequisites.powershell.restart_required') -Level 'Warning'
+            Write-Status -Message (Get-LogString -Key 'prerequisites.powershell.completed') -Level 'Success'
+            Write-Status -Message (Get-LogString -Key 'prerequisites.powershell.restart_required') -Level 'Warning'
             return $true
         }
 
@@ -495,7 +495,7 @@ function Install-PowerShell7 {
         Write-Verbose "Direct download failed: $($_.Exception.Message)"
     }
 
-    Write-Status -Message (Get-LocalizedString -Key 'prerequisites.powershell.install_failed_unknown') -Level 'Error'
+    Write-Status -Message (Get-LogString -Key 'prerequisites.powershell.install_failed_unknown') -Level 'Error'
     return $false
 }
 
@@ -561,7 +561,7 @@ function Install-DotNetRuntime {
     $allSucceeded = $true
 
     foreach ($runtime in $runtimes) {
-        Write-Status -Message (Get-LocalizedString -Key 'prerequisites.dotnet.installing' -Parameters @{ Name = $runtime.Name }) -Level 'Info'
+        Write-Status -Message (Get-LogString -Key 'prerequisites.dotnet.installing' -Parameters @{ Name = $runtime.Name }) -Level 'Info'
         $installed = $false
 
         # Try Winget first
@@ -581,9 +581,9 @@ function Install-DotNetRuntime {
         }
 
         if ($installed) {
-            Write-Status -Message (Get-LocalizedString -Key 'prerequisites.dotnet.installed_success' -Parameters @{ Name = $runtime.Name }) -Level 'Success'
+            Write-Status -Message (Get-LogString -Key 'prerequisites.dotnet.installed_success' -Parameters @{ Name = $runtime.Name }) -Level 'Success'
         } else {
-            Write-Status -Message (Get-LocalizedString -Key 'prerequisites.dotnet.install_failed' -Parameters @{ Name = $runtime.Name }) -Level 'Warning'
+            Write-Status -Message (Get-LogString -Key 'prerequisites.dotnet.install_failed' -Parameters @{ Name = $runtime.Name }) -Level 'Warning'
             $allSucceeded = $false
         }
     }
@@ -624,7 +624,7 @@ function Install-VCRedist {
     $allSucceeded = $true
 
     foreach ($vcRedist in $vcRedists) {
-        Write-Status -Message (Get-LocalizedString -Key 'prerequisites.vcredist.installing' -Parameters @{ Name = $vcRedist.Name }) -Level 'Info'
+        Write-Status -Message (Get-LogString -Key 'prerequisites.vcredist.installing' -Parameters @{ Name = $vcRedist.Name }) -Level 'Info'
         $installed = $false
 
         # Try Chocolatey first (more reliable for VCRedist)
@@ -645,9 +645,9 @@ function Install-VCRedist {
         }
 
         if ($installed) {
-            Write-Status -Message (Get-LocalizedString -Key 'prerequisites.vcredist.installed_success' -Parameters @{ Name = $vcRedist.Name }) -Level 'Success'
+            Write-Status -Message (Get-LogString -Key 'prerequisites.vcredist.installed_success' -Parameters @{ Name = $vcRedist.Name }) -Level 'Success'
         } else {
-            Write-Status -Message (Get-LocalizedString -Key 'prerequisites.vcredist.install_failed' -Parameters @{ Name = $vcRedist.Name }) -Level 'Warning'
+            Write-Status -Message (Get-LogString -Key 'prerequisites.vcredist.install_failed' -Parameters @{ Name = $vcRedist.Name }) -Level 'Warning'
             $allSucceeded = $false
         }
     }
@@ -674,7 +674,7 @@ function Install-JavaRuntime {
     try {
         & java -version 2>&1 | Out-Null
         if ($LASTEXITCODE -eq 0 -and -not $Force) {
-            Write-Status -Message (Get-LocalizedString -Key 'prerequisites.java.already_installed') -Level 'Info'
+            Write-Status -Message (Get-LogString -Key 'prerequisites.java.already_installed') -Level 'Info'
             $javaVersion = & java -version 2>&1 | Select-Object -First 1
             Write-Verbose "Detected: $javaVersion"
             return $true
@@ -684,7 +684,7 @@ function Install-JavaRuntime {
         Write-Verbose "Java detection failed, continuing with installation: $($_.Exception.Message)"
     }
 
-    Write-Status -Message (Get-LocalizedString -Key 'prerequisites.java.installing') -Level 'Info'
+    Write-Status -Message (Get-LogString -Key 'prerequisites.java.installing') -Level 'Info'
     $installed = $false
 
     # Get Java configuration from download-sources.json
@@ -735,7 +735,7 @@ function Install-JavaRuntime {
         try {
             & java -version 2>&1 | Out-Null
             if ($LASTEXITCODE -eq 0) {
-                Write-Status -Message (Get-LocalizedString -Key 'prerequisites.java.installed_verified') -Level 'Success'
+                Write-Status -Message (Get-LogString -Key 'prerequisites.java.installed_verified') -Level 'Success'
                 return $true
             }
         } catch {
@@ -743,7 +743,7 @@ function Install-JavaRuntime {
         }
     }
 
-    Write-Status -Message (Get-LocalizedString -Key 'prerequisites.java.install_failed') -Level 'Warning'
+    Write-Status -Message (Get-LogString -Key 'prerequisites.java.install_failed') -Level 'Warning'
     return $false
 }
 
@@ -872,7 +872,7 @@ function Start-PrerequisitesInstallation {
     [CmdletBinding()]
     param([switch]$Force)
 
-    Write-Status -Message (Get-LocalizedString -Key 'prerequisites.workflow.starting') -Level 'Info'
+    Write-Status -Message (Get-LogString -Key 'prerequisites.workflow.starting') -Level 'Info'
 
     try {
         # Install package managers first
@@ -883,20 +883,20 @@ function Start-PrerequisitesInstallation {
         Install-PowerShell7 -Force:$Force | Out-Null
 
         # Install runtimes
-        Write-Status -Message (Get-LocalizedString -Key 'prerequisites.workflow.installing_runtimes') -Level 'Info'
+        Write-Status -Message (Get-LogString -Key 'prerequisites.workflow.installing_runtimes') -Level 'Info'
         Install-DotNetRuntime -Force:$Force | Out-Null
         Install-VCRedist -Force:$Force | Out-Null
         Install-JavaRuntime -Force:$Force | Out-Null
 
         # Final environment refresh
-        Write-Status -Message (Get-LocalizedString -Key 'prerequisites.workflow.final_refresh') -Level 'Info'
+        Write-Status -Message (Get-LogString -Key 'prerequisites.workflow.final_refresh') -Level 'Info'
         Invoke-EnvironmentRefresh
 
         # Test and report results
         $results = Test-Prerequisites
 
         Write-Host ""
-        Write-Status -Message (Get-LocalizedString -Key 'prerequisites.workflow.summary_title') -Level 'Info'
+        Write-Status -Message (Get-LogString -Key 'prerequisites.workflow.summary_title') -Level 'Info'
 
         foreach ($key in $results.Keys) {
             $status = if ($results[$key].Installed) { '[OK]' } else { '[MISSING]' }
@@ -904,11 +904,11 @@ function Start-PrerequisitesInstallation {
             Write-Status -Message "$status $key : $($results[$key].Version)" -Level $statusLevel
         }
 
-        Write-Status -Message (Get-LocalizedString -Key 'prerequisites.workflow.completed') -Level 'Success'
+        Write-Status -Message (Get-LogString -Key 'prerequisites.workflow.completed') -Level 'Success'
 
         return $results
     } catch {
-        Write-Status -Message (Get-LocalizedString -Key 'prerequisites.workflow.failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
+        Write-Status -Message (Get-LogString -Key 'prerequisites.workflow.failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
         throw
     }
 }

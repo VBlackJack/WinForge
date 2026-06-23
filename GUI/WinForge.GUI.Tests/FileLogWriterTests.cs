@@ -15,6 +15,7 @@
  */
 
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 using WinForge.GUI.Services;
 
@@ -118,6 +119,33 @@ public class FileLogWriterTests
             Assert.Contains("[ERROR]", content, StringComparison.Ordinal);
             Assert.Contains("InvalidOperationException", content, StringComparison.Ordinal);
             Assert.Contains("x", content, StringComparison.Ordinal);
+        }
+        finally
+        {
+            TryDeleteDirectory(tempDirectory);
+        }
+    }
+
+    [Fact]
+    public void Write_UsesUtf8WithoutBom_ForNonAsciiMessages()
+    {
+        string tempDirectory = CreateTempDirectory();
+        try
+        {
+            FileLogWriter writer = new FileLogWriter(tempDirectory);
+            string message = "UTF-8 round trip: café naïve €";
+
+            writer.Write(message);
+
+            string logFilePath = GetTodayLogFilePath(tempDirectory);
+            byte[] bytes = File.ReadAllBytes(logFilePath);
+
+            Assert.False(
+                bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF,
+                "File logs must be UTF-8 without BOM.");
+
+            string content = Encoding.UTF8.GetString(bytes);
+            Assert.Contains(message, content, StringComparison.Ordinal);
         }
         finally
         {

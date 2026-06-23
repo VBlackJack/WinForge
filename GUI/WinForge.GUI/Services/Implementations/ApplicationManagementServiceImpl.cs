@@ -15,6 +15,7 @@
  */
 
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Text.Json;
@@ -39,6 +40,7 @@ public class ApplicationManagementServiceImpl : IApplicationManagementService
     private const string DetectionVersionRegexPropertyName = "VersionRegex";
     private const string DetectionMethodCommand = "Command";
     private static readonly TimeSpan DetectionRegexTimeout = TimeSpan.FromMilliseconds(500);
+    private static readonly CultureInfo LogCulture = CultureInfo.GetCultureInfo("en");
 
     private readonly IRepositoryPathService _pathService;
     private readonly IPowerShellExecutionService _executionService;
@@ -833,7 +835,7 @@ try {{
 
                 string errorMsg = string.IsNullOrEmpty(wingetId) && string.IsNullOrEmpty(chocoPackage)
                     ? (rejectedInvalidPackageId
-                        ? Resources.Resources.AppManagement_InvalidPackageId
+                        ? GetLogResource(nameof(Resources.Resources.AppManagement_InvalidPackageId))
                         : "No uninstall sources available for this application")
                     : "All uninstallation methods failed";
 
@@ -893,7 +895,7 @@ try {{
 
                 if (!PackageIdValidator.IsValidPackageId(wingetId))
                 {
-                    return UpdateCheckResult.Failed(Resources.Resources.AppManagement_CannotDetermineVersion);
+                    return UpdateCheckResult.Failed(GetLogResource(nameof(Resources.Resources.AppManagement_CannotDetermineVersion)));
                 }
 
                 string installedVersion = await GetInstalledVersionAsync(wingetId);
@@ -1043,7 +1045,7 @@ if (Get-Command -Name 'Clear-WingetUpdatesCache' -ErrorAction SilentlyContinue) 
                     ? $"Preferred update source {preferredUpdateSource} is not available for this application"
                     : string.IsNullOrEmpty(wingetId) && string.IsNullOrEmpty(chocoPackage)
                     ? (rejectedInvalidPackageId
-                        ? Resources.Resources.AppManagement_InvalidPackageId
+                        ? GetLogResource(nameof(Resources.Resources.AppManagement_InvalidPackageId))
                         : "No update sources available for this application")
                     : "All update methods failed";
 
@@ -1257,6 +1259,9 @@ if (Get-Command -Name 'Clear-WingetUpdatesCache' -ErrorAction SilentlyContinue) 
         logBuilder.AppendLine($"Rejected invalid {sourceName} package id (failed safe-charset validation)");
         return true;
     }
+
+    private static string GetLogResource(string resourceName)
+        => Resources.Resources.ResourceManager.GetString(resourceName, LogCulture) ?? resourceName;
 
     protected static void AppendVendorOutputSummary(StringBuilder logBuilder, string output, string error)
     {

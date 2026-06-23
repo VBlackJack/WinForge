@@ -47,7 +47,7 @@ if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
 
 # Import Localization module for i18n support
 $script:LocalizationModulePath = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
-if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Get-LogString -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:LocalizationModulePath) {
         Import-Module -Name $script:LocalizationModulePath -Force
     }
@@ -146,7 +146,7 @@ function Get-ApplicationCategory {
         }
     }
     catch {
-        Write-Status -Message (t 'startmenu.layout.category.lookup.error' @{ ErrorMessage = $_.Exception.Message }) -Level 'Verbose'
+        Write-Status -Message (Get-LogString 'startmenu.layout.category.lookup.error' @{ ErrorMessage = $_.Exception.Message }) -Level 'Verbose'
     }
 
     # Default category mapping based on common keywords
@@ -214,7 +214,7 @@ function Get-ShortcutInfo {
         return $info
     }
     catch {
-        Write-Status -Message (t 'startmenu.layout.shortcut.read.error' @{ ShortcutPath = $ShortcutPath; ErrorMessage = $_.Exception.Message }) -Level 'Verbose'
+        Write-Status -Message (Get-LogString 'startmenu.layout.shortcut.read.error' @{ ShortcutPath = $ShortcutPath; ErrorMessage = $_.Exception.Message }) -Level 'Verbose'
         return $null
     }
 }
@@ -245,7 +245,7 @@ function Get-PackagedAppId {
         }
     }
     catch {
-        Write-Status -Message (t 'startmenu.layout.packagedapp.find.error' @{ ErrorMessage = $_.Exception.Message }) -Level 'Verbose'
+        Write-Status -Message (Get-LogString 'startmenu.layout.packagedapp.find.error' @{ ErrorMessage = $_.Exception.Message }) -Level 'Verbose'
     }
 
     return $null
@@ -289,7 +289,7 @@ function Copy-ShortcutToStartMenu {
         return $destinationPath
     }
     catch {
-        Write-Status -Message (t 'startmenu.layout.shortcut.copy.error' @{ ErrorMessage = $_.Exception.Message }) -Level 'Error'
+        Write-Status -Message (Get-LogString 'startmenu.layout.shortcut.copy.error' @{ ErrorMessage = $_.Exception.Message }) -Level 'Error'
         return $null
     }
 }
@@ -391,7 +391,7 @@ function Set-StartMenuLayout {
             }
 
             $JsonContent | Out-File -FilePath $targetPath -Encoding UTF8 -Force
-            Write-Status -Message (t 'startmenu.layout.deploy.defaultprofile.success' @{ TargetPath = $targetPath }) -Level 'Success'
+            Write-Status -Message (Get-LogString 'startmenu.layout.deploy.defaultprofile.success' @{ TargetPath = $targetPath }) -Level 'Success'
         }
         else {
             # Deploy to current user
@@ -403,25 +403,25 @@ function Set-StartMenuLayout {
             }
 
             $JsonContent | Out-File -FilePath $targetPath -Encoding UTF8 -Force
-            Write-Status -Message (t 'startmenu.layout.deploy.currentuser.success' @{ TargetPath = $targetPath }) -Level 'Success'
+            Write-Status -Message (Get-LogString 'startmenu.layout.deploy.currentuser.success' @{ TargetPath = $targetPath }) -Level 'Success'
 
             # Restart Start Menu
-            Write-Status -Message (t 'startmenu.layout.restart.starting') -Level 'Info'
+            Write-Status -Message (Get-LogString 'startmenu.layout.restart.starting') -Level 'Info'
             try {
                 Stop-Process -Name StartMenuExperienceHost -Force -ErrorAction SilentlyContinue
                 Start-Sleep -Milliseconds 500
                 Start-Process explorer.exe -ErrorAction SilentlyContinue
-                Write-Status -Message (t 'startmenu.layout.restart.success') -Level 'Success'
+                Write-Status -Message (Get-LogString 'startmenu.layout.restart.success') -Level 'Success'
             }
             catch {
-                Write-Status -Message (t 'startmenu.layout.restart.failed') -Level 'Warning'
+                Write-Status -Message (Get-LogString 'startmenu.layout.restart.failed') -Level 'Warning'
             }
         }
 
         return $true
     }
     catch {
-        Write-Status -Message (t 'startmenu.layout.deploy.error' @{ ErrorMessage = $_.Exception.Message }) -Level 'Error'
+        Write-Status -Message (Get-LogString 'startmenu.layout.deploy.error' @{ ErrorMessage = $_.Exception.Message }) -Level 'Error'
         return $false
     }
 }
@@ -455,14 +455,14 @@ function Invoke-StartMenuOrganization {
         [string[]]$ExcludePatterns = @('*uninstall*', '*uninst*', '*remove*', '*help*', '*readme*')
     )
 
-    Write-Status -Message (t 'startmenu.layout.organization.starting') -Level 'Info'
-    Write-Status -Message (t 'startmenu.layout.shortcuts.scanning') -Level 'Info'
+    Write-Status -Message (Get-LogString 'startmenu.layout.organization.starting') -Level 'Info'
+    Write-Status -Message (Get-LogString 'startmenu.layout.shortcuts.scanning') -Level 'Info'
 
     $shortcuts = Get-DesktopShortcuts
 
     # Handle $null, single object, or array
     if (-not $shortcuts) {
-        Write-Status -Message (t 'startmenu.layout.shortcuts.notfound') -Level 'Warning'
+        Write-Status -Message (Get-LogString 'startmenu.layout.shortcuts.notfound') -Level 'Warning'
         return
     }
 
@@ -470,11 +470,11 @@ function Invoke-StartMenuOrganization {
     $shortcutArray = @($shortcuts)
 
     if ($shortcutArray.Count -eq 0) {
-        Write-Status -Message (t 'startmenu.layout.shortcuts.notfound') -Level 'Warning'
+        Write-Status -Message (Get-LogString 'startmenu.layout.shortcuts.notfound') -Level 'Warning'
         return
     }
 
-    Write-Status -Message (t 'startmenu.layout.shortcuts.found' @{ Count = $shortcutArray.Count }) -Level 'Info'
+    Write-Status -Message (Get-LogString 'startmenu.layout.shortcuts.found' @{ Count = $shortcutArray.Count }) -Level 'Info'
 
     $stats = @{
         Total = $shortcutArray.Count
@@ -492,7 +492,7 @@ function Invoke-StartMenuOrganization {
         $excluded = $false
         foreach ($pattern in $ExcludePatterns) {
             if ($shortcutName -like $pattern) {
-                Write-Status -Message (t 'startmenu.layout.shortcut.skipped' @{ ShortcutName = $shortcutName }) -Level 'Verbose'
+                Write-Status -Message (Get-LogString 'startmenu.layout.shortcut.skipped' @{ ShortcutName = $shortcutName }) -Level 'Verbose'
                 $stats.Skipped++
                 $excluded = $true
                 break
@@ -518,7 +518,7 @@ function Invoke-StartMenuOrganization {
         if ($destinationPath) {
             $categorizedShortcuts[$category] += $destinationPath
             $stats.Copied++
-            Write-Status -Message (t 'startmenu.layout.shortcut.copied' @{ ShortcutName = $shortcutName; Category = $category }) -Level 'Verbose'
+            Write-Status -Message (Get-LogString 'startmenu.layout.shortcut.copied' @{ ShortcutName = $shortcutName; Category = $category }) -Level 'Verbose'
         }
         else {
             $stats.Failed++
@@ -526,39 +526,39 @@ function Invoke-StartMenuOrganization {
     }
 
     # Generate LayoutModification.json
-    Write-Status -Message (t 'startmenu.layout.json.generating') -Level 'Info'
+    Write-Status -Message (Get-LogString 'startmenu.layout.json.generating') -Level 'Info'
     $jsonContent = New-LayoutModificationJson -CategorizedShortcuts $categorizedShortcuts
 
     # Deploy layout
-    Write-Status -Message (t 'startmenu.layout.deploy.starting') -Level 'Info'
+    Write-Status -Message (Get-LogString 'startmenu.layout.deploy.starting') -Level 'Info'
     $deployed = Set-StartMenuLayout -JsonContent $jsonContent -ForDefaultProfile:$ForDefaultProfile
 
     # Summary
-    Write-Status -Message (t 'startmenu.layout.summary.header') -Level 'Info'
-    Write-Status -Message (t 'startmenu.layout.summary.total' @{ Total = $stats.Total }) -Level 'Info'
-    Write-Status -Message (t 'startmenu.layout.summary.copied' @{ Copied = $stats.Copied }) -Level 'Success'
+    Write-Status -Message (Get-LogString 'startmenu.layout.summary.header') -Level 'Info'
+    Write-Status -Message (Get-LogString 'startmenu.layout.summary.total' @{ Total = $stats.Total }) -Level 'Info'
+    Write-Status -Message (Get-LogString 'startmenu.layout.summary.copied' @{ Copied = $stats.Copied }) -Level 'Success'
 
     if ($stats.Skipped -gt 0) {
-        Write-Status -Message (t 'startmenu.layout.summary.skipped' @{ Skipped = $stats.Skipped }) -Level 'Info'
+        Write-Status -Message (Get-LogString 'startmenu.layout.summary.skipped' @{ Skipped = $stats.Skipped }) -Level 'Info'
     }
 
     if ($stats.Failed -gt 0) {
-        Write-Status -Message (t 'startmenu.layout.summary.failed' @{ Failed = $stats.Failed }) -Level 'Warning'
+        Write-Status -Message (Get-LogString 'startmenu.layout.summary.failed' @{ Failed = $stats.Failed }) -Level 'Warning'
     }
 
-    Write-Status -Message (t 'startmenu.layout.summary.categories.header') -Level 'Info'
+    Write-Status -Message (Get-LogString 'startmenu.layout.summary.categories.header') -Level 'Info'
     foreach ($category in $categorizedShortcuts.Keys | Sort-Object) {
         $count = $categorizedShortcuts[$category].Count
-        Write-Status -Message (t 'startmenu.layout.summary.categories.item' @{ Category = $category; Count = $count }) -Level 'Info'
+        Write-Status -Message (Get-LogString 'startmenu.layout.summary.categories.item' @{ Category = $category; Count = $count }) -Level 'Info'
     }
 
     if ($deployed) {
-        Write-Status -Message (t 'startmenu.layout.deploy.success') -Level 'Success'
+        Write-Status -Message (Get-LogString 'startmenu.layout.deploy.success') -Level 'Success'
         if ($ForDefaultProfile) {
-            Write-Status -Message (t 'startmenu.layout.deploy.defaultprofile.info') -Level 'Info'
+            Write-Status -Message (Get-LogString 'startmenu.layout.deploy.defaultprofile.info') -Level 'Info'
         }
         else {
-            Write-Status -Message (t 'startmenu.layout.deploy.currentuser.info') -Level 'Info'
+            Write-Status -Message (Get-LogString 'startmenu.layout.deploy.currentuser.info') -Level 'Info'
         }
     }
 }

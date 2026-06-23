@@ -51,7 +51,7 @@ if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue) -or
 }
 
 # Import Localization module for i18n support
-if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Get-LogString -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:LocalizationModulePath) {
         Import-Module -Name $script:LocalizationModulePath -Force
     }
@@ -210,8 +210,8 @@ function Get-RegistryInstalledApp {
             }
         }
 
-        if (Get-Command -Name 'Get-LocalizedString' -ErrorAction SilentlyContinue) {
-            Write-Verbose (Get-LocalizedString -Key 'optimization.registry_cache_built' -Parameters @{ Count = $script:RegistryAppsCache.Count })
+        if (Get-Command -Name 'Get-LogString' -ErrorAction SilentlyContinue) {
+            Write-Verbose (Get-LogString -Key 'optimization.registry_cache_built' -Parameters @{ Count = $script:RegistryAppsCache.Count })
         }
     }
 
@@ -249,8 +249,8 @@ function Clear-RegistryAppsCache {
     $script:RegistryAppsCache = $null
     $script:RegistryAppsCacheTime = $null
 
-    if (Get-Command -Name 'Get-LocalizedString' -ErrorAction SilentlyContinue) {
-        Write-Verbose (Get-LocalizedString -Key 'optimization.registry_cache_cleared')
+    if (Get-Command -Name 'Get-LogString' -ErrorAction SilentlyContinue) {
+        Write-Verbose (Get-LogString -Key 'optimization.registry_cache_cleared')
     }
 }
 
@@ -276,7 +276,7 @@ function Test-RegistryKey {
 
     # Security: Validate path is allowed
     if (-not (Test-RegistryPathAllowed -Path $Path)) {
-        Write-Status -Message (Get-LocalizedString -Key 'detect.security.registry_path_blocked' -Parameters @{ Path = $Path }) -Level 'Warning'
+        Write-Status -Message (Get-LogString -Key 'detect.security.registry_path_blocked' -Parameters @{ Path = $Path }) -Level 'Warning'
         return $false
     }
 
@@ -301,7 +301,7 @@ function Expand-DetectionPath {
 
     # Security: Block path traversal attempts in input
     if ($Path -match '\.\.' -or $Path -match '[\\/]\.\.[\\/]?' -or $Path -match '^\.\.') {
-        Write-Status -Message (Get-LocalizedString -Key 'detect.security.path_traversal_blocked' -Parameters @{ Path = $Path }) -Level 'Warning'
+        Write-Status -Message (Get-LogString -Key 'detect.security.path_traversal_blocked' -Parameters @{ Path = $Path }) -Level 'Warning'
         return $null
     }
 
@@ -312,13 +312,13 @@ function Expand-DetectionPath {
 
     # Security: Block $env: or $() syntax in detection paths - these indicate potential injection
     if ($expanded -match '\$env:|\$\(') {
-        Write-Status -Message (Get-LocalizedString -Key 'detect.security.variable_syntax_blocked' -Parameters @{ Path = $Path }) -Level 'Warning'
+        Write-Status -Message (Get-LogString -Key 'detect.security.variable_syntax_blocked' -Parameters @{ Path = $Path }) -Level 'Warning'
         return $null
     }
 
     # Security: Block path traversal attempts after expansion
     if ($expanded -match '\.\.' -or $expanded -match '[\\/]\.\.[\\/]?' -or $expanded -match '^\.\.') {
-        Write-Status -Message (Get-LocalizedString -Key 'detect.security.path_traversal_after_expansion' -Parameters @{ Path = $expanded }) -Level 'Warning'
+        Write-Status -Message (Get-LogString -Key 'detect.security.path_traversal_after_expansion' -Parameters @{ Path = $expanded }) -Level 'Warning'
         return $null
     }
 
@@ -326,7 +326,7 @@ function Expand-DetectionPath {
     if (-not [System.IO.Path]::IsPathRooted($expanded)) {
         # Allow wildcards in detection paths (e.g., "C:\Program Files\*\app.exe")
         if ($expanded -notmatch '^[A-Za-z]:[\\/]') {
-            Write-Status -Message (Get-LocalizedString -Key 'detect.security.relative_path_blocked' -Parameters @{ Path = $expanded }) -Level 'Warning'
+            Write-Status -Message (Get-LogString -Key 'detect.security.relative_path_blocked' -Parameters @{ Path = $expanded }) -Level 'Warning'
             return $null
         }
     }
@@ -417,7 +417,7 @@ function Wait-ForOfficeInstallation {
         [int]$CheckIntervalSeconds = 30
     )
 
-    Write-Status -Message (Get-LocalizedString -Key 'office.monitoring') -Level 'Info'
+    Write-Status -Message (Get-LogString -Key 'office.monitoring') -Level 'Info'
 
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
     $timeoutMs = $TimeoutSeconds * 1000
@@ -444,7 +444,7 @@ function Wait-ForOfficeInstallation {
         foreach ($regPath in $officeRegistryPaths) {
             if (Test-Path $regPath -ErrorAction SilentlyContinue) {
                 $elapsed = [math]::Round($stopwatch.Elapsed.TotalMinutes, 1)
-                Write-Status -Message (Get-LocalizedString -Key 'office.completed_registry' -Parameters @{ Minutes = $elapsed }) -Level 'Success'
+                Write-Status -Message (Get-LogString -Key 'office.completed_registry' -Parameters @{ Minutes = $elapsed }) -Level 'Success'
                 return $true
             }
         }
@@ -452,7 +452,7 @@ function Wait-ForOfficeInstallation {
         foreach ($officePath in $officePaths) {
             if (Test-Path $officePath -ErrorAction SilentlyContinue) {
                 $elapsed = [math]::Round($stopwatch.Elapsed.TotalMinutes, 1)
-                Write-Status -Message (Get-LocalizedString -Key 'office.completed_executable' -Parameters @{ Minutes = $elapsed }) -Level 'Success'
+                Write-Status -Message (Get-LogString -Key 'office.completed_executable' -Parameters @{ Minutes = $elapsed }) -Level 'Success'
                 return $true
             }
         }
@@ -462,12 +462,12 @@ function Wait-ForOfficeInstallation {
 
         if ($runningInstallProcesses) {
             $processNames = ($runningInstallProcesses | Select-Object -ExpandProperty Name -Unique) -join ', '
-            Write-Status -Message (Get-LocalizedString -Key 'office.in_progress' -Parameters @{ Processes = $processNames; Minutes = [math]::Round($stopwatch.Elapsed.TotalMinutes, 1) }) -Level 'Verbose'
+            Write-Status -Message (Get-LogString -Key 'office.in_progress' -Parameters @{ Processes = $processNames; Minutes = [math]::Round($stopwatch.Elapsed.TotalMinutes, 1) }) -Level 'Verbose'
         } else {
             # No install processes and Office not detected yet
             $officeDetectionTimeoutMs = (Get-Timeout -TimeoutKey 'OfficeDetection') * 1000
             if ($stopwatch.ElapsedMilliseconds -gt $officeDetectionTimeoutMs) {
-                Write-Status -Message (Get-LocalizedString -Key 'office.no_process_detected') -Level 'Warning'
+                Write-Status -Message (Get-LogString -Key 'office.no_process_detected') -Level 'Warning'
                 return $false
             }
         }
@@ -476,7 +476,7 @@ function Wait-ForOfficeInstallation {
     }
 
     $timeoutMinutes = [math]::Round($TimeoutSeconds / 60, 1)
-    Write-Status -Message (Get-LocalizedString -Key 'office.timed_out' -Parameters @{ Minutes = $timeoutMinutes }) -Level 'Warning'
+    Write-Status -Message (Get-LogString -Key 'office.timed_out' -Parameters @{ Minutes = $timeoutMinutes }) -Level 'Warning'
     return $false
 }
 
@@ -499,7 +499,7 @@ function Test-ApplicationByName {
             }
         }
     } catch {
-        Write-Status -Message (Get-LocalizedString -Key 'detect.winget_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
+        Write-Status -Message (Get-LogString -Key 'detect.winget_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
     }
 
     try {
@@ -511,7 +511,7 @@ function Test-ApplicationByName {
             }
         }
     } catch {
-        Write-Status -Message (Get-LocalizedString -Key 'detect.choco_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
+        Write-Status -Message (Get-LogString -Key 'detect.choco_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
     }
 
     $programFiles = @(
@@ -544,8 +544,8 @@ function Test-ApplicationInstalled {
     $registryApp = Get-RegistryInstalledApp -AppName $appName
     if ($registryApp) {
         # App found in registry - return immediately
-        if (Get-Command -Name 'Get-LocalizedString' -ErrorAction SilentlyContinue) {
-            Write-Verbose (Get-LocalizedString -Key 'optimization.registry_hit' -Parameters @{ AppName = $appName; Version = $registryApp.Version })
+        if (Get-Command -Name 'Get-LogString' -ErrorAction SilentlyContinue) {
+            Write-Verbose (Get-LogString -Key 'optimization.registry_hit' -Parameters @{ AppName = $appName; Version = $registryApp.Version })
         }
         return $true
     }
@@ -607,12 +607,12 @@ function Test-ApplicationInstalled {
                     # Security: Only allow whitelisted executables for command detection
                     $exeBaseName = [System.IO.Path]::GetFileName($executable).ToLower()
                     if ($exeBaseName -notin (Get-DetectionAllowlist)) {
-                        Write-Status -Message (Get-LocalizedString -Key 'detect.security.command_not_allowed' -Parameters @{ Executable = $executable }) -Level 'Verbose'
+                        Write-Status -Message (Get-LogString -Key 'detect.security.command_not_allowed' -Parameters @{ Executable = $executable }) -Level 'Verbose'
                         $detected = $false
                     }
                     # Security: Sanitize arguments - block dangerous patterns including newlines (command injection)
                     elseif (Test-DetectionArgumentDangerous -Arguments $arguments) {
-                        Write-Status -Message (Get-LocalizedString -Key 'detect.security.dangerous_arguments' -Parameters @{ Executable = $executable }) -Level 'Warning'
+                        Write-Status -Message (Get-LogString -Key 'detect.security.dangerous_arguments' -Parameters @{ Executable = $executable }) -Level 'Warning'
                         $detected = $false
                     }
                     # Validate executable exists
@@ -988,7 +988,7 @@ function Test-ApplicationInstalledFast {
                         # exec), so a dangerous detection config is declined outright -
                         # parity with the sequential gold path (I4). The shared guard also
                         # rejects newlines and control chars the former inline regex missed.
-                        Write-Status -Message (Get-LocalizedString -Key 'detect.security.dangerous_arguments' -Parameters @{ Executable = $executable }) -Level 'Warning'
+                        Write-Status -Message (Get-LogString -Key 'detect.security.dangerous_arguments' -Parameters @{ Executable = $executable }) -Level 'Warning'
                         $detected = $false
                     } else {
                         # Check if this command output is cached
@@ -1110,7 +1110,7 @@ function Get-ApplicationsInstallationStatus {
         [PSCustomObject[]]$Applications
     )
 
-    Write-Host (Get-LocalizedString -Key 'install.detection.scan_starting' -Parameters @{ Count = $Applications.Count }) -ForegroundColor Cyan
+    Write-Host (Get-LogString -Key 'install.detection.scan_starting' -Parameters @{ Count = $Applications.Count }) -ForegroundColor Cyan
 
     # Build cache once
     $cache = Get-InstalledApplicationsCache
@@ -1128,7 +1128,7 @@ function Get-ApplicationsInstallationStatus {
         if ($status.IsInstalled) { $installedCount++ }
     }
 
-    Write-Host (Get-LocalizedString -Key 'install.detection.scan_complete' -Parameters @{ Installed = $installedCount; Total = $Applications.Count }) -ForegroundColor Green
+    Write-Host (Get-LogString -Key 'install.detection.scan_complete' -Parameters @{ Installed = $installedCount; Total = $Applications.Count }) -ForegroundColor Green
 
     return $results
 }

@@ -46,7 +46,7 @@ if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
 
 # Import Localization module for i18n support
 $script:LocalizationModulePath = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
-if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Get-LogString -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:LocalizationModulePath) {
         Import-Module -Name $script:LocalizationModulePath -Force
     }
@@ -250,12 +250,12 @@ function New-ScheduledDeployment {
 
     # Validate prerequisites
     if (-not (Test-ScheduledTasksAvailable)) {
-        $msg = Get-LocalizedString -Key 'scheduledDeployment.error.taskSchedulerUnavailable' -DefaultValue 'Windows Task Scheduler module is not available'
+        $msg = Get-LogString -Key 'scheduledDeployment.error.taskSchedulerUnavailable' -DefaultValue 'Windows Task Scheduler module is not available'
         throw [System.NotSupportedException]::new($msg)
     }
 
     if (-not (Test-AdministratorPrivileges)) {
-        $msg = Get-LocalizedString -Key 'core.admin_required' -DefaultValue 'Administrator privileges required'
+        $msg = Get-LogString -Key 'core.admin_required' -DefaultValue 'Administrator privileges required'
         throw [System.UnauthorizedAccessException]::new($msg)
     }
 
@@ -263,7 +263,7 @@ function New-ScheduledDeployment {
     $profilesDir = Join-Path $script:RepositoryRoot 'Profiles'
     $profilePath = Join-Path $profilesDir "$ProfileName.json"
     if (-not (Test-Path $profilePath)) {
-        $msg = Get-LocalizedString -Key 'profile.not_found' -DefaultValue 'Profile not found: {Name}' -Parameters @{ Name = $ProfileName }
+        $msg = Get-LogString -Key 'profile.not_found' -DefaultValue 'Profile not found: {Name}' -Parameters @{ Name = $ProfileName }
         throw [System.IO.FileNotFoundException]::new($msg)
     }
 
@@ -349,7 +349,7 @@ function New-ScheduledDeployment {
                 -Force
 
             # Log success
-            $msg = Get-LocalizedString -Key 'scheduledDeployment.created' -DefaultValue 'Scheduled deployment created: {Id}' -Parameters @{ Id = $deployment.Id }
+            $msg = Get-LogString -Key 'scheduledDeployment.created' -DefaultValue 'Scheduled deployment created: {Id}' -Parameters @{ Id = $deployment.Id }
             Write-Status -Message $msg -Level 'Success'
 
             # Save deployment info to local registry
@@ -358,7 +358,7 @@ function New-ScheduledDeployment {
             return $deployment
         }
         catch {
-            $msg = Get-LocalizedString -Key 'scheduledDeployment.error.createFailed' -DefaultValue 'Failed to create scheduled deployment: {Error}' -Parameters @{ Error = $_.Exception.Message }
+            $msg = Get-LogString -Key 'scheduledDeployment.error.createFailed' -DefaultValue 'Failed to create scheduled deployment: {Error}' -Parameters @{ Error = $_.Exception.Message }
             Write-Status -Message $msg -Level 'Error'
             throw
         }
@@ -405,7 +405,7 @@ function Get-ScheduledDeployment {
     )
 
     if (-not (Test-ScheduledTasksAvailable)) {
-        $msg = Get-LocalizedString -Key 'scheduledDeployment.error.taskSchedulerUnavailable' -DefaultValue 'Windows Task Scheduler module is not available'
+        $msg = Get-LogString -Key 'scheduledDeployment.error.taskSchedulerUnavailable' -DefaultValue 'Windows Task Scheduler module is not available'
         Write-Status -Message $msg -Level 'Warning'
         return @()
     }
@@ -488,7 +488,7 @@ function Get-ScheduledDeployment {
         }
     }
     catch {
-        $msg = Get-LocalizedString -Key 'scheduledDeployment.error.listFailed' -DefaultValue 'Failed to list scheduled deployments: {Error}' -Parameters @{ Error = $_.Exception.Message }
+        $msg = Get-LogString -Key 'scheduledDeployment.error.listFailed' -DefaultValue 'Failed to list scheduled deployments: {Error}' -Parameters @{ Error = $_.Exception.Message }
         Write-Status -Message $msg -Level 'Warning'
     }
 
@@ -526,7 +526,7 @@ function Remove-ScheduledDeployment {
 
     process {
         if (-not (Test-AdministratorPrivileges)) {
-            $msg = Get-LocalizedString -Key 'core.admin_required' -DefaultValue 'Administrator privileges required'
+            $msg = Get-LogString -Key 'core.admin_required' -DefaultValue 'Administrator privileges required'
             throw [System.UnauthorizedAccessException]::new($msg)
         }
 
@@ -539,11 +539,11 @@ function Remove-ScheduledDeployment {
                 # Remove saved info
                 Remove-SavedDeploymentInfo -Id $Id
 
-                $msg = Get-LocalizedString -Key 'scheduledDeployment.removed' -DefaultValue 'Scheduled deployment removed: {Id}' -Parameters @{ Id = $Id }
+                $msg = Get-LogString -Key 'scheduledDeployment.removed' -DefaultValue 'Scheduled deployment removed: {Id}' -Parameters @{ Id = $Id }
                 Write-Status -Message $msg -Level 'Success'
             }
             catch {
-                $msg = Get-LocalizedString -Key 'scheduledDeployment.error.removeFailed' -DefaultValue 'Failed to remove scheduled deployment: {Error}' -Parameters @{ Error = $_.Exception.Message }
+                $msg = Get-LogString -Key 'scheduledDeployment.error.removeFailed' -DefaultValue 'Failed to remove scheduled deployment: {Error}' -Parameters @{ Error = $_.Exception.Message }
                 Write-Status -Message $msg -Level 'Error'
                 throw
             }
@@ -573,7 +573,7 @@ function Enable-ScheduledDeployment {
 
     process {
         if (-not (Test-AdministratorPrivileges)) {
-            $msg = Get-LocalizedString -Key 'core.admin_required' -DefaultValue 'Administrator privileges required'
+            $msg = Get-LogString -Key 'core.admin_required' -DefaultValue 'Administrator privileges required'
             throw [System.UnauthorizedAccessException]::new($msg)
         }
 
@@ -582,11 +582,11 @@ function Enable-ScheduledDeployment {
         try {
             Enable-ScheduledTask -TaskName $task.TaskName -TaskPath $task.TaskPath -ErrorAction Stop
 
-            $msg = Get-LocalizedString -Key 'scheduledDeployment.enabled' -DefaultValue 'Scheduled deployment enabled: {Id}' -Parameters @{ Id = $Id }
+            $msg = Get-LogString -Key 'scheduledDeployment.enabled' -DefaultValue 'Scheduled deployment enabled: {Id}' -Parameters @{ Id = $Id }
             Write-Status -Message $msg -Level 'Success'
         }
         catch {
-            $msg = Get-LocalizedString -Key 'scheduledDeployment.error.enableFailed' -DefaultValue 'Failed to enable scheduled deployment: {Error}' -Parameters @{ Error = $_.Exception.Message }
+            $msg = Get-LogString -Key 'scheduledDeployment.error.enableFailed' -DefaultValue 'Failed to enable scheduled deployment: {Error}' -Parameters @{ Error = $_.Exception.Message }
             Write-Status -Message $msg -Level 'Error'
             throw
         }
@@ -616,7 +616,7 @@ function Disable-ScheduledDeployment {
 
     process {
         if (-not (Test-AdministratorPrivileges)) {
-            $msg = Get-LocalizedString -Key 'core.admin_required' -DefaultValue 'Administrator privileges required'
+            $msg = Get-LogString -Key 'core.admin_required' -DefaultValue 'Administrator privileges required'
             throw [System.UnauthorizedAccessException]::new($msg)
         }
 
@@ -625,11 +625,11 @@ function Disable-ScheduledDeployment {
         try {
             Disable-ScheduledTask -TaskName $task.TaskName -TaskPath $task.TaskPath -ErrorAction Stop
 
-            $msg = Get-LocalizedString -Key 'scheduledDeployment.disabled' -DefaultValue 'Scheduled deployment disabled: {Id}' -Parameters @{ Id = $Id }
+            $msg = Get-LogString -Key 'scheduledDeployment.disabled' -DefaultValue 'Scheduled deployment disabled: {Id}' -Parameters @{ Id = $Id }
             Write-Status -Message $msg -Level 'Success'
         }
         catch {
-            $msg = Get-LocalizedString -Key 'scheduledDeployment.error.disableFailed' -DefaultValue 'Failed to disable scheduled deployment: {Error}' -Parameters @{ Error = $_.Exception.Message }
+            $msg = Get-LogString -Key 'scheduledDeployment.error.disableFailed' -DefaultValue 'Failed to disable scheduled deployment: {Error}' -Parameters @{ Error = $_.Exception.Message }
             Write-Status -Message $msg -Level 'Error'
             throw
         }
@@ -659,7 +659,7 @@ function Start-ScheduledDeployment {
 
     process {
         if (-not (Test-AdministratorPrivileges)) {
-            $msg = Get-LocalizedString -Key 'core.admin_required' -DefaultValue 'Administrator privileges required'
+            $msg = Get-LogString -Key 'core.admin_required' -DefaultValue 'Administrator privileges required'
             throw [System.UnauthorizedAccessException]::new($msg)
         }
 
@@ -668,11 +668,11 @@ function Start-ScheduledDeployment {
         try {
             Start-ScheduledTask -TaskName $task.TaskName -TaskPath $task.TaskPath -ErrorAction Stop
 
-            $msg = Get-LocalizedString -Key 'scheduledDeployment.started' -DefaultValue 'Scheduled deployment started: {Id}' -Parameters @{ Id = $Id }
+            $msg = Get-LogString -Key 'scheduledDeployment.started' -DefaultValue 'Scheduled deployment started: {Id}' -Parameters @{ Id = $Id }
             Write-Status -Message $msg -Level 'Success'
         }
         catch {
-            $msg = Get-LocalizedString -Key 'scheduledDeployment.error.startFailed' -DefaultValue 'Failed to start scheduled deployment: {Error}' -Parameters @{ Error = $_.Exception.Message }
+            $msg = Get-LogString -Key 'scheduledDeployment.error.startFailed' -DefaultValue 'Failed to start scheduled deployment: {Error}' -Parameters @{ Error = $_.Exception.Message }
             Write-Status -Message $msg -Level 'Error'
             throw
         }
