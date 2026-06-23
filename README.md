@@ -1,8 +1,8 @@
-# WinForge / WinForge v2026062201
+# WinForge v2026062301
 
 **Configurez un PC Windows 10/11 avec des profils d'applications reproductibles.**
 
-[![Version](https://img.shields.io/badge/version-2026062201-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2026062301-blue.svg)](CHANGELOG.md)
 [![Windows](https://img.shields.io/badge/Windows-10%20%2F%2011-0078D4.svg)](https://www.microsoft.com/windows)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 

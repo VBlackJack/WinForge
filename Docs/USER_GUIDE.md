@@ -16,7 +16,7 @@ limitations under the License.
 
 # WinForge User Guide
 
-Current framework display version: `2026062201`.
+Current framework display version: `2026062301`.
 
 ## Quick Start
 1. Extract the release archive.
