@@ -66,6 +66,35 @@ public class AppUninstallCoordinatorTests
     }
 
     [Fact]
+    public async Task UninstallAsync_WithUninstalledApps_ShouldInvalidateUpdateCache()
+    {
+        List<ApplicationModel> apps = CreateApps("App1");
+        Mock<IPowerShellBridge> bridge = CreateBridge();
+        AppUninstallCoordinator coordinator = CreateCoordinator(bridge.Object);
+
+        await coordinator.UninstallAsync(apps);
+
+        bridge.Verify(x => x.InvalidateUpdateCacheAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task UninstallAsync_WithOnlyFailures_ShouldNotInvalidateUpdateCache()
+    {
+        List<ApplicationModel> apps = CreateApps("Failed");
+        Mock<IPowerShellBridge> bridge = CreateBridge();
+        bridge
+            .Setup(x => x.UninstallApplicationAsync(
+                It.IsAny<ApplicationModel>(),
+                It.IsAny<Action<string>?>()))
+            .ReturnsAsync(InstallResult.Failed("Uninstall failed", "failed-log"));
+        AppUninstallCoordinator coordinator = CreateCoordinator(bridge.Object);
+
+        await coordinator.UninstallAsync(apps);
+
+        bridge.Verify(x => x.InvalidateUpdateCacheAsync(), Times.Never);
+    }
+
+    [Fact]
     public async Task UninstallAsync_WithMixedResults_ShouldSplitFinalCounters()
     {
         List<ApplicationModel> apps = CreateApps("Uninstalled", "Failed");
@@ -170,6 +199,9 @@ public class AppUninstallCoordinatorTests
                 It.IsAny<ApplicationModel>(),
                 It.IsAny<Action<string>?>()))
             .ReturnsAsync(InstallResult.Successful("Uninstalled", "log"));
+        bridge
+            .Setup(x => x.InvalidateUpdateCacheAsync())
+            .Returns(Task.CompletedTask);
         return bridge;
     }
 

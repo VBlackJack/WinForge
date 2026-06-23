@@ -116,7 +116,8 @@ function Test-AppInstalledParallel {
             if ($WingetListCache -match [regex]::Escape($appName)) { return $true }
         } elseif (Get-Command -Name 'winget' -ErrorAction SilentlyContinue) {
             try {
-                $list = & winget list --accept-source-agreements 2>&1 | Out-String
+                $result = Invoke-NativeCommandUtf8 -FilePath 'winget' -ArgumentList @('list', '--accept-source-agreements')
+                $list = $result.Output
                 if ($list -match [regex]::Escape($appName)) { return $true }
             } catch {
                 Write-Verbose "Winget list detection failed for $appName : $($_.Exception.Message)"
@@ -152,7 +153,8 @@ function Test-AppInstalledParallel {
                 if ($WingetListCache -match [regex]::Escape($appName)) { return $true }
             } elseif (Get-Command -Name 'winget' -ErrorAction SilentlyContinue) {
                 try {
-                    $list = & winget list --accept-source-agreements 2>&1 | Out-String
+                    $result = Invoke-NativeCommandUtf8 -FilePath 'winget' -ArgumentList @('list', '--accept-source-agreements')
+                    $list = $result.Output
                     if ($list -match [regex]::Escape($appName)) { return $true }
                 } catch {
                     Write-Verbose "Winget fallback detection failed for $appName : $($_.Exception.Message)"
@@ -279,17 +281,14 @@ function Test-CommandDetection {
         $argArray = @(ConvertTo-DetectionArgumentArray -Arguments $cmdArgs)
 
         if ($expectedPattern) {
-            $output = if ($argArray.Count -gt 0) {
-                & $exe @argArray 2>&1 | Out-String
-            } else {
-                & $exe 2>&1 | Out-String
-            }
+            $result = Invoke-NativeCommandUtf8 -FilePath $exe -ArgumentList $argArray
+            $output = $result.Output
             return $output -match [regex]::Escape($expectedPattern)
         } else {
             $proc = if ($argArray.Count -gt 0) {
-                Start-Process -FilePath $exe -ArgumentList $argArray -Wait -NoNewWindow -PassThru -ErrorAction Stop
+                Start-Process -FilePath $exe -ArgumentList $argArray -Wait -WindowStyle Hidden -PassThru -ErrorAction Stop
             } else {
-                Start-Process -FilePath $exe -Wait -NoNewWindow -PassThru -ErrorAction Stop
+                Start-Process -FilePath $exe -Wait -WindowStyle Hidden -PassThru -ErrorAction Stop
             }
             return $proc.ExitCode -eq 0
         }
@@ -359,7 +358,8 @@ function Test-StoreAppDetection {
     $list = $WingetListCache
     if (-not $list -and (Get-Command -Name 'winget' -ErrorAction SilentlyContinue)) {
         try {
-            $list = & winget list --accept-source-agreements 2>&1 | Out-String
+            $result = Invoke-NativeCommandUtf8 -FilePath 'winget' -ArgumentList @('list', '--accept-source-agreements')
+            $list = $result.Output
         } catch {
             return $false
         }

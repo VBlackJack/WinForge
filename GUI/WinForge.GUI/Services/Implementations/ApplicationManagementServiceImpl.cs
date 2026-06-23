@@ -591,10 +591,14 @@ try {{
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
+                    StandardOutputEncoding = Encoding.UTF8,
+                    StandardErrorEncoding = Encoding.UTF8,
                     CreateNoWindow = true
                 };
 
                 using Process process = new Process { StartInfo = startInfo };
+                bool rawOutputOmitted = false;
+                bool rawErrorOutputOmitted = false;
 
                 process.OutputDataReceived += (sender, e) =>
                 {
@@ -603,21 +607,34 @@ try {{
                         string line = e.Data.Trim();
                         if (!string.IsNullOrWhiteSpace(line))
                         {
-                            outputLines.Add(line);
-                            logBuilder.AppendLine(line);
+                            bool isWinForgeLine =
+                                line.StartsWith("[STATUS]", StringComparison.Ordinal) ||
+                                line.StartsWith("[ERROR]", StringComparison.Ordinal) ||
+                                line.StartsWith("[INFO]", StringComparison.Ordinal) ||
+                                line.StartsWith("[SUCCESS]", StringComparison.Ordinal) ||
+                                line.StartsWith("[WARNING]", StringComparison.Ordinal);
+                            bool isJsonResult = line.StartsWith("{", StringComparison.Ordinal) &&
+                                line.EndsWith("}", StringComparison.Ordinal);
 
-                            if (line.StartsWith("[STATUS]") || line.StartsWith("[ERROR]") ||
-                                line.StartsWith("[INFO]") || line.StartsWith("[SUCCESS]") ||
-                                line.StartsWith("[WARNING]"))
+                            if (isWinForgeLine || isJsonResult)
+                            {
+                                outputLines.Add(line);
+                                logBuilder.AppendLine(line);
+                            }
+
+                            if (isWinForgeLine)
                             {
                                 progressCallback?.Invoke($"{app.Name}: {line}");
                             }
-                            else if (line.Contains("Installing") || line.Contains("Downloading") ||
-                                     line.Contains("Verifying") || line.Contains("Completed") ||
-                                     line.Contains("already installed", StringComparison.OrdinalIgnoreCase) ||
-                                     line.Contains("Successfully", StringComparison.OrdinalIgnoreCase))
+                            else if (!isJsonResult)
                             {
-                                progressCallback?.Invoke($"{app.Name}: {line}");
+                                // Vendor tools localize stdout according to Windows display language.
+                                // Keep raw vendor text out of the main deployment log.
+                                if (!rawOutputOmitted)
+                                {
+                                    rawOutputOmitted = true;
+                                    logBuilder.AppendLine("Raw process output omitted from main log");
+                                }
                             }
                         }
                     }
@@ -627,11 +644,11 @@ try {{
                 {
                     if (!string.IsNullOrWhiteSpace(e.Data))
                     {
-                        string cleanLine = ExtractReadableMessage(e.Data);
-                        if (!string.IsNullOrWhiteSpace(cleanLine))
+                        if (!rawErrorOutputOmitted)
                         {
-                            logBuilder.AppendLine($"[STDERR] {cleanLine}");
-                            progressCallback?.Invoke($"{app.Name}: [Error] {cleanLine}");
+                            rawErrorOutputOmitted = true;
+                            logBuilder.AppendLine("[STDERR] Raw process error output omitted from main log");
+                            progressCallback?.Invoke($"{app.Name}: [Error] Process error output received");
                         }
                     }
                 };
@@ -835,13 +852,22 @@ try {{
     }
 
     /// <inheritdoc/>
-    public async Task<UpdateCheckResult> CheckApplicationUpdateAsync(ApplicationModel app)
+    public Task<UpdateCheckResult> CheckApplicationUpdateAsync(ApplicationModel app)
+        => CheckApplicationUpdateAsync(app, forceRefresh: false);
+
+    /// <inheritdoc/>
+    public async Task<UpdateCheckResult> CheckApplicationUpdateAsync(ApplicationModel app, bool forceRefresh)
     {
         if (app.Status != ApplicationStatus.Installed &&
             app.Status != ApplicationStatus.AlreadyInstalled &&
             app.Status != ApplicationStatus.UpdateAvailable)
         {
             return UpdateCheckResult.UpToDate();
+        }
+
+        if (forceRefresh)
+        {
+            await InvalidateUpdateCacheAsync().ConfigureAwait(false);
         }
 
         await _cacheService.EnsureApplicationsCacheAsync();
@@ -897,6 +923,39 @@ try {{
                 return UpdateCheckResult.Failed(ex.Message);
             }
         });
+    }
+
+    /// <inheritdoc/>
+    public async Task InvalidateUpdateCacheAsync()
+    {
+        try
+        {
+            _detectionService.InvalidateAllCache(CacheInvalidationReason.UserRequested);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning($"[ApplicationManagementService] Detection cache invalidation failed: {ex.Message}");
+        }
+
+        try
+        {
+            string updateManagerPath = _pathService.GetPathForPowerShell("Modules", "UpdateManager.psm1");
+            string escapedUpdateManagerPath = PowerShellValidation.EscapeForPowerShell(updateManagerPath);
+            string script = $@"
+Import-Module '{escapedUpdateManagerPath}' -Force
+if (Get-Command -Name 'Clear-WingetUpdatesCache' -ErrorAction SilentlyContinue) {{
+    Clear-WingetUpdatesCache
+}} elseif (Get-Command -Name 'Clear-BatchUpdateCache' -ErrorAction SilentlyContinue) {{
+    Clear-BatchUpdateCache
+}}
+";
+
+            await _executionService.ExecutePowerShellScriptAsync(script).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning($"[ApplicationManagementService] Update cache invalidation failed: {ex.Message}");
+        }
     }
 
     /// <inheritdoc/>
@@ -1199,6 +1258,21 @@ try {{
         return true;
     }
 
+    protected static void AppendVendorOutputSummary(StringBuilder logBuilder, string output, string error)
+    {
+        int outputLength = string.IsNullOrEmpty(output) ? 0 : output.Length;
+        int errorLength = string.IsNullOrEmpty(error) ? 0 : error.Length;
+        if (outputLength == 0 && errorLength == 0)
+        {
+            return;
+        }
+
+        // Winget and Chocolatey localize raw output according to the host OS.
+        // Main deployment logs must keep WinForge-owned English summaries only.
+        logBuilder.AppendLine(
+            $"Raw vendor output omitted from main log (stdout chars: {outputLength}, stderr chars: {errorLength})");
+    }
+
     /// <summary>
     /// Gets the installed version of a package using winget list.
     /// </summary>
@@ -1213,6 +1287,8 @@ try {{
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
+                StandardOutputEncoding = Encoding.UTF8,
+                StandardErrorEncoding = Encoding.UTF8,
                 CreateNoWindow = true
             };
 
@@ -1254,6 +1330,8 @@ try {{
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
+                StandardOutputEncoding = Encoding.UTF8,
+                StandardErrorEncoding = Encoding.UTF8,
                 CreateNoWindow = true
             };
 
@@ -1326,6 +1404,8 @@ try {{
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
+                StandardOutputEncoding = Encoding.UTF8,
+                StandardErrorEncoding = Encoding.UTF8,
                 CreateNoWindow = true
             };
 
@@ -1350,11 +1430,7 @@ try {{
             string output = await outputTask;
             string error = await errorTask;
 
-            logBuilder.AppendLine(output);
-            if (!string.IsNullOrEmpty(error))
-            {
-                logBuilder.AppendLine($"[stderr] {error}");
-            }
+            AppendVendorOutputSummary(logBuilder, output, error);
 
             return (process.ExitCode == 0, process.ExitCode, output);
         }
@@ -1430,7 +1506,7 @@ try {{
     /// <summary>
     /// Executes an uninstall command and returns the result.
     /// </summary>
-    private async Task<(bool Success, int ExitCode, string Output)> ExecuteUninstallCommandAsync(
+    protected virtual async Task<(bool Success, int ExitCode, string Output)> ExecuteUninstallCommandAsync(
         string command,
         string arguments,
         StringBuilder logBuilder)
@@ -1444,6 +1520,8 @@ try {{
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
+                StandardOutputEncoding = Encoding.UTF8,
+                StandardErrorEncoding = Encoding.UTF8,
                 CreateNoWindow = true
             };
 
@@ -1468,11 +1546,7 @@ try {{
             string output = await outputTask;
             string error = await errorTask;
 
-            logBuilder.AppendLine(output);
-            if (!string.IsNullOrEmpty(error))
-            {
-                logBuilder.AppendLine($"[stderr] {error}");
-            }
+            AppendVendorOutputSummary(logBuilder, output, error);
 
             return (process.ExitCode == 0, process.ExitCode, output);
         }

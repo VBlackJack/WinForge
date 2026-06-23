@@ -77,6 +77,11 @@ public sealed class AppUninstallCoordinator : IAppUninstallCoordinator
                     _resumeService.AppendCompletedAsync(batchId, app.AppId, ToOutcome(result.Status), token))
                 .ConfigureAwait(false);
 
+            if (itemResults.Any(result => result.Status == AppUninstallItemStatus.Uninstalled))
+            {
+                await InvalidateUpdateCacheBestEffortAsync().ConfigureAwait(false);
+            }
+
             // Mark with CancellationToken.None: once we reach this point the batch is
             // logically finished, the transition to Completed should not be cancellable.
             await _resumeService.MarkBatchCompletedAsync(batchId, CancellationToken.None).ConfigureAwait(false);
@@ -148,6 +153,22 @@ public sealed class AppUninstallCoordinator : IAppUninstallCoordinator
     {
         int maxParallelInstalls = Math.Clamp(_settingsService.LoadSettings().MaxParallelInstalls, 1, 10);
         return new AppOperationRunner(maxParallelInstalls);
+    }
+
+    private async Task InvalidateUpdateCacheBestEffortAsync()
+    {
+        try
+        {
+            Task? invalidation = _powerShellBridge.InvalidateUpdateCacheAsync();
+            if (invalidation is not null)
+            {
+                await invalidation.ConfigureAwait(false);
+            }
+        }
+        catch
+        {
+            // Cache invalidation is a freshness optimization; the uninstall result remains authoritative.
+        }
     }
 
     private static AppUninstallResult BuildResult(

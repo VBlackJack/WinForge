@@ -41,7 +41,8 @@ $script:CoreModulePath = Join-Path $script:RepositoryRoot 'Core\Core.psm1'
 $script:LocalizationModulePath = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
 
 # Import Core module for logging
-if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue) -or
+    -not (Get-Command -Name Invoke-NativeCommandUtf8 -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:CoreModulePath) {
         Import-Module -Name $script:CoreModulePath -Force
     }
@@ -250,7 +251,8 @@ function Get-CachedWingetList {
     Write-Verbose "Cache miss for winget list - refreshing..."
 
     try {
-        $output = & winget list --accept-source-agreements 2>&1 | Out-String
+        $result = Invoke-NativeCommandUtf8 -FilePath 'winget' -ArgumentList @('list', '--accept-source-agreements')
+        $output = $result.Output
         $script:WingetCache.ListCache = $output
         $script:WingetCache.ListCacheTime = Get-Date
         Write-Verbose "Cached winget list output ($($output.Length) chars)"
@@ -321,7 +323,8 @@ function Get-CachedWingetSearch {
     Write-Verbose "Cache miss for search '$Query' - refreshing..."
 
     try {
-        $output = & winget search $Query --accept-source-agreements 2>&1 | Out-String
+        $result = Invoke-NativeCommandUtf8 -FilePath 'winget' -ArgumentList @('search', $Query, '--accept-source-agreements')
+        $output = $result.Output
 
         # Enforce max entries limit
         if ($script:WingetCache.SearchCache.Count -ge $script:CacheConfig.MaxEntries) {
@@ -545,7 +548,8 @@ function Get-CachedChocoList {
     Write-Verbose "Chocolatey cache miss - refreshing..."
 
     try {
-        $output = & choco list --local-only 2>&1 | Out-String
+        $result = Invoke-NativeCommandUtf8 -FilePath 'choco' -ArgumentList @('list', '--local-only')
+        $output = $result.Output
         $script:ChocoCache.ListCache = $output
         $script:ChocoCache.ListCacheTime = Get-Date
         Write-Verbose "Cached Chocolatey list ($($output.Length) chars)"

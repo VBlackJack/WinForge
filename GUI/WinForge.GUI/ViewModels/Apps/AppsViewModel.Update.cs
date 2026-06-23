@@ -25,9 +25,12 @@ public partial class AppsViewModel
 {
     /// <summary>
     /// Whether the ScanUpdates command can execute.
-    /// Requires installed apps and no active scanning.
+    /// Requires update-scannable apps and no active scanning.
     /// </summary>
-    private bool CanScanUpdates => !IsScanningUpdates && !IsScanning && InstalledCount > 0;
+    private bool CanScanUpdates =>
+        !IsScanningUpdates &&
+        !IsScanning &&
+        _allApplications.Any(app => IsUpdateScannableStatus(app.Status));
 
     /// <summary>
     /// Re-scans installed applications for available updates only.
@@ -54,11 +57,12 @@ public partial class AppsViewModel
                 return;
             }
 
-            AppUpdateScanResult result = await _updateCoordinator.ScanForUpdatesAsync(installedApps);
+            AppUpdateScanResult result = await _updateCoordinator.ScanForUpdatesAsync(installedApps, forceRefresh: true);
             UpdatesAvailableCount = result.UpdatesAvailableCount;
 
             // Apply filter to refresh view
             ApplyFilter();
+            RefreshSelectionActionState();
             _lastOperationType = string.Empty;
         }
         catch (Exception ex)
@@ -86,6 +90,8 @@ public partial class AppsViewModel
             {
                 UpdatesAvailableCount--;
             }
+
+            RefreshSelectionActionState();
         }
         catch (Exception ex)
         {
@@ -103,7 +109,15 @@ public partial class AppsViewModel
     /// <summary>
     /// Whether the UpdateSelected command can execute.
     /// </summary>
-    private bool CanUpdateSelected => UpdatesAvailableCount > 0 && !IsInstalling && !IsUninstalling;
+    private bool CanUpdateSelected =>
+        _allApplications.Any(app => app.Status == ApplicationStatus.UpdateAvailable) &&
+        !IsInstalling &&
+        !IsUninstalling;
+
+    private static bool IsUpdateScannableStatus(ApplicationStatus status) =>
+        status == ApplicationStatus.Installed ||
+        status == ApplicationStatus.AlreadyInstalled ||
+        status == ApplicationStatus.UpdateAvailable;
 
     /// <summary>
     /// Updates all applications with available updates.
@@ -188,6 +202,7 @@ public partial class AppsViewModel
             _batchCancellationTokenSource = null;
 
             _deploymentStateService.EndDeployment();
+            RefreshSelectionActionState();
             ApplyFilter();
         }
     }

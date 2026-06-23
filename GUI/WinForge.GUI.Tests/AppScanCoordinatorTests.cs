@@ -120,6 +120,40 @@ public class AppScanCoordinatorTests
     }
 
     [Fact]
+    public async Task ScanAsync_WithBatchUpdateTrailingZeroEquivalent_ShouldNotMarkUpdateAvailable()
+    {
+        List<ApplicationModel> apps = CreateApps("Chocolatey");
+        apps[0].Name = "Chocolatey";
+        Mock<IPowerShellBridge> bridge = CreateBridge();
+        bridge
+            .Setup(x => x.GetBatchApplicationStatusAsync(It.IsAny<IReadOnlyList<ApplicationModel>>()))
+            .ReturnsAsync(new Dictionary<string, BatchAppStatus>
+            {
+                ["Chocolatey"] = new(ApplicationStatus.Installed, "2.7.3")
+            });
+        Mock<IApplicationDetectionService> detection = CreateDetectionService();
+        detection
+            .Setup(x => x.GetAvailableUpdatesAsync())
+            .ReturnsAsync(
+            [
+                new UpdateInfo
+                {
+                    Id = "Chocolatey",
+                    Name = "Chocolatey",
+                    CurrentVersion = "2.7.3",
+                    NewVersion = "2.7.3.0"
+                }
+            ]);
+        AppScanCoordinator coordinator = CreateCoordinator(bridge.Object, detection.Object);
+
+        AppScanResult result = await coordinator.ScanAsync(apps);
+
+        Assert.Equal(0, result.UpdatesAvailableCount);
+        Assert.Equal(ApplicationStatus.Installed, apps[0].Status);
+        Assert.Equal(string.Empty, apps[0].AvailableVersion);
+    }
+
+    [Fact]
     public async Task ScanAsync_WithBatchUpdates_ShouldMatchWingetIdAndVersionedName()
     {
         List<ApplicationModel> apps = CreateApps("7Zip");

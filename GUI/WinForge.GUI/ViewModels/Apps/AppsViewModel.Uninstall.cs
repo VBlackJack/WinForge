@@ -45,6 +45,7 @@ public partial class AppsViewModel
         {
             AppUninstallResult result = await _uninstallCoordinator.UninstallAsync([app]);
             InstalledCount = Math.Max(0, InstalledCount - result.UninstalledCount);
+            RefreshSelectionActionState();
         }
         catch (Exception ex)
         {
@@ -149,6 +150,7 @@ public partial class AppsViewModel
             IsPaused = false;
             _batchCancellationTokenSource?.Dispose();
             _batchCancellationTokenSource = null;
+            RefreshSelectionActionState();
         }
     }
 

@@ -28,6 +28,7 @@ public interface IAppUpdateCoordinator
     /// </summary>
     Task<AppUpdateScanResult> ScanForUpdatesAsync(
         IReadOnlyCollection<ApplicationModel> installedApps,
+        bool forceRefresh = false,
         IProgress<AppOperationProgress>? progress = null,
         CancellationToken cancellationToken = default);
 

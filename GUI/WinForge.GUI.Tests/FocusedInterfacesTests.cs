@@ -89,9 +89,10 @@ public class FocusedInterfacesTests
         Assert.Contains("InstallApplicationAsync", methods);
         Assert.Contains("UninstallApplicationAsync", methods);
         Assert.Contains("CheckApplicationUpdateAsync", methods);
+        Assert.Contains("InvalidateUpdateCacheAsync", methods);
         Assert.Contains("UpdateApplicationAsync", methods);
         Assert.Contains("LaunchApplicationAsync", methods);
-        Assert.Equal(8, methods.Count);
+        Assert.Equal(10, methods.Count);
     }
 
     /// <summary>

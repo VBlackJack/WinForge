@@ -71,6 +71,37 @@ public class AppInstallationCoordinatorTests
     }
 
     [Fact]
+    public async Task InstallAsync_WithInstalledApps_ShouldInvalidateUpdateCache()
+    {
+        List<ApplicationModel> apps = CreateApps("App1");
+        Mock<IPowerShellBridge> bridge = CreateBridge();
+        AppInstallationCoordinator coordinator = CreateCoordinator(bridge.Object);
+
+        await coordinator.InstallAsync(apps, new AppInstallationOptions(ForceUpdate: false));
+
+        bridge.Verify(x => x.InvalidateUpdateCacheAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task InstallAsync_WithOnlyAlreadyInstalledApps_ShouldNotInvalidateUpdateCache()
+    {
+        List<ApplicationModel> apps = CreateApps("Already");
+        Mock<IPowerShellBridge> bridge = CreateBridge();
+        bridge
+            .Setup(x => x.InstallApplicationAsync(
+                It.IsAny<ApplicationModel>(),
+                It.IsAny<bool>(),
+                It.IsAny<bool>(),
+                It.IsAny<Action<string>?>()))
+            .ReturnsAsync(InstallResult.Successful("Already installed", "already-log", alreadyInstalled: true));
+        AppInstallationCoordinator coordinator = CreateCoordinator(bridge.Object);
+
+        await coordinator.InstallAsync(apps, new AppInstallationOptions(ForceUpdate: false));
+
+        bridge.Verify(x => x.InvalidateUpdateCacheAsync(), Times.Never);
+    }
+
+    [Fact]
     public async Task InstallAsync_WithMixedResults_ShouldSplitFinalCounters()
     {
         List<ApplicationModel> apps = CreateApps("Installed", "Already", "Failed");
@@ -193,6 +224,9 @@ public class AppInstallationCoordinatorTests
                 It.IsAny<bool>(),
                 It.IsAny<Action<string>?>()))
             .ReturnsAsync(InstallResult.Successful("Installed", "log"));
+        bridge
+            .Setup(x => x.InvalidateUpdateCacheAsync())
+            .Returns(Task.CompletedTask);
         return bridge;
     }
 

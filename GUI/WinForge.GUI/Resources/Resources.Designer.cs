@@ -246,6 +246,7 @@ public class Resources
     public static string Apps_Installed => ResourceManager.GetString("Apps_Installed", resourceCulture);
     public static string Apps_Selected => ResourceManager.GetString("Apps_Selected", resourceCulture);
     public static string Apps_InstallSelected => ResourceManager.GetString("Apps_InstallSelected", resourceCulture);
+    public static string Apps_InstallUpdateSelected => ResourceManager.GetString("Apps_InstallUpdateSelected", resourceCulture);
     public static string Apps_SelectAll => ResourceManager.GetString("Apps_SelectAll", resourceCulture);
     public static string Apps_SelectNone => ResourceManager.GetString("Apps_SelectNone", resourceCulture);
     public static string Apps_SelectNotInstalled => ResourceManager.GetString("Apps_SelectNotInstalled", resourceCulture);

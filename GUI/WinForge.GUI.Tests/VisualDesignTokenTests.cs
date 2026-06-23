@@ -259,13 +259,19 @@ public class VisualDesignTokenTests
     }
 
     [Fact]
-    public void AppsUpdateFilter_UsesUpdateSelectedActionInsteadOfInstallSelected()
+    public void AppsSelectionActionBar_UsesStatusAwarePrimaryAction()
     {
         string appsXaml = File.ReadAllText(FindRepoFile("GUI", "WinForge.GUI", "Views", "AppsView.xaml"));
 
-        Assert.Contains("Command=\"{Binding UpdateSelectedCommand}\"", appsXaml, StringComparison.Ordinal);
-        Assert.Contains("Text=\"{loc:Loc Btn_UpdateSelected}\"", appsXaml, StringComparison.Ordinal);
-        Assert.Contains("Value=\"{x:Static viewModels:StatusFilterOption.HasUpdates}\"", appsXaml, StringComparison.Ordinal);
+        string selectionActionBar = ExtractXamlSection(
+            appsXaml,
+            "<!-- Selection Action Bar -->",
+            "<!-- Batch Progress Panel");
+
+        Assert.Contains("Command=\"{Binding InstallSelectedCommand}\"", selectionActionBar, StringComparison.Ordinal);
+        Assert.Contains("SelectedPrimaryActionText", selectionActionBar, StringComparison.Ordinal);
+        Assert.DoesNotContain("UpdateSelectedCommand", selectionActionBar, StringComparison.Ordinal);
+        Assert.DoesNotContain("StatusFilterOption.HasUpdates", selectionActionBar, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -319,6 +325,59 @@ public class VisualDesignTokenTests
             "<Setter Property=\"Foreground\" Value=\"{DynamicResource TextFillColorPrimaryBrush}\"/>",
             deploymentXaml,
             StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AppThemeFallback_UsesThemeForgeBridgeInsteadOfHardcodedPalette()
+    {
+        string appSource = File.ReadAllText(FindRepoFile("GUI", "WinForge.GUI", "App.xaml.cs"));
+
+        Assert.Contains("ThemeService.ClearPaletteBridgeResources(app.Resources)", appSource, StringComparison.Ordinal);
+        Assert.Contains("ThemeService.ApplyPaletteBridgeResources(app.Resources)", appSource, StringComparison.Ordinal);
+        Assert.DoesNotContain("RestoreDarkThemeDefaults", appSource, StringComparison.Ordinal);
+        Assert.DoesNotContain("ApplyLightThemeEnhancements", appSource, StringComparison.Ordinal);
+        Assert.DoesNotContain("Color.FromRgb", appSource, StringComparison.Ordinal);
+        Assert.DoesNotContain("Color.FromArgb", appSource, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void FluentThemeBridge_SemanticFallbacksUseThemeForgeDarkPalette()
+    {
+        XDocument bridge = XDocument.Load(FindRepoFile("GUI", "WinForge.GUI", "Resources", "FluentThemeBridge.xaml"));
+
+        AssertBridgeBrush(bridge, "StatusInstalledBrush", "#50FA7B");
+        AssertBridgeBrush(bridge, "StatusInstallingBrush", "#8BE9FD");
+        AssertBridgeBrush(bridge, "StatusFailedBrush", "#FF5555");
+        AssertBridgeBrush(bridge, "StatusSkippedBrush", "#FFB86C");
+        AssertBridgeBrush(bridge, "StatusPendingBrush", "#B3BBD6", "0.65");
+        AssertBridgeBrush(bridge, "StatusAlreadyInstalledBrush", "#50FA7B", "0.75");
+        AssertBridgeBrush(bridge, "RowInstalledBackground", "#50FA7B", "0.12");
+        AssertBridgeBrush(bridge, "RowFailedBackground", "#FF5555", "0.12");
+        AssertBridgeBrush(bridge, "RowUpdateAvailableBackground", "#FFB86C", "0.16");
+        AssertBridgeBrush(bridge, "SuccessBackgroundBrush", "#50FA7B", "0.12");
+        AssertBridgeBrush(bridge, "WarningBackgroundBrush", "#FFB86C", "0.16");
+        AssertBridgeBrush(bridge, "ErrorBackgroundBrush", "#FF5555", "0.14");
+        AssertBridgeBrush(bridge, "PrimaryHueMidBrush", "#BD93F9");
+        AssertBridgeBrush(bridge, "SecondaryHueMidBrush", "#8BE9FD");
+        AssertBridgeBrush(bridge, "ThemeAdaptiveAccentBrush", "#BD93F9");
+        AssertBridgeBrush(bridge, "BadgePrimaryForegroundBrush", "#282A36");
+        AssertBridgeBrush(bridge, "FocusIndicatorBrush", "#BD93F9");
+    }
+
+    [Fact]
+    public void CSharpThemeFallbacks_AreCentralizedInThemeFallbackBrushes()
+    {
+        string convertersSource = File.ReadAllText(FindRepoFile("GUI", "WinForge.GUI", "Resources", "Converters.cs"));
+        string severitySource = File.ReadAllText(FindRepoFile("GUI", "WinForge.GUI", "Controls", "SeverityIndicator.xaml.cs"));
+        string fallbackSource = File.ReadAllText(FindRepoFile("GUI", "WinForge.GUI", "Resources", "ThemeFallbackBrushes.cs"));
+
+        Assert.Contains("internal static class ThemeFallbackBrushes", fallbackSource, StringComparison.Ordinal);
+        Assert.Contains("ThemeFallbackBrushes.", convertersSource, StringComparison.Ordinal);
+        Assert.Contains("ThemeFallbackBrushes.", severitySource, StringComparison.Ordinal);
+        Assert.DoesNotContain("Color.FromRgb", convertersSource, StringComparison.Ordinal);
+        Assert.DoesNotContain("Color.FromArgb", convertersSource, StringComparison.Ordinal);
+        Assert.DoesNotContain("Color.FromRgb", severitySource, StringComparison.Ordinal);
+        Assert.DoesNotContain("Color.FromArgb", severitySource, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -548,6 +607,35 @@ public class VisualDesignTokenTests
 
         Assert.NotNull(resource);
         Assert.Equal(expectedValue, resource.Value);
+    }
+
+    private static string ExtractXamlSection(string xaml, string startMarker, string endMarker)
+    {
+        int start = xaml.IndexOf(startMarker, StringComparison.Ordinal);
+        Assert.True(start >= 0, $"Could not find start marker {startMarker}.");
+
+        int end = xaml.IndexOf(endMarker, start, StringComparison.Ordinal);
+        Assert.True(end > start, $"Could not find end marker {endMarker} after {startMarker}.");
+
+        return xaml[start..end];
+    }
+
+    private static void AssertBridgeBrush(
+        XDocument bridge,
+        string key,
+        string expectedColor,
+        string? expectedOpacity = null)
+    {
+        XElement brush = bridge.Descendants()
+            .Single(element =>
+                element.Name.LocalName == "SolidColorBrush"
+                && string.Equals(
+                    element.Attribute(XName.Get("Key", "http://schemas.microsoft.com/winfx/2006/xaml"))?.Value,
+                    key,
+                    StringComparison.Ordinal));
+
+        Assert.Equal(expectedColor, brush.Attribute("Color")?.Value);
+        Assert.Equal(expectedOpacity, brush.Attribute("Opacity")?.Value);
     }
 
     private static string FindRepoFile(params string[] relativeParts)
