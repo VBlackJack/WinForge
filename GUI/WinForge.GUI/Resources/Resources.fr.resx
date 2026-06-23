@@ -713,6 +713,12 @@ Veuillez vous assurer que WinForge est extrait correctement avec tous les dossie
   <data name="Apps_ManualInstallTooltip" xml:space="preserve">
     <value>Cette application nécessite une installation manuelle depuis le site officiel</value>
   </data>
+  <data name="Apps_Prerequisite" xml:space="preserve">
+    <value>Prérequis</value>
+  </data>
+  <data name="Apps_PrerequisiteTooltip" xml:space="preserve">
+    <value>Cette application est un prérequis de WinForge</value>
+  </data>
   <data name="Apps_OpenWebsite" xml:space="preserve">
     <value>Ouvrir le site</value>
   </data>
@@ -1257,6 +1263,18 @@ Veuillez vous assurer que WinForge est extrait correctement avec tous les dossie
   <data name="Confirm_Uninstall_Message_Multiple" xml:space="preserve">
     <value>Êtes-vous sûr de vouloir désinstaller {0} applications ? Cette action est irréversible.</value>
   </data>
+  <data name="Confirm_Uninstall_Prerequisite_Title_Single" xml:space="preserve">
+    <value>Désinstaller un prérequis requis</value>
+  </data>
+  <data name="Confirm_Uninstall_Prerequisite_Title_Multiple" xml:space="preserve">
+    <value>Désinstaller {0} prérequis requis</value>
+  </data>
+  <data name="Confirm_Uninstall_Prerequisite_Message_Single" xml:space="preserve">
+    <value>Désinstaller {0} peut casser WinForge ou les déploiements qui dépendent de ce prérequis. Cette action est irréversible.</value>
+  </data>
+  <data name="Confirm_Uninstall_Prerequisite_Message_Multiple" xml:space="preserve">
+    <value>Désinstaller {0} prérequis requis peut casser WinForge ou les déploiements qui en dépendent : {1}. Cette action est irréversible.</value>
+  </data>
   <data name="Confirm_Uninstall_Btn" xml:space="preserve">
     <value>Désinstaller</value>
   </data>
@@ -1302,7 +1320,7 @@ Veuillez vous assurer que WinForge est extrait correctement avec tous les dossie
   </data>
   <!-- Application Updates -->
   <data name="Btn_ScanUpdates" xml:space="preserve">
-    <value>Actualiser mises à jour</value>
+    <value>Rechercher les mises à jour</value>
   </data>
   <data name="Btn_Update" xml:space="preserve">
     <value>Mettre à jour</value>

@@ -59,6 +59,13 @@ public partial class ApplicationModel : ObservableValidator
     [ObservableProperty]
     private bool _isRequired;
 
+    /// <summary>Whether this application is a system prerequisite.</summary>
+    [ObservableProperty]
+    private bool _isPrerequisite;
+
+    /// <summary>Whether this application is a required system prerequisite.</summary>
+    public bool IsRequiredPrerequisite => IsRequired && IsPrerequisite;
+
     /// <summary>Current installation status.</summary>
     [ObservableProperty]
     private ApplicationStatus _status = ApplicationStatus.Pending;
@@ -125,4 +132,14 @@ public partial class ApplicationModel : ObservableValidator
     [ObservableProperty]
     [StringLength(64, ErrorMessageResourceName = "Validation_StringTooLong", ErrorMessageResourceType = typeof(Resources.Resources))]
     private string _profileTier = string.Empty;
+
+    partial void OnIsRequiredChanged(bool value)
+    {
+        OnPropertyChanged(nameof(IsRequiredPrerequisite));
+    }
+
+    partial void OnIsPrerequisiteChanged(bool value)
+    {
+        OnPropertyChanged(nameof(IsRequiredPrerequisite));
+    }
 }

@@ -76,6 +76,30 @@ public class ConfirmDialogTests
     }
 
     [Fact]
+    public async Task UninstallSelected_WithRequiredPrerequisite_UsesPrerequisiteWarningCopy()
+    {
+        TestDialogService dialogService = new TestDialogService();
+        dialogService.QueueConfirmResult(false);
+        AppsViewModel viewModel = CreateAppsViewModel(dialogService: dialogService);
+        await viewModel.InitializeAsync();
+        ApplicationModel app = viewModel.FilteredApplications.Cast<ApplicationModel>().First();
+        app.Name = "PowerShell 7";
+        app.Status = ApplicationStatus.Installed;
+        app.IsRequired = true;
+        app.IsPrerequisite = true;
+        app.IsSelected = true;
+        viewModel.UpdateSelectedCount();
+
+        await viewModel.UninstallSelectedCommand.ExecuteAsync(null);
+
+        (string Title, string Message, string? ConfirmText, string? CancelText) request = Assert.Single(dialogService.ConfirmRequests);
+        Assert.Equal(Loc.Confirm_Uninstall_Prerequisite_Title_Single, request.Title);
+        Assert.Equal(string.Format(Loc.Confirm_Uninstall_Prerequisite_Message_Single, "PowerShell 7"), request.Message);
+        Assert.Equal(Loc.Confirm_Uninstall_Btn, request.ConfirmText);
+        Assert.Equal(Loc.Common_Cancel, request.CancelText);
+    }
+
+    [Fact]
     public async Task AppCatalogDelete_UsesDeleteAndCancelButtons()
     {
         TestDialogService dialogService = new TestDialogService();

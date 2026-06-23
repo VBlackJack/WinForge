@@ -31,11 +31,7 @@ public partial class AppsViewModel
     {
         if (app == null) return;
 
-        bool confirmed = await _dialogService.ShowConfirmAsync(
-            Resources.Resources.Confirm_Uninstall_Title_Single,
-            Resources.Resources.Confirm_Uninstall_Message_Single,
-            Resources.Resources.Confirm_Uninstall_Btn,
-            Resources.Resources.Common_Cancel);
+        bool confirmed = await ConfirmUninstallAsync([app]);
         if (!confirmed)
         {
             return;
@@ -80,18 +76,7 @@ public partial class AppsViewModel
 
         if (selectedApps.Count == 0) return;
 
-        bool isSingle = selectedApps.Count == 1;
-        string confirmTitle = isSingle
-            ? Resources.Resources.Confirm_Uninstall_Title_Single
-            : string.Format(Resources.Resources.Confirm_Uninstall_Title_Multiple, selectedApps.Count);
-        string confirmMessage = isSingle
-            ? Resources.Resources.Confirm_Uninstall_Message_Single
-            : string.Format(Resources.Resources.Confirm_Uninstall_Message_Multiple, selectedApps.Count);
-        bool confirmed = await _dialogService.ShowConfirmAsync(
-            confirmTitle,
-            confirmMessage,
-            Resources.Resources.Confirm_Uninstall_Btn,
-            Resources.Resources.Common_Cancel);
+        bool confirmed = await ConfirmUninstallAsync(selectedApps);
         if (!confirmed)
         {
             return;
@@ -162,5 +147,60 @@ public partial class AppsViewModel
         }
 
         ApplyBatchProgressCore(progress, updateDeploymentState: false);
+    }
+
+    private Task<bool> ConfirmUninstallAsync(IReadOnlyList<ApplicationModel> apps)
+    {
+        bool isSingle = apps.Count == 1;
+        List<ApplicationModel> requiredPrerequisites = apps
+            .Where(app => app.IsRequiredPrerequisite)
+            .ToList();
+
+        string confirmTitle;
+        string confirmMessage;
+
+        if (requiredPrerequisites.Count > 0)
+        {
+            bool hasSingleRequiredPrerequisite = requiredPrerequisites.Count == 1;
+
+            confirmTitle = hasSingleRequiredPrerequisite
+                ? Resources.Resources.Confirm_Uninstall_Prerequisite_Title_Single
+                : string.Format(
+                    CultureInfo.CurrentCulture,
+                    Resources.Resources.Confirm_Uninstall_Prerequisite_Title_Multiple,
+                    requiredPrerequisites.Count);
+
+            confirmMessage = hasSingleRequiredPrerequisite
+                ? string.Format(
+                    CultureInfo.CurrentCulture,
+                    Resources.Resources.Confirm_Uninstall_Prerequisite_Message_Single,
+                    requiredPrerequisites[0].Name)
+                : string.Format(
+                    CultureInfo.CurrentCulture,
+                    Resources.Resources.Confirm_Uninstall_Prerequisite_Message_Multiple,
+                    requiredPrerequisites.Count,
+                    string.Join(", ", requiredPrerequisites.Select(app => app.Name)));
+        }
+        else
+        {
+            confirmTitle = isSingle
+                ? Resources.Resources.Confirm_Uninstall_Title_Single
+                : string.Format(
+                    CultureInfo.CurrentCulture,
+                    Resources.Resources.Confirm_Uninstall_Title_Multiple,
+                    apps.Count);
+            confirmMessage = isSingle
+                ? Resources.Resources.Confirm_Uninstall_Message_Single
+                : string.Format(
+                    CultureInfo.CurrentCulture,
+                    Resources.Resources.Confirm_Uninstall_Message_Multiple,
+                    apps.Count);
+        }
+
+        return _dialogService.ShowConfirmAsync(
+            confirmTitle,
+            confirmMessage,
+            Resources.Resources.Confirm_Uninstall_Btn,
+            Resources.Resources.Common_Cancel);
     }
 }

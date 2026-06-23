@@ -5,6 +5,8 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 ## [Unreleased]
 
 ### Changed
+- The Applications update scan button now uses clearer "Scan for Updates" wording.
+- Required prerequisite apps now remain manageable in the Applications grid with an explicit prerequisite badge and uninstall warning.
 - Rebranded public project identifiers, GUI assets, launchers, runtime data directory, and documentation from Win11Forge to WinForge.
 - Added startup migration from `%LOCALAPPDATA%\Win11Forge` to `%LOCALAPPDATA%\WinForge`, with graceful fallback to legacy data when migration is blocked.
 - Scheduled deployments now use WinForge task names while continuing to discover and manage legacy Win11Forge scheduled tasks.

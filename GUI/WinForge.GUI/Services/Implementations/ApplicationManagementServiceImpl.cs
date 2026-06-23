@@ -39,6 +39,7 @@ public class ApplicationManagementServiceImpl : IApplicationManagementService
     private const string DetectionCommandPropertyName = "Command";
     private const string DetectionVersionRegexPropertyName = "VersionRegex";
     private const string DetectionMethodCommand = "Command";
+    private const string PrerequisiteTag = "prerequisite";
     private static readonly TimeSpan DetectionRegexTimeout = TimeSpan.FromMilliseconds(500);
     private static readonly CultureInfo LogCulture = CultureInfo.GetCultureInfo("en");
 
@@ -110,6 +111,8 @@ public class ApplicationManagementServiceImpl : IApplicationManagementService
                 app.IsRequired = requiredProp.GetBoolean();
             }
 
+            app.IsPrerequisite = HasTag(appData, PrerequisiteTag);
+
             // Build sources list from Sources object
             List<string> sourcesList = new List<string>();
             if (appData.TryGetProperty("Sources", out JsonElement sourcesObj) &&
@@ -160,6 +163,26 @@ public class ApplicationManagementServiceImpl : IApplicationManagementService
         }
 
         return applications.OrderBy(a => a.Name).ToList();
+    }
+
+    private static bool HasTag(JsonElement appData, string tag)
+    {
+        if (!appData.TryGetProperty("Tags", out JsonElement tagsElement) ||
+            tagsElement.ValueKind != JsonValueKind.Array)
+        {
+            return false;
+        }
+
+        foreach (JsonElement tagElement in tagsElement.EnumerateArray())
+        {
+            if (tagElement.ValueKind == JsonValueKind.String &&
+                string.Equals(tagElement.GetString(), tag, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <inheritdoc/>
