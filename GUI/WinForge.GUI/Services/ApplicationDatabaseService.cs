@@ -568,6 +568,7 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
             Category = GetStringProperty(element, "Category") ?? string.Empty,
             Description = GetStringProperty(element, "Description") ?? string.Empty,
             InstallArguments = GetStringProperty(element, "InstallArguments") ?? string.Empty,
+            PreferredUpdateSource = GetStringProperty(element, "PreferredUpdateSource") ?? string.Empty,
             DefaultPriority = GetIntProperty(element, "DefaultPriority", 50),
             DefaultRequired = GetBoolProperty(element, "DefaultRequired"),
             LastVerified = GetStringProperty(element, "LastVerified") ?? string.Empty,
@@ -698,6 +699,7 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
             app.Category,
             Description = app.Description ?? string.Empty,
             InstallArguments = canonicalInstallArguments,
+            PreferredUpdateSource = NormalizeOptionalString(app.PreferredUpdateSource),
             Sources = new
             {
                 app.Sources.Winget,

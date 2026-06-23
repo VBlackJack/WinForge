@@ -61,6 +61,7 @@ public class ApplicationDatabaseServiceTests
                       "additionalArgs": "--silent"
                     }
                   },
+                  "PreferredUpdateSource": "Chocolatey",
                   "Detection": {
                     "method": "Registry",
                     "path": "HKLM:\\Software\\Test",
@@ -87,6 +88,7 @@ public class ApplicationDatabaseServiceTests
             Assert.Equal("9NBLGGH4NNS1", app.Sources.Store);
             Assert.Equal("https://example.com/installer.exe", app.Sources.DirectUrl);
             Assert.Equal("Google LLC", app.Sources.ExpectedPublisher);
+            Assert.Equal("Chocolatey", app.PreferredUpdateSource);
             Assert.NotNull(app.Sources.WingetConfig);
             Assert.Equal("1.2.3", app.Sources.WingetConfig!.Version);
             Assert.Equal("winget", app.Sources.WingetConfig.Source);
@@ -132,6 +134,7 @@ public class ApplicationDatabaseServiceTests
                 Name = "My Test App",
                 Category = "Utility",
                 Description = "desc",
+                PreferredUpdateSource = "Chocolatey",
                 Sources = new ApplicationSourcesModel
                 {
                     Winget = "Google.Chrome",
@@ -182,9 +185,11 @@ public class ApplicationDatabaseServiceTests
             Assert.Contains("\"Store\":", capturedScript!);
             Assert.Contains("\"DirectUrl\":", capturedScript!);
             Assert.Contains("\"ExpectedPublisher\":", capturedScript!);
+            Assert.Contains("\"PreferredUpdateSource\":", capturedScript!);
             Assert.Contains("\"LastVerified\":", capturedScript!);
             Assert.Contains("\"Verified\":", capturedScript!);
             Assert.Contains("2026-02-12", capturedScript!);
+            Assert.Contains("Chocolatey", capturedScript!);
             Assert.DoesNotContain("\"winget\":", capturedScript!);
             Assert.DoesNotContain("\"chocolatey\":", capturedScript!);
             Assert.DoesNotContain("\"store\":", capturedScript!);

@@ -10,6 +10,7 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 - Scheduled deployments now use WinForge task names while continuing to discover and manage legacy Win11Forge scheduled tasks.
 
 ### Fixed
+- Chocolatey now self-updates through `choco upgrade chocolatey` instead of trying the WinGet bootstrap package during update operations.
 - Applications selection now routes checked `Update Available` apps through the update workflow, installs only not-installed apps, and skips apps that are already current.
 - Refresh Updates now forces a fresh update scan and update caches are invalidated after install, update, or uninstall operations.
 - Update scans now suppress trailing-zero version false positives such as `2.7.3` versus `2.7.3.0`.
