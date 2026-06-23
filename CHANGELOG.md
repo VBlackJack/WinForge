@@ -12,6 +12,7 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 ### Fixed
 - Applications selection now routes checked `Update Available` apps through the update workflow, installs only not-installed apps, and skips apps that are already current.
 - Refresh Updates now forces a fresh update scan and update caches are invalidated after install, update, or uninstall operations.
+- Update scans now suppress trailing-zero version false positives such as `2.7.3` versus `2.7.3.0`.
 - Process output capture now uses UTF-8 consistently and deployment logs omit raw localized package-manager output from the main log stream.
 
 ## [2026062201] - 2026-06-22

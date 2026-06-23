@@ -322,8 +322,9 @@ function Test-IsNewerVersion {
     .SYNOPSIS
         Compares two version strings and returns true if $Available is newer than $Current.
     .DESCRIPTION
-        Uses [System.Version]::Parse() for proper semantic version comparison.
-        Handles common edge cases like "v1.0" vs "1.0", missing patch versions, etc.
+        Uses Compare-SemanticVersions for normalized version comparison.
+        Handles common edge cases like "v1.0" vs "1.0", missing patch versions,
+        prerelease suffixes, and equivalent trailing-zero forms like "2.7.3" vs "2.7.3.0".
     .PARAMETER Current
         The currently installed version string.
     .PARAMETER Available
@@ -350,57 +351,7 @@ function Test-IsNewerVersion {
     if ([string]::IsNullOrWhiteSpace($Current)) { return $true }
     if ([string]::IsNullOrWhiteSpace($Available)) { return $false }
 
-    # Clean version strings - remove common prefixes (v, V, version)
-    $cleanedCurrent = $Current -replace '^[vV]', '' -replace '^version\s*', ''
-    $cleanedAvailable = $Available -replace '^[vV]', '' -replace '^version\s*', ''
-
-    # Detect prerelease suffixes (e.g., -alpha, -beta, -rc)
-    $currentHasPrerelease = $cleanedCurrent -match '-[a-zA-Z]'
-    $availableHasPrerelease = $cleanedAvailable -match '-[a-zA-Z]'
-
-    # Extract base version (numeric parts only)
-    $cleanCurrent = $cleanedCurrent -replace '[^\d\.].*$', ''
-    $cleanAvailable = $cleanedAvailable -replace '[^\d\.].*$', ''
-
-    # Ensure we have at least major.minor.patch format
-    $currentParts = $cleanCurrent -split '\.'
-    $availableParts = $cleanAvailable -split '\.'
-
-    # Pad to 4 parts (major.minor.patch.build) for System.Version compatibility
-    while ($currentParts.Count -lt 2) { $currentParts += '0' }
-    while ($availableParts.Count -lt 2) { $availableParts += '0' }
-
-    # Limit to 4 parts max (System.Version constraint)
-    if ($currentParts.Count -gt 4) { $currentParts = $currentParts[0..3] }
-    if ($availableParts.Count -gt 4) { $availableParts = $availableParts[0..3] }
-
-    $normalizedCurrent = $currentParts -join '.'
-    $normalizedAvailable = $availableParts -join '.'
-
-    try {
-        $versionCurrent = [System.Version]::Parse($normalizedCurrent)
-        $versionAvailable = [System.Version]::Parse($normalizedAvailable)
-
-        # If base versions are equal, check prerelease status
-        # Stable (no prerelease) is newer than prerelease of same version
-        if ($versionCurrent -eq $versionAvailable) {
-            if ($currentHasPrerelease -and -not $availableHasPrerelease) {
-                return $true  # Available stable is newer than Current prerelease
-            }
-            if (-not $currentHasPrerelease -and $availableHasPrerelease) {
-                return $false  # Available prerelease is not newer than Current stable
-            }
-            return $false  # Same version, same prerelease status
-        }
-
-        return $versionAvailable -gt $versionCurrent
-    } catch {
-        # Fallback to string comparison if parsing fails
-        if (Get-Command -Name 'Get-LocalizedString' -ErrorAction SilentlyContinue) {
-            Write-Verbose (Get-LocalizedString -Key 'optimization.version_compare_fallback' -Parameters @{ Current = $Current; Available = $Available })
-        }
-        return (Compare-SemanticVersions -Version1 $Available -Version2 $Current) -gt 0
-    }
+    return (Compare-SemanticVersions -Version1 $Available -Version2 $Current) -gt 0
 }
 
 function Get-WingetUpdatesBatch {
