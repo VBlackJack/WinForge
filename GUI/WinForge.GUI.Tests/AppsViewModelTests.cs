@@ -781,6 +781,7 @@ public class AppsViewModelTests
 
         // Assert
         IReadOnlyCollection<ApplicationModel> call = Assert.Single(updateCoordinator.ScanCalls);
+        Assert.True(Assert.Single(updateCoordinator.ScanForceRefreshValues));
         Assert.Equal(3, call.Count);
         Assert.Equal(2, viewModel.UpdatesAvailableCount);
         Assert.False(viewModel.IsScanningUpdates);
@@ -2356,6 +2357,11 @@ internal class MockPowerShellBridge : IPowerShellBridge
     public Task<UpdateCheckResult> CheckApplicationUpdateAsync(ApplicationModel app) =>
         Task.FromResult(UpdateCheckResult.UpToDate());
 
+    public Task<UpdateCheckResult> CheckApplicationUpdateAsync(ApplicationModel app, bool forceRefresh) =>
+        CheckApplicationUpdateAsync(app);
+
+    public Task InvalidateUpdateCacheAsync() => Task.CompletedTask;
+
     public Task<InstallResult> UpdateApplicationAsync(
         ApplicationModel app,
         Action<string>? progressCallback = null) =>
@@ -2581,6 +2587,8 @@ internal sealed class TestAppUpdateCoordinator : IAppUpdateCoordinator
 {
     public List<IReadOnlyCollection<ApplicationModel>> ScanCalls { get; } = [];
 
+    public List<bool> ScanForceRefreshValues { get; } = [];
+
     public List<IReadOnlyCollection<ApplicationModel>> UpdateCalls { get; } = [];
 
     public AppUpdateScanResult ScanResult { get; set; } = new(0, 0, WasCancelled: false);
@@ -2595,10 +2603,12 @@ internal sealed class TestAppUpdateCoordinator : IAppUpdateCoordinator
 
     public Task<AppUpdateScanResult> ScanForUpdatesAsync(
         IReadOnlyCollection<ApplicationModel> installedApps,
+        bool forceRefresh = false,
         IProgress<AppOperationProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
         ScanCalls.Add(installedApps);
+        ScanForceRefreshValues.Add(forceRefresh);
 
         int completed = 0;
         foreach (ApplicationModel app in installedApps)

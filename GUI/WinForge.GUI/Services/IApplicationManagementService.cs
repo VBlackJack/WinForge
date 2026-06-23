@@ -77,6 +77,19 @@ public interface IApplicationManagementService
     Task<UpdateCheckResult> CheckApplicationUpdateAsync(ApplicationModel app);
 
     /// <summary>
+    /// Checks if an application has an update available after optionally forcing update-cache invalidation.
+    /// </summary>
+    /// <param name="app">Application model to check</param>
+    /// <param name="forceRefresh">If true, invalidates update caches before checking</param>
+    /// <returns>Update check result with version info</returns>
+    Task<UpdateCheckResult> CheckApplicationUpdateAsync(ApplicationModel app, bool forceRefresh);
+
+    /// <summary>
+    /// Invalidates cached update data after a user-forced refresh or a package state mutation.
+    /// </summary>
+    Task InvalidateUpdateCacheAsync();
+
+    /// <summary>
     /// Updates a single application to the latest version.
     /// </summary>
     /// <param name="app">Application model to update</param>

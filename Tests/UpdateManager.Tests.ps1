@@ -64,6 +64,10 @@ Describe 'UpdateManager Module' {
         It 'Should export Set-UpdateConfiguration function' {
             Get-Command Set-UpdateConfiguration -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
         }
+
+        It 'Should export Clear-WingetUpdatesCache function' {
+            Get-Command Clear-WingetUpdatesCache -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+        }
     }
 
     Context 'Get-CurrentVersion' {
@@ -239,6 +243,44 @@ Describe 'Test-UpdateAvailable' {
     }
 }
 
+Describe 'Winget update batch cache' {
+    Context 'Forced refresh and invalidation' {
+        It 'Get-ApplicationUpdateStatus should pass Force to batch cache lookup' {
+            Mock -CommandName Get-WingetUpdatesBatch -ModuleName UpdateManager -MockWith {
+                param([switch]$Force)
+
+                return @{}
+            }
+
+            $result = Get-ApplicationUpdateStatus -WingetId 'Vendor.Package' -Force
+
+            $result.HasUpdate | Should -BeFalse
+            Should -Invoke -CommandName Get-WingetUpdatesBatch -ModuleName UpdateManager -Times 1 -ParameterFilter {
+                $Force.IsPresent
+            }
+        }
+
+        It 'Clear-WingetUpdatesCache should clear cached batch results' {
+            InModuleScope UpdateManager {
+                $script:BatchUpdateCache = @{
+                    'Vendor.Package' = [PSCustomObject]@{
+                        Name             = 'Package'
+                        PackageId        = 'Vendor.Package'
+                        CurrentVersion   = '1.0.0'
+                        AvailableVersion = '2.0.0'
+                    }
+                }
+                $script:BatchUpdateCacheTime = Get-Date
+
+                Clear-WingetUpdatesCache
+
+                $script:BatchUpdateCache.Count | Should -Be 0
+                $script:BatchUpdateCacheTime | Should -BeNullOrEmpty
+            }
+        }
+    }
+}
+
 Describe 'Test-IsNewerVersion' {
     Context 'Direct Comparison' {
         It 'Should export Test-IsNewerVersion function' {
@@ -314,6 +356,7 @@ Describe 'UpdateManager Export Completeness' {
             @{ FunctionName = 'Get-UpdateConfiguration' }
             @{ FunctionName = 'Set-UpdateConfiguration' }
             @{ FunctionName = 'Get-AvailableBackups' }
+            @{ FunctionName = 'Clear-WingetUpdatesCache' }
             @{ FunctionName = 'Backup-CurrentVersion' }
             @{ FunctionName = 'Restore-PreviousVersion' }
         ) {
