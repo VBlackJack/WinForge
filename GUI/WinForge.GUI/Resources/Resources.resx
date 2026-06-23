@@ -1721,7 +1721,7 @@ Please ensure WinForge is extracted correctly with all folders (Config/, Modules
   </data>
   <!-- Application Updates -->
   <data name="Btn_ScanUpdates" xml:space="preserve">
-    <value>Refresh Updates</value>
+    <value>Scan for Updates</value>
     <comment>Button to re-check for available updates on installed apps</comment>
   </data>
   <data name="Btn_Update" xml:space="preserve">
