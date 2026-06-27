@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'ApplicationDatabase.psm1'
-    ModuleVersion = '1.0.0623.1'
+    ModuleVersion = '1.0.0627.1'
     GUID = 'c1556951-f2bd-4785-8b11-0b541795dab1'
     Author = 'Julien Bombled'
     CompanyName = 'WinForge'
@@ -35,7 +35,7 @@
             Tags = @('WinForge', 'Applications', 'Database')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
-            ReleaseNotes = 'WinForge v2026062301'
+            ReleaseNotes = 'WinForge v2026062701'
         }
     }
 }

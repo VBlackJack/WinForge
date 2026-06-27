@@ -4,11 +4,17 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 
 ## [Unreleased]
 
+## [2026062701] - 2026-06-27
+
 ### Security
 - Command detection on the post-update verification path now enforces the shared executable allowlist, so an imported application catalog can no longer cause an arbitrary executable to be launched. The GUI detection probe and the application-management service now load the same fail-closed allowlist from a single source.
+- Plugin execution and plugin-load validation now share the same sandbox AST checks, reject dynamic command invocation and dangerous aliases, and enforce an explicit allowlist for plugin template/logging commands.
+- Direct-download catalog entries must now declare an Authenticode publisher, a SHA-256 checksum, or a documented validation exemption before the application database is accepted.
 
 ### Changed
 - Updated GitHub Actions workflow dependencies to maintained Node 24-ready major versions and aligned the GUI coverage threshold with the current tested baseline.
+- CI now parses PowerShell sources, runs the shared PSScriptAnalyzer wrapper, and executes detailed framework validation as first-class workflow steps.
+- Application database validation now includes a direct-download security gate and requires notes for moving "latest" endpoints that cannot be version-pinned.
 - Deployment progress and result strings are now sourced from resources instead of hardcoded literals, while still resolving in English so persisted logs stay parseable across UI cultures.
 - The severity indicator's accessible name is now localized instead of using a hardcoded English string.
 - Deduplicated the winget/chocolatey process-execution and version-probe plumbing in the application-management service.
@@ -22,6 +28,10 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 - Reload failures triggered by application-database changes are now logged instead of being lost.
 - Full exception stack traces are no longer written into the user-facing deployment log.
 - Corrected the documented prerequisite SDK to .NET 10 in the contribution guide.
+- System configuration tests now mock Explorer and DNS operations, avoiding local machine side effects during CI or maintainer test runs.
+
+### Tests
+- Added regression coverage for plugin sandbox command allowlisting, direct-download metadata invariants, publisher validation, and side-effect-safe system configuration behavior.
 
 ## [2026062301] - 2026-06-23
 

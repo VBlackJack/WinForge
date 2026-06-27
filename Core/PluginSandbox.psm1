@@ -117,7 +117,6 @@ $script:AllowedPluginCommands = @(
     'Export-ModuleMember',
     'ForEach-Object',
     'Get-Date',
-    'Get-LocalizedString',
     'Get-LogString',
     'Get-Random',
     'Join-Path',

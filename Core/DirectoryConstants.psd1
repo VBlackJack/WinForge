@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'DirectoryConstants.psm1'
-    ModuleVersion = '1.0.0623.1'
+    ModuleVersion = '1.0.0627.1'
     GUID = 'ee5b82ab-0a2a-479d-9216-52b82c6a2fbc'
     Author = 'Julien Bombled'
     CompanyName = 'WinForge'
@@ -35,7 +35,7 @@
             Tags = @('WinForge', 'Core', 'Constants', 'Paths')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
-            ReleaseNotes = 'WinForge v2026062301'
+            ReleaseNotes = 'WinForge v2026062701'
         }
     }
 }

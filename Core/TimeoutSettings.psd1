@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'TimeoutSettings.psm1'
-    ModuleVersion = '1.0.0623.1'
+    ModuleVersion = '1.0.0627.1'
     GUID = 'c889f9d4-6328-432b-889b-655e04e25fdf'
     Author = 'Julien Bombled'
     CompanyName = 'WinForge'
@@ -35,7 +35,7 @@
             Tags = @('WinForge', 'Core', 'Timeout', 'Configuration')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
-            ReleaseNotes = 'WinForge v2026062301'
+            ReleaseNotes = 'WinForge v2026062701'
         }
     }
 }

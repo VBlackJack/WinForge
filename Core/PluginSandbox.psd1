@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'PluginSandbox.psm1'
-    ModuleVersion = '1.0.0623.1'
+    ModuleVersion = '1.0.0627.1'
     GUID = '8a1369f8-98cd-4b7c-a5d2-29004729fd56'
     Author = 'Julien Bombled'
     CompanyName = 'WinForge'
@@ -35,7 +35,7 @@
             Tags = @('WinForge', 'Core', 'Plugin', 'Sandbox', 'Security')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
-            ReleaseNotes = 'WinForge v2026062301'
+            ReleaseNotes = 'WinForge v2026062701'
         }
     }
 }

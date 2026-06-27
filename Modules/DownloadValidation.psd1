@@ -21,7 +21,7 @@
     RootModule = 'DownloadValidation.psm1'
 
     # Version number of this module
-    ModuleVersion = '1.0.0623.1'
+    ModuleVersion = '1.0.0627.1'
 
     # ID used to uniquely identify this module
     GUID = '3f29f7f7-c975-493a-96db-040b49cc2f9d'
