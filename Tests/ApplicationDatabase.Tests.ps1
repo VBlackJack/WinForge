@@ -494,6 +494,54 @@ Describe 'ApplicationDatabase Authenticode Gate Invariants' {
             }
         }
     }
+
+    It 'DirectUrl apps should declare publisher, checksum, or documented validation exemption' {
+        $violations = @(
+            $script:ApplicationDatabaseJson.Applications.PSObject.Properties | Where-Object {
+                $app = $_.Value
+                $sources = $app.Sources
+                $directUrl = if ($sources.PSObject.Properties['DirectUrl']) { [string]$sources.DirectUrl } else { $null }
+                if ([string]::IsNullOrWhiteSpace($directUrl)) { return $false }
+
+                $publisher = if ($sources.PSObject.Properties['ExpectedPublisher']) { [string]$sources.ExpectedPublisher } else { $null }
+                $checksum = if ($sources.PSObject.Properties['ExpectedSHA256']) { [string]$sources.ExpectedSHA256 } else { $null }
+                $notes = if ($app.PSObject.Properties['Notes']) { [string]$app.Notes } else { $null }
+                $knownIssues = if ($app.PSObject.Properties['KnownIssues']) { [string]$app.KnownIssues } else { $null }
+
+                $hasPublisher = -not [string]::IsNullOrWhiteSpace($publisher)
+                $hasChecksum = -not [string]::IsNullOrWhiteSpace($checksum) -and $checksum -ne 'SKIP_VALIDATION'
+                $hasDocumentedSkip = $checksum -eq 'SKIP_VALIDATION' -and (
+                    -not [string]::IsNullOrWhiteSpace($notes) -or
+                    -not [string]::IsNullOrWhiteSpace($knownIssues)
+                )
+
+                return -not ($hasPublisher -or $hasChecksum -or $hasDocumentedSkip)
+            }
+        )
+
+        $report = ($violations | ForEach-Object { $_.Name }) -join ', '
+        $violations | Should -BeNullOrEmpty -Because "DirectUrl entries need ExpectedPublisher, ExpectedSHA256, or documented SKIP_VALIDATION: $report"
+    }
+
+    It 'DirectUrl latest endpoints should document why they are not version pinned' {
+        $violations = @(
+            $script:ApplicationDatabaseJson.Applications.PSObject.Properties | Where-Object {
+                $app = $_.Value
+                $sources = $app.Sources
+                $directUrl = if ($sources.PSObject.Properties['DirectUrl']) { [string]$sources.DirectUrl } else { $null }
+                if ([string]::IsNullOrWhiteSpace($directUrl)) { return $false }
+                if ($directUrl -notmatch '(?i)(^|[/_.?&=-])latest([/_.?&=-]|$)') { return $false }
+
+                $notes = if ($app.PSObject.Properties['Notes']) { [string]$app.Notes } else { $null }
+                $knownIssues = if ($app.PSObject.Properties['KnownIssues']) { [string]$app.KnownIssues } else { $null }
+
+                return [string]::IsNullOrWhiteSpace($notes) -and [string]::IsNullOrWhiteSpace($knownIssues)
+            }
+        )
+
+        $report = ($violations | ForEach-Object { $_.Name }) -join ', '
+        $violations | Should -BeNullOrEmpty -Because "latest DirectUrl endpoints are dynamic and need Notes or KnownIssues: $report"
+    }
 }
 
 Describe 'ApplicationDatabase Performance' {

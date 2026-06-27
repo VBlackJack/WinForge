@@ -1048,7 +1048,8 @@
       ],
       "LastVerified": "2025-10-03",
       "Verified": true,
-      "Homepage": "https://discord.com/"
+      "Homepage": "https://discord.com/",
+      "Notes": "DirectUrl intentionally uses Discord's stable latest endpoint; installer freshness is dynamic, so Authenticode ExpectedPublisher is enforced instead of a pinned SHA256."
     },
     "EpicGamesLauncher": {
       "Name": "Epic Games Launcher",
@@ -4151,7 +4152,8 @@
       ],
       "LastVerified": "2026-01-16",
       "Verified": true,
-      "Homepage": "https://www.freedownloadmanager.org/"
+      "Homepage": "https://www.freedownloadmanager.org/",
+      "Notes": "DirectUrl intentionally uses the vendor's latest installer endpoint; installer freshness is dynamic, so Authenticode ExpectedPublisher is enforced instead of a pinned SHA256."
     },
     "ABDownloadManager": {
       "Name": "AB Download Manager",

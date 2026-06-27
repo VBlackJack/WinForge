@@ -38,6 +38,7 @@ $script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
 $script:CoreModulePath = Join-Path $script:ModuleRoot 'Core.psm1'
 $script:LocalizationPath = Join-Path $script:ModuleRoot 'Localization.psm1'
 $script:TimeoutSettingsPath = Join-Path $script:ModuleRoot 'TimeoutSettings.psm1'
+$script:PluginSandboxModulePath = $PSCommandPath
 
 if (-not (Get-Command -Name Get-LogString -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:LocalizationPath) {
@@ -108,7 +109,221 @@ $script:DangerousCommands = @(
     'Get-Credential'
 )
 
+# === SECURITY: PLUGIN COMMAND ALLOWLIST ===
+$script:AllowedPluginCommands = @(
+    'Compare-Object',
+    'ConvertFrom-Json',
+    'ConvertTo-Json',
+    'Export-ModuleMember',
+    'ForEach-Object',
+    'Get-Date',
+    'Get-LocalizedString',
+    'Get-LogString',
+    'Get-Random',
+    'Join-Path',
+    'Measure-Object',
+    'Select-Object',
+    'Set-StrictMode',
+    'Sort-Object',
+    'Split-Path',
+    'Start-Sleep',
+    'Test-Path',
+    'Where-Object',
+    'Write-Debug',
+    'Write-Error',
+    'Write-Information',
+    'Write-Output',
+    'Write-Progress',
+    'Write-Section',
+    'Write-Status',
+    'Write-StatusProgress',
+    'Write-Verbose',
+    'Write-Warning'
+)
+
+$script:DangerousCommandSet = @{}
+foreach ($dangerousCommand in $script:DangerousCommands) {
+    $script:DangerousCommandSet[$dangerousCommand.ToLowerInvariant()] = $true
+}
+
+$script:AllowedPluginCommandSet = @{}
+foreach ($allowedCommand in $script:AllowedPluginCommands) {
+    $script:AllowedPluginCommandSet[$allowedCommand.ToLowerInvariant()] = $true
+}
+
 # === AST VALIDATION ===
+
+function ConvertTo-PluginCommandName {
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [AllowNull()]
+        [string]$CommandName
+    )
+
+    if ([string]::IsNullOrWhiteSpace($CommandName)) {
+        return ''
+    }
+
+    $normalized = $CommandName.Trim()
+    if ($normalized.Contains('\')) {
+        $normalized = ($normalized -split '\\')[-1]
+    }
+
+    return $normalized
+}
+
+function Test-PluginCommandAstSafe {
+    [CmdletBinding()]
+    [OutputType([hashtable])]
+    param(
+        [Parameter(Mandatory)]
+        [System.Management.Automation.Language.CommandAst]$CommandAst,
+
+        [Parameter()]
+        [string[]]$DefinedFunctionNames = @()
+    )
+
+    $result = @{
+        IsValid = $true
+        Errors = @()
+    }
+
+    $commandName = $CommandAst.GetCommandName()
+    if ([string]::IsNullOrWhiteSpace($commandName)) {
+        $result.IsValid = $false
+        $result.Errors += "Dynamic command invocation blocked: $($CommandAst.Extent.Text)"
+        return $result
+    }
+
+    $normalizedCommandName = ConvertTo-PluginCommandName -CommandName $commandName
+    $commandsToCheck = @($normalizedCommandName)
+
+    try {
+        $resolvedCommand = Get-Command -Name $commandName -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($resolvedCommand) {
+            if ($resolvedCommand.CommandType -eq 'Application') {
+                $result.IsValid = $false
+                $result.Errors += "External command blocked: $commandName"
+            }
+            elseif ($resolvedCommand.CommandType -eq 'Alias' -and $resolvedCommand.Definition) {
+                $commandsToCheck += (ConvertTo-PluginCommandName -CommandName $resolvedCommand.Definition)
+            }
+            elseif ($resolvedCommand.Name) {
+                $commandsToCheck += (ConvertTo-PluginCommandName -CommandName $resolvedCommand.Name)
+            }
+        }
+    } catch {
+        $result.IsValid = $false
+        $result.Errors += "Command resolution failed: $commandName"
+    }
+
+    if ($commandName -match '(^\.{0,2}[\\/]|[\\/]|\.((exe)|(cmd)|(bat)|(ps1)|(vbs)|(js))$)') {
+        $result.IsValid = $false
+        $result.Errors += "External command blocked: $commandName"
+    }
+
+    $hasDangerousCommand = $false
+    foreach ($nameToCheck in ($commandsToCheck | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Unique)) {
+        if ($script:DangerousCommandSet.ContainsKey($nameToCheck.ToLowerInvariant())) {
+            $hasDangerousCommand = $true
+            $result.IsValid = $false
+            $result.Errors += (Get-LogString 'plugins.sandbox.validation.dangerous_command' @{ Command = $commandName })
+        }
+    }
+
+    if (-not $hasDangerousCommand) {
+        $definedFunctionSet = @{}
+        foreach ($functionName in $DefinedFunctionNames) {
+            if (-not [string]::IsNullOrWhiteSpace($functionName)) {
+                $definedFunctionSet[(ConvertTo-PluginCommandName -CommandName $functionName).ToLowerInvariant()] = $true
+            }
+        }
+
+        $isAllowed = $false
+        foreach ($nameToCheck in ($commandsToCheck | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Unique)) {
+            $lookup = $nameToCheck.ToLowerInvariant()
+            if ($script:AllowedPluginCommandSet.ContainsKey($lookup) -or $definedFunctionSet.ContainsKey($lookup)) {
+                $isAllowed = $true
+                break
+            }
+        }
+
+        if (-not $isAllowed) {
+            $result.IsValid = $false
+            $result.Errors += "Command not allowed by plugin sandbox allowlist: $commandName"
+        }
+    }
+
+    return $result
+}
+
+function Test-ParsedPluginAstSafe {
+    [CmdletBinding()]
+    [OutputType([hashtable])]
+    param(
+        [Parameter(Mandatory)]
+        [System.Management.Automation.Language.Ast]$Ast
+    )
+
+    $result = @{
+        IsValid = $true
+        Errors = @()
+    }
+
+    $definedFunctionNames = @(
+        $Ast.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.FunctionDefinitionAst]
+        }, $true) | ForEach-Object { $_.Name }
+    )
+
+    $commandAsts = $Ast.FindAll({
+        param($node)
+        $node -is [System.Management.Automation.Language.CommandAst]
+    }, $true)
+
+    foreach ($cmdAst in $commandAsts) {
+        $commandResult = Test-PluginCommandAstSafe -CommandAst $cmdAst -DefinedFunctionNames $definedFunctionNames
+        if (-not $commandResult.IsValid) {
+            $result.IsValid = $false
+            $result.Errors += $commandResult.Errors
+        }
+    }
+
+    $typeAsts = $Ast.FindAll({
+        param($node)
+        $node -is [System.Management.Automation.Language.TypeExpressionAst] -or
+        $node -is [System.Management.Automation.Language.TypeConstraintAst]
+    }, $true)
+
+    foreach ($typeAst in $typeAsts) {
+        $typeName = $typeAst.TypeName.FullName
+        if ($typeName -match 'System\.Reflection|System\.Runtime\.InteropServices|System\.Net\.WebClient') {
+            $result.IsValid = $false
+            $result.Errors += (Get-LogString 'plugins.sandbox.validation.dangerous_type' @{ TypeName = $typeName })
+        }
+    }
+
+    $memberAsts = $Ast.FindAll({
+        param($node)
+        $node -is [System.Management.Automation.Language.InvokeMemberExpressionAst] -or
+        $node -is [System.Management.Automation.Language.MemberExpressionAst]
+    }, $true)
+
+    foreach ($memberAst in $memberAsts) {
+        $memberName = $memberAst.Member.Value
+        if ($memberName -in @('Create', 'DownloadString', 'DownloadFile', 'Load', 'LoadFile', 'Invoke')) {
+            $expressionText = $memberAst.Extent.Text
+            if ($expressionText -match 'scriptblock|webclient|assembly|reflection') {
+                $result.IsValid = $false
+                $result.Errors += (Get-LogString 'plugins.sandbox.validation.dangerous_member' @{ Expression = $expressionText })
+            }
+        }
+    }
+
+    return $result
+}
 
 function Test-ScriptblockSafe {
     <#
@@ -151,85 +366,10 @@ function Test-ScriptblockSafe {
             return $result
         }
 
-        # Find all command AST nodes
-        $commandAsts = $ast.FindAll({
-            param($node)
-            $node -is [System.Management.Automation.Language.CommandAst]
-        }, $true)
-
-        foreach ($cmdAst in $commandAsts) {
-            $commandName = $cmdAst.GetCommandName()
-            if ([string]::IsNullOrWhiteSpace($commandName)) {
-                $result.IsValid = $false
-                $result.Errors += "Dynamic command invocation blocked: $($cmdAst.Extent.Text)"
-                continue
-            }
-
-            $commandsToCheck = @($commandName)
-            try {
-                $resolvedCommand = Get-Command -Name $commandName -ErrorAction SilentlyContinue | Select-Object -First 1
-                if ($resolvedCommand) {
-                    if ($resolvedCommand.CommandType -eq 'Application') {
-                        $result.IsValid = $false
-                        $result.Errors += "External command blocked: $commandName"
-                    }
-                    elseif ($resolvedCommand.CommandType -eq 'Alias' -and $resolvedCommand.Definition) {
-                        $commandsToCheck += $resolvedCommand.Definition
-                    }
-                }
-            } catch {
-                $result.IsValid = $false
-                $result.Errors += "Command resolution failed: $commandName"
-            }
-
-            if ($commandName -match '(^\.{0,2}[\\/]|[\\/]|\.((exe)|(cmd)|(bat)|(ps1)|(vbs)|(js))$)') {
-                $result.IsValid = $false
-                $result.Errors += "External command blocked: $commandName"
-            }
-
-            foreach ($nameToCheck in $commandsToCheck) {
-                foreach ($dangerous in $script:DangerousCommands) {
-                    if ([string]::Equals($nameToCheck, $dangerous, [StringComparison]::OrdinalIgnoreCase)) {
-                        $result.IsValid = $false
-                        $result.Errors += (Get-LogString 'plugins.sandbox.validation.dangerous_command' @{ Command = $commandName })
-                        break
-                    }
-                }
-            }
-        }
-
-        # Find all type expression AST nodes (like [System.Reflection.Assembly])
-        $typeAsts = $ast.FindAll({
-            param($node)
-            $node -is [System.Management.Automation.Language.TypeExpressionAst] -or
-            $node -is [System.Management.Automation.Language.TypeConstraintAst]
-        }, $true)
-
-        foreach ($typeAst in $typeAsts) {
-            $typeName = $typeAst.TypeName.FullName
-            if ($typeName -match 'System\.Reflection|System\.Runtime\.InteropServices|System\.Net\.WebClient') {
-                $result.IsValid = $false
-                $result.Errors += (Get-LogString 'plugins.sandbox.validation.dangerous_type' @{ TypeName = $typeName })
-            }
-        }
-
-        # Find all member expression AST nodes (like ::Create, .DownloadString)
-        $memberAsts = $ast.FindAll({
-            param($node)
-            $node -is [System.Management.Automation.Language.InvokeMemberExpressionAst] -or
-            $node -is [System.Management.Automation.Language.MemberExpressionAst]
-        }, $true)
-
-        foreach ($memberAst in $memberAsts) {
-            $memberName = $memberAst.Member.Value
-            if ($memberName -in @('Create', 'DownloadString', 'DownloadFile', 'Load', 'LoadFile', 'Invoke')) {
-                # Check if it's a potentially dangerous invocation
-                $expressionText = $memberAst.Extent.Text
-                if ($expressionText -match 'scriptblock|webclient|assembly|reflection') {
-                    $result.IsValid = $false
-                    $result.Errors += (Get-LogString 'plugins.sandbox.validation.dangerous_member' @{ Expression = $expressionText })
-                }
-            }
+        $astValidation = Test-ParsedPluginAstSafe -Ast $ast
+        if (-not $astValidation.IsValid) {
+            $result.IsValid = $false
+            $result.Errors += $astValidation.Errors
         }
 
     } catch {
@@ -331,63 +471,17 @@ function Invoke-PluginSandboxed {
         }
 
         # Create a job for isolated execution
-        # Security: Pass dangerous commands list to job for re-validation (TOCTOU prevention)
-        $dangerousCmds = $script:DangerousCommands
+        # Security: Import this module inside the job and re-use the same AST
+        # validator there to prevent TOCTOU drift between parent and job scope.
+        $sandboxModulePath = $script:PluginSandboxModulePath
         $job = Start-Job -ScriptBlock {
-            param($HandlerText, $ContextData, $DangerousCommands)
+            param($HandlerText, $ContextData, $SandboxModulePath)
 
             # Security: Re-validate handler inside job scope before execution (TOCTOU prevention)
-            $tokens = $null
-            $errors = $null
-            $ast = [System.Management.Automation.Language.Parser]::ParseInput($HandlerText, [ref]$tokens, [ref]$errors)
-
-            if ($errors.Count -gt 0) {
-                throw "Security: Handler has parse errors in job context"
-            }
-
-            # Re-check for dangerous commands
-            $commandAsts = $ast.FindAll({ param($n) $n -is [System.Management.Automation.Language.CommandAst] }, $true)
-            foreach ($cmdAst in $commandAsts) {
-                $cmdName = $cmdAst.GetCommandName()
-                if ([string]::IsNullOrWhiteSpace($cmdName)) {
-                    throw "Security: Dynamic command invocation blocked in job context: $($cmdAst.Extent.Text)"
-                }
-
-                $commandsToCheck = @($cmdName)
-                try {
-                    $resolvedCommand = Get-Command -Name $cmdName -ErrorAction SilentlyContinue | Select-Object -First 1
-                    if ($resolvedCommand) {
-                        if ($resolvedCommand.CommandType -eq 'Application') {
-                            throw "Security: External command blocked in job context: $cmdName"
-                        }
-                        elseif ($resolvedCommand.CommandType -eq 'Alias' -and $resolvedCommand.Definition) {
-                            $commandsToCheck += $resolvedCommand.Definition
-                        }
-                    }
-                } catch {
-                    throw
-                }
-
-                if ($cmdName -match '(^\.{0,2}[\\/]|[\\/]|\.((exe)|(cmd)|(bat)|(ps1)|(vbs)|(js))$)') {
-                    throw "Security: External command blocked in job context: $cmdName"
-                }
-
-                foreach ($nameToCheck in $commandsToCheck) {
-                    foreach ($dangerous in $DangerousCommands) {
-                        if ([string]::Equals($nameToCheck, $dangerous, [StringComparison]::OrdinalIgnoreCase)) {
-                            throw "Security: Blocked command detected in job context: $cmdName"
-                        }
-                    }
-                }
-            }
-
-            # Re-check for dangerous types
-            $typeAsts = $ast.FindAll({ param($n) $n -is [System.Management.Automation.Language.TypeExpressionAst] -or $n -is [System.Management.Automation.Language.TypeConstraintAst] }, $true)
-            foreach ($typeAst in $typeAsts) {
-                $typeName = $typeAst.TypeName.FullName
-                if ($typeName -match 'System\.Reflection|System\.Runtime\.InteropServices|System\.Net\.WebClient') {
-                    throw "Security: Blocked type detected in job context: $typeName"
-                }
+            Import-Module -Name $SandboxModulePath -Force -ErrorAction Stop
+            $validation = Test-ScriptblockSafe -ScriptText $HandlerText
+            if (-not $validation.IsValid) {
+                throw "Security: Handler blocked in job context: $($validation.Errors -join '; ')"
             }
 
             # Create handler before switching to constrained language
@@ -398,7 +492,7 @@ function Invoke-PluginSandboxed {
 
             # Execute handler with context
             & $handler $ContextData
-        } -ArgumentList $handlerText, $Context, $dangerousCmds
+        } -ArgumentList $handlerText, $Context, $sandboxModulePath
 
         # Wait for job with timeout
         $completed = $job | Wait-Job -Timeout $TimeoutSeconds
@@ -624,75 +718,16 @@ function Invoke-PluginLoadSandboxed {
             return $result
         }
 
-        $dangerousCmds = $script:DangerousCommands
+        $sandboxModulePath = $script:PluginSandboxModulePath
         $moduleName = [System.IO.Path]::GetFileNameWithoutExtension($PluginPath)
         $job = Start-Job -ScriptBlock {
-            param($Path, $ModuleContent, $DangerousCommands, $ModuleName)
+            param($Path, $ModuleContent, $ModuleName, $SandboxModulePath)
 
             # Security: Re-validate the module content AST inside job scope (TOCTOU prevention)
-            $tokens = $null
-            $parseErrors = $null
-            $ast = [System.Management.Automation.Language.Parser]::ParseInput($ModuleContent, [ref]$tokens, [ref]$parseErrors)
-
-            if ($parseErrors.Count -gt 0) {
-                throw "Security: Module has parse errors in job context"
-            }
-
-            # Check for dangerous commands
-            $commandAsts = $ast.FindAll({ param($n) $n -is [System.Management.Automation.Language.CommandAst] }, $true)
-            foreach ($cmdAst in $commandAsts) {
-                $cmdName = $cmdAst.GetCommandName()
-                if ([string]::IsNullOrWhiteSpace($cmdName)) {
-                    throw "Security: Dynamic command invocation blocked in module: $($cmdAst.Extent.Text)"
-                }
-
-                $commandsToCheck = @($cmdName)
-                try {
-                    $resolvedCommand = Get-Command -Name $cmdName -ErrorAction SilentlyContinue | Select-Object -First 1
-                    if ($resolvedCommand) {
-                        if ($resolvedCommand.CommandType -eq 'Application') {
-                            throw "Security: External command blocked in module: $cmdName"
-                        }
-                        elseif ($resolvedCommand.CommandType -eq 'Alias' -and $resolvedCommand.Definition) {
-                            $commandsToCheck += $resolvedCommand.Definition
-                        }
-                    }
-                } catch {
-                    throw
-                }
-
-                if ($cmdName -match '(^\.{0,2}[\\/]|[\\/]|\.((exe)|(cmd)|(bat)|(ps1)|(vbs)|(js))$)') {
-                    throw "Security: External command blocked in module: $cmdName"
-                }
-
-                foreach ($nameToCheck in $commandsToCheck) {
-                    foreach ($dangerous in $DangerousCommands) {
-                        if ([string]::Equals($nameToCheck, $dangerous, [StringComparison]::OrdinalIgnoreCase)) {
-                            throw "Security: Blocked command detected in module: $cmdName"
-                        }
-                    }
-                }
-            }
-
-            # Check for dangerous types
-            $typeAsts = $ast.FindAll({ param($n) $n -is [System.Management.Automation.Language.TypeExpressionAst] -or $n -is [System.Management.Automation.Language.TypeConstraintAst] }, $true)
-            foreach ($typeAst in $typeAsts) {
-                $typeName = $typeAst.TypeName.FullName
-                if ($typeName -match 'System\.Reflection|System\.Runtime\.InteropServices|System\.Net\.WebClient') {
-                    throw "Security: Blocked type detected in module: $typeName"
-                }
-            }
-
-            # Check for dangerous member invocations
-            $memberAsts = $ast.FindAll({ param($n) $n -is [System.Management.Automation.Language.InvokeMemberExpressionAst] -or $n -is [System.Management.Automation.Language.MemberExpressionAst] }, $true)
-            foreach ($memberAst in $memberAsts) {
-                $memberName = $memberAst.Member.Value
-                if ($memberName -in @('Create', 'DownloadString', 'DownloadFile', 'Load', 'LoadFile', 'Invoke')) {
-                    $expressionText = $memberAst.Extent.Text
-                    if ($expressionText -match 'scriptblock|webclient|assembly|reflection') {
-                        throw "Security: Blocked member invocation in module: $expressionText"
-                    }
-                }
+            Import-Module -Name $SandboxModulePath -Force -ErrorAction Stop
+            $validation = Test-ScriptblockSafe -ScriptText $ModuleContent
+            if (-not $validation.IsValid) {
+                throw "Security: Module blocked in job context: $($validation.Errors -join '; ')"
             }
 
             # Security: Enforce Constrained Language Mode for module execution.
@@ -711,7 +746,7 @@ function Invoke-PluginLoadSandboxed {
             }
 
             return @{ Valid = $true; ExportedCommands = 0 }
-        } -ArgumentList $PluginPath, $moduleContent, $dangerousCmds, $moduleName
+        } -ArgumentList $PluginPath, $moduleContent, $moduleName, $sandboxModulePath
 
         $completed = $job | Wait-Job -Timeout $loadTimeout
 

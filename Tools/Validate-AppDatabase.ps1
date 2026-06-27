@@ -60,6 +60,80 @@ if (-not (Test-Path $ModulePath)) {
 
 Import-Module $ModulePath -Force
 
+function Get-OptionalTextValue {
+    param(
+        [Parameter(Mandatory)]
+        [object]$Object,
+
+        [Parameter(Mandatory)]
+        [string]$PropertyName
+    )
+
+    if ($null -eq $Object) {
+        return $null
+    }
+
+    $property = $Object.PSObject.Properties[$PropertyName]
+    if ($property) {
+        return [string]$property.Value
+    }
+
+    return $null
+}
+
+function Test-DirectDownloadSecurityMetadata {
+    param(
+        [Parameter(Mandatory)]
+        [array]$Applications
+    )
+
+    $errors = @()
+
+    foreach ($app in $Applications) {
+        $sources = $app.Sources
+        $directUrl = Get-OptionalTextValue -Object $sources -PropertyName 'DirectUrl'
+        if ([string]::IsNullOrWhiteSpace($directUrl)) {
+            continue
+        }
+
+        $expectedPublisher = Get-OptionalTextValue -Object $sources -PropertyName 'ExpectedPublisher'
+        $expectedSha256 = Get-OptionalTextValue -Object $sources -PropertyName 'ExpectedSHA256'
+        $notes = Get-OptionalTextValue -Object $app -PropertyName 'Notes'
+        $knownIssues = Get-OptionalTextValue -Object $app -PropertyName 'KnownIssues'
+
+        $hasPublisher = -not [string]::IsNullOrWhiteSpace($expectedPublisher)
+        $hasChecksum = -not [string]::IsNullOrWhiteSpace($expectedSha256) -and $expectedSha256 -ne 'SKIP_VALIDATION'
+        $hasSkipValidation = $expectedSha256 -eq 'SKIP_VALIDATION'
+        $hasDocumentation = -not [string]::IsNullOrWhiteSpace($notes) -or -not [string]::IsNullOrWhiteSpace($knownIssues)
+
+        if (-not ($hasPublisher -or $hasChecksum -or ($hasSkipValidation -and $hasDocumentation))) {
+            $errors += [PSCustomObject]@{
+                AppId = $app.AppId
+                Name = $app.Name
+                Issue = 'DirectUrl requires ExpectedPublisher, ExpectedSHA256, or documented SKIP_VALIDATION'
+            }
+        }
+
+        if ($hasSkipValidation -and -not $hasDocumentation) {
+            $errors += [PSCustomObject]@{
+                AppId = $app.AppId
+                Name = $app.Name
+                Issue = 'SKIP_VALIDATION requires Notes or KnownIssues explaining the exemption'
+            }
+        }
+
+        if ($directUrl -match '(?i)(^|[/_.?&=-])latest([/_.?&=-]|$)' -and -not $hasDocumentation) {
+            $errors += [PSCustomObject]@{
+                AppId = $app.AppId
+                Name = $app.Name
+                Issue = 'DirectUrl uses a latest endpoint and must document why it is not version pinned'
+            }
+        }
+    }
+
+    return $errors
+}
+
 # Display banner
 Write-Host "`n=======================================" -ForegroundColor Cyan
 Write-Host "  Application Database Validator v1.0" -ForegroundColor Cyan
@@ -87,9 +161,26 @@ Write-Host "  Apps with Choco  : $($stats.AppsWithChocolatey)" -ForegroundColor 
 Write-Host "  Apps with Store  : $($stats.AppsWithStore)" -ForegroundColor White
 Write-Host "  Apps with DirUrl : $($stats.AppsWithDirectUrl)" -ForegroundColor White
 
+$allApplications = @(Get-AllApplications)
+
+Write-Host ("`n" + ("=" * 60)) -ForegroundColor Cyan
+Write-Host "  Direct Download Security" -ForegroundColor Cyan
+Write-Host ("=" * 60) -ForegroundColor Cyan
+
+$directDownloadSecurityErrors = @(Test-DirectDownloadSecurityMetadata -Applications $allApplications)
+if ($directDownloadSecurityErrors.Count -gt 0) {
+    Write-Host "❌ Direct download security metadata issues found:" -ForegroundColor Red
+    foreach ($securityError in $directDownloadSecurityErrors) {
+        Write-Host "  - $($securityError.Name) ($($securityError.AppId)): $($securityError.Issue)" -ForegroundColor Red
+    }
+    exit 1
+}
+
+Write-Host "✅ Direct download security metadata complete" -ForegroundColor Green
+
 # Validate source availability
 if ($ValidateWinget -or $ValidateChocolatey) {
-    Write-Host "`n" + ("=" * 60) -ForegroundColor Cyan
+    Write-Host ("`n" + ("=" * 60)) -ForegroundColor Cyan
     Write-Host "  Source Validation" -ForegroundColor Cyan
     Write-Host ("=" * 60) -ForegroundColor Cyan
 
@@ -108,7 +199,7 @@ if ($ValidateWinget -or $ValidateChocolatey) {
     if ($canValidateWinget -or $canValidateChoco) {
         Write-Host "`nValidating application sources (this may take a while)...`n" -ForegroundColor Yellow
 
-        $allApps = Get-AllApplications
+        $allApps = $allApplications
         $totalApps = ($allApps | Measure-Object).Count
         $validApps = 0
         $invalidApps = 0
@@ -178,7 +269,7 @@ if ($ValidateWinget -or $ValidateChocolatey) {
             }
         }
 
-        Write-Host "`n" + ("-" * 60) -ForegroundColor Cyan
+        Write-Host ("`n" + ("-" * 60)) -ForegroundColor Cyan
         Write-Host "Validation Summary:" -ForegroundColor Cyan
         Write-Host "  Total Apps  : $totalApps" -ForegroundColor White
         Write-Host "  Valid       : $validApps " -NoNewline
@@ -204,7 +295,7 @@ if ($ValidateWinget -or $ValidateChocolatey) {
 }
 
 # Category breakdown
-Write-Host "`n" + ("=" * 60) -ForegroundColor Cyan
+Write-Host ("`n" + ("=" * 60)) -ForegroundColor Cyan
 Write-Host "  Category Breakdown" -ForegroundColor Cyan
 Write-Host ("=" * 60) -ForegroundColor Cyan
 
@@ -218,7 +309,7 @@ foreach ($cat in $categories) {
 }
 
 # Tag breakdown
-Write-Host "`n" + ("=" * 60) -ForegroundColor Cyan
+Write-Host ("`n" + ("=" * 60)) -ForegroundColor Cyan
 Write-Host "  Popular Tags" -ForegroundColor Cyan
 Write-Host ("=" * 60) -ForegroundColor Cyan
 
@@ -232,7 +323,7 @@ foreach ($tag in $popularTags) {
 
 # Generate HTML report
 if ($GenerateReport) {
-    Write-Host "`n" + ("=" * 60) -ForegroundColor Cyan
+    Write-Host ("`n" + ("=" * 60)) -ForegroundColor Cyan
     Write-Host "  Generating HTML Report" -ForegroundColor Cyan
     Write-Host ("=" * 60) -ForegroundColor Cyan
 
@@ -331,9 +422,9 @@ if ($GenerateReport) {
     Write-Host "✅ Report generated: $ReportPath" -ForegroundColor Green
 }
 
-Write-Host "`n" + ("=" * 60) -ForegroundColor Cyan
+Write-Host ("`n" + ("=" * 60)) -ForegroundColor Cyan
 Write-Host "✅ Validation Complete!" -ForegroundColor Green
-Write-Host ("=" * 60) + "`n" -ForegroundColor Cyan
+Write-Host (("=" * 60) + "`n") -ForegroundColor Cyan
 
 # Explicit success exit
 exit 0

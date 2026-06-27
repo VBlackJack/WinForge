@@ -82,47 +82,42 @@ jobs:
         run: |
           Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
 
-      - name: Run PSScriptAnalyzer
+      - name: Validate PowerShell syntax
         shell: pwsh
         run: |
-          $results = @()
-          $paths = @('Core', 'Modules', 'Tests', 'Tools')
+          $roots = @('.', 'Core', 'Modules', 'Tools', 'Tests') | Where-Object { Test-Path $_ }
+          $extensions = @('.ps1', '.psm1', '.psd1')
+          $excluded = @('.git', '.vs', 'bin', 'obj', 'Reports', 'Results', 'Dist', 'Backups')
+          $files = Get-ChildItem -Path $roots -Recurse -File |
+            Where-Object {
+              $_.Extension -in $extensions -and
+              -not (($_.FullName -split '[\\/]') | Where-Object { $_ -in $excluded })
+            } |
+            Sort-Object FullName -Unique
 
-          # Use local settings file if available, with additional CI-specific exclusions
-          $excludeRules = @(
-            'PSAvoidUsingWriteHost',
-            'PSUseSingularNouns',
-            'PSUseBOMForUnicodeEncodedFile',
-            'PSUseShouldProcessForStateChangingFunctions',
-            'PSUseProcessBlockForPipelineCommand',
-            'PSAvoidAssignmentToAutomaticVariable',
-            'PSAvoidUsingInvokeExpression',
-            'PSReviewUnusedParameter',
-            'PSAvoidUsingBrokenHashAlgorithms',
-            'PSUseToExportFieldsInManifest',
-            'PSPossibleIncorrectComparisonWithNull',
-            'PSAvoidDefaultValueSwitchParameter',
-            'PSUseDeclaredVarsMoreThanAssignments',
-            'PSUseUsingScopeModifierInNewRunspaces',
-            'PSUseApprovedVerbs',
-            'PSUseSupportsShouldProcess'
-          )
-
-          foreach ($path in $paths) {
-            if (Test-Path $path) {
-              $issues = Invoke-ScriptAnalyzer -Path $path -Recurse -Severity Error,Warning `
-                -ExcludeRule $excludeRules
-              $results += $issues
+          $failures = @()
+          foreach ($file in $files) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($file.FullName, [ref]$tokens, [ref]$errors) > $null
+            if ($errors.Count -gt 0) {
+              $failures += [PSCustomObject]@{
+                Path = $file.FullName
+                Error = ($errors | ForEach-Object { "$($_.Extent.StartLineNumber):$($_.Extent.StartColumnNumber) $($_.Message)" }) -join '; '
+              }
             }
           }
 
-          if ($results.Count -gt 0) {
-            Write-Host "PSScriptAnalyzer found $($results.Count) issue(s):" -ForegroundColor Red
-            $results | Format-Table -AutoSize -Wrap
+          if ($failures.Count -gt 0) {
+            $failures | Format-Table -AutoSize -Wrap
             exit 1
           }
 
-          Write-Host "PSScriptAnalyzer: No issues found" -ForegroundColor Green
+          Write-Host "PowerShell syntax parse passed for $($files.Count) files"
+
+      - name: Run PSScriptAnalyzer
+        shell: pwsh
+        run: .\Tools\Invoke-PSScriptAnalyzer.ps1
 
       - name: Lint French diacritics
         shell: pwsh
@@ -409,6 +404,17 @@ jobs:
             & 'Tools/Verify-VersionConsistency.ps1'
             if ($LASTEXITCODE -ne 0) {
               Write-Host "Version consistency check failed" -ForegroundColor Red
+              exit 1
+            }
+          }
+
+      - name: Validate Framework
+        shell: pwsh
+        run: |
+          if (Test-Path 'Tools/Validate-Framework.ps1') {
+            & 'Tools/Validate-Framework.ps1' -Detailed
+            if ($LASTEXITCODE -ne 0) {
+              Write-Host "Framework validation failed" -ForegroundColor Red
               exit 1
             }
           }

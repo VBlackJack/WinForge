@@ -130,6 +130,32 @@ Describe 'PluginSandbox Module' {
             $result.IsValid | Should -Be $false
             ($result.Errors -join '; ') | Should -Match 'External command blocked'
         }
+
+        It 'Should reject cmdlets outside the plugin allowlist' {
+            $result = Test-ScriptblockSafe -ScriptText 'Get-Process'
+            $result.IsValid | Should -Be $false
+            ($result.Errors -join '; ') | Should -Match 'allowlist'
+        }
+
+        It 'Should allow documented plugin template commands' {
+            $scriptText = @"
+Set-StrictMode -Version Latest
+`$script:PluginRoot = Split-Path -Parent `$PSCommandPath
+function Invoke-TestPluginpreinstall {
+    param([hashtable]`$Context)
+    Write-Verbose "pre-install"
+    return `$true
+}
+Export-ModuleMember -Function 'Invoke-TestPluginpreinstall'
+"@
+            $result = Test-ScriptblockSafe -ScriptText $scriptText
+            $result.IsValid | Should -Be $true -Because ($result.Errors -join '; ')
+        }
+
+        It 'Should allow WinForge logging helpers' {
+            $result = Test-ScriptblockSafe -ScriptText "Write-Status -Message 'plugin log' -Level 'Info'"
+            $result.IsValid | Should -Be $true -Because ($result.Errors -join '; ')
+        }
     }
 
     Context 'Invoke-PluginSandboxed - Basic Execution' {

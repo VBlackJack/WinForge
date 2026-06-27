@@ -198,7 +198,7 @@
             },
             { "type": "null" }
           ],
-          "description": "Expected Authenticode certificate subject substring for direct-download installers"
+          "description": "Expected Authenticode certificate subject CN/O/OU value for direct-download installers"
         },
         "ExpectedSHA256": {
           "oneOf": [
