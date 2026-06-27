@@ -149,6 +149,17 @@ echo  Launching: %PROGRAM%
 echo  Method: TrustedInstaller via PowerShell
 echo ========================================================================
 echo.
+echo [WARNING] This will launch a process with TrustedInstaller/System rights.
+echo [WARNING] Use only for deliberate maintenance of protected system state.
+echo.
+set "CONFIRM_TI="
+set /p "CONFIRM_TI=Type YES to continue: "
+if /I not "%CONFIRM_TI%"=="YES" (
+    echo Launch cancelled.
+    timeout /t 2 >nul
+    goto MENU
+)
+echo.
 
 :: Ensure TrustedInstaller service is running
 echo Starting TrustedInstaller service...
@@ -169,9 +180,9 @@ if not exist "%PS_SCRIPT%" (
 
 echo Launching as TrustedInstaller...
 if "%ARGS%"=="" (
-    powershell -NoProfile -ExecutionPolicy Bypass -File "%PS_SCRIPT%" -Program "%PROGRAM%"
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%PS_SCRIPT%" -Program "%PROGRAM%" -IUnderstandTrustedInstallerRisk
 ) else (
-    powershell -NoProfile -ExecutionPolicy Bypass -File "%PS_SCRIPT%" -Program "%PROGRAM%" -Arguments "%ARGS%"
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%PS_SCRIPT%" -Program "%PROGRAM%" -Arguments "%ARGS%" -IUnderstandTrustedInstallerRisk
 )
 
 echo.

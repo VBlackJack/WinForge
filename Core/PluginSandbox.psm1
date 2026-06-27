@@ -36,7 +36,14 @@ Set-StrictMode -Version Latest
 $script:ModuleRoot = Split-Path -Parent $PSCommandPath
 $script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
 $script:CoreModulePath = Join-Path $script:ModuleRoot 'Core.psm1'
+$script:LocalizationPath = Join-Path $script:ModuleRoot 'Localization.psm1'
 $script:TimeoutSettingsPath = Join-Path $script:ModuleRoot 'TimeoutSettings.psm1'
+
+if (-not (Get-Command -Name Get-LogString -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:LocalizationPath) {
+        Import-Module -Name $script:LocalizationPath -Force
+    }
+}
 
 if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:CoreModulePath) {
@@ -265,8 +272,18 @@ function Invoke-PluginSandboxed {
     try {
         Write-Status -Message "Executing plugin '$PluginName' in sandbox (timeout: ${TimeoutSeconds}s)" -Level 'Verbose' -Category 'Plugin'
 
-        # Security: Validate handler scriptblock using AST analysis
-        $handlerText = $Handler.ToString()
+        # Security: Validate the actual handler body rather than a FunctionInfo
+        # display name, then pass only text into the isolated job.
+        if ($Handler -is [scriptblock]) {
+            $handlerText = $Handler.ToString()
+        } elseif ($Handler -is [System.Management.Automation.CommandInfo] -and $null -ne $Handler.ScriptBlock) {
+            $handlerText = $Handler.ScriptBlock.ToString()
+        } elseif ($null -ne $Handler.PSObject.Properties['ScriptBlock'] -and $null -ne $Handler.ScriptBlock) {
+            $handlerText = $Handler.ScriptBlock.ToString()
+        } else {
+            $handlerText = [string]$Handler
+        }
+
         $validation = Test-ScriptblockSafe -ScriptText $handlerText
         if (-not $validation.IsValid) {
             $result.Error = (Get-LogString 'plugins.sandbox.security.handler_blocked' @{ Errors = ($validation.Errors -join '; ') })
@@ -279,16 +296,15 @@ function Invoke-PluginSandboxed {
         # Security: Pass dangerous commands list to job for re-validation (TOCTOU prevention)
         $dangerousCmds = $script:DangerousCommands
         $job = Start-Job -ScriptBlock {
-            param($HandlerScript, $ContextData, $DangerousCommands)
+            param($HandlerText, $ContextData, $DangerousCommands)
 
             # Security: Re-validate handler inside job scope before execution (TOCTOU prevention)
-            $handlerText = if ($HandlerScript -is [scriptblock]) { $HandlerScript.ToString() } else { [string]$HandlerScript }
             $tokens = $null
             $errors = $null
-            $ast = [System.Management.Automation.Language.Parser]::ParseInput($handlerText, [ref]$tokens, [ref]$errors)
+            $ast = [System.Management.Automation.Language.Parser]::ParseInput($HandlerText, [ref]$tokens, [ref]$errors)
 
             if ($errors.Count -gt 0) {
-                throw (New-SecurityException -Message "Security: Handler has parse errors in job context")
+                throw "Security: Handler has parse errors in job context"
             }
 
             # Re-check for dangerous commands
@@ -298,7 +314,7 @@ function Invoke-PluginSandboxed {
                 if ($cmdName) {
                     foreach ($dangerous in $DangerousCommands) {
                         if ($cmdName -match [regex]::Escape($dangerous)) {
-                            throw (New-SecurityException -Message "Security: Blocked command detected in job context: $cmdName")
+                            throw "Security: Blocked command detected in job context: $cmdName"
                         }
                     }
                 }
@@ -309,23 +325,19 @@ function Invoke-PluginSandboxed {
             foreach ($typeAst in $typeAsts) {
                 $typeName = $typeAst.TypeName.FullName
                 if ($typeName -match 'System\.Reflection|System\.Runtime\.InteropServices|System\.Net\.WebClient') {
-                    throw (New-SecurityException -Message "Security: Blocked type detected in job context: $typeName")
+                    throw "Security: Blocked type detected in job context: $typeName"
                 }
             }
 
             # Create handler before switching to constrained language
-            if ($HandlerScript -is [scriptblock]) {
-                $handler = $HandlerScript
-            } else {
-                $handler = [scriptblock]::Create($handlerText)
-            }
+            $handler = [scriptblock]::Create($HandlerText)
 
             # Security: Enforce Constrained Language Mode to prevent dangerous type usage
             $ExecutionContext.SessionState.LanguageMode = 'ConstrainedLanguage'
 
             # Execute handler with context
             & $handler $ContextData
-        } -ArgumentList $Handler, $Context, $dangerousCmds
+        } -ArgumentList $handlerText, $Context, $dangerousCmds
 
         # Wait for job with timeout
         $completed = $job | Wait-Job -Timeout $TimeoutSeconds
@@ -562,7 +574,7 @@ function Invoke-PluginLoadSandboxed {
             $ast = [System.Management.Automation.Language.Parser]::ParseInput($ModuleContent, [ref]$tokens, [ref]$parseErrors)
 
             if ($parseErrors.Count -gt 0) {
-                throw (New-SecurityException -Message "Security: Module has parse errors in job context")
+                throw "Security: Module has parse errors in job context"
             }
 
             # Check for dangerous commands
@@ -572,7 +584,7 @@ function Invoke-PluginLoadSandboxed {
                 if ($cmdName) {
                     foreach ($dangerous in $DangerousCommands) {
                         if ($cmdName -match [regex]::Escape($dangerous)) {
-                            throw (New-SecurityException -Message "Security: Blocked command detected in module: $cmdName")
+                            throw "Security: Blocked command detected in module: $cmdName"
                         }
                     }
                 }
@@ -583,7 +595,7 @@ function Invoke-PluginLoadSandboxed {
             foreach ($typeAst in $typeAsts) {
                 $typeName = $typeAst.TypeName.FullName
                 if ($typeName -match 'System\.Reflection|System\.Runtime\.InteropServices|System\.Net\.WebClient') {
-                    throw (New-SecurityException -Message "Security: Blocked type detected in module: $typeName")
+                    throw "Security: Blocked type detected in module: $typeName"
                 }
             }
 
@@ -594,7 +606,7 @@ function Invoke-PluginLoadSandboxed {
                 if ($memberName -in @('Create', 'DownloadString', 'DownloadFile', 'Load', 'LoadFile', 'Invoke')) {
                     $expressionText = $memberAst.Extent.Text
                     if ($expressionText -match 'scriptblock|webclient|assembly|reflection') {
-                        throw (New-SecurityException -Message "Security: Blocked member invocation in module: $expressionText")
+                        throw "Security: Blocked member invocation in module: $expressionText"
                     }
                 }
             }
@@ -652,4 +664,3 @@ Export-ModuleMember -Function @(
     'Get-SandboxStatus',
     'Test-ScriptblockSafe'
 )
-

@@ -13,6 +13,13 @@
 .PARAMETER Arguments
     Arguments to pass to the program
 
+.PARAMETER AllowModuleInstall
+    Allows this script to install NtObjectManager if it is missing.
+
+.PARAMETER IUnderstandTrustedInstallerRisk
+    Confirms the caller understands this launches a process with highly privileged
+    TrustedInstaller/System rights.
+
 .NOTES
     Author: Julien Bombled
     Version: 1.0.0
@@ -39,7 +46,13 @@ param(
     [string]$Program = "cmd.exe",
 
     [Parameter()]
-    [string]$Arguments = ""
+    [string]$Arguments = "",
+
+    [Parameter()]
+    [switch]$AllowModuleInstall,
+
+    [Parameter()]
+    [switch]$IUnderstandTrustedInstallerRisk
 )
 
 # Require Administrator privileges
@@ -48,9 +61,68 @@ if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
     exit 1
 }
 
+if (-not $IUnderstandTrustedInstallerRisk) {
+    Write-Error "Refusing to launch without -IUnderstandTrustedInstallerRisk. TrustedInstaller processes can modify protected system state."
+    exit 1
+}
+
 Write-Host "TrustedInstaller GUI Launcher for Windows 11 24H2" -ForegroundColor Green
 Write-Host "Target Program: $Program $Arguments" -ForegroundColor Yellow
 Write-Host "Uses NtObjectManager PowerShell module" -ForegroundColor Gray
+
+function Import-TrustedInstallerModule {
+    param(
+        [switch]$InstallIfMissing
+    )
+
+    Write-Host "Checking for NtObjectManager module..."
+    if (-not (Get-Module -ListAvailable -Name NtObjectManager)) {
+        if (-not $InstallIfMissing) {
+            throw "NtObjectManager is not installed. Install it manually with: Install-Module -Name NtObjectManager -Scope CurrentUser -Force -AllowClobber"
+        }
+
+        Write-Host "Installing NtObjectManager module..." -ForegroundColor Yellow
+        Install-Module -Name NtObjectManager -Force -Scope CurrentUser -AllowClobber -Confirm:$false -ErrorAction Stop
+        Write-Host "Module installed successfully" -ForegroundColor Green
+    }
+
+    Import-Module NtObjectManager -ErrorAction Stop
+    Write-Host "Module loaded successfully"
+}
+
+function Resolve-TrustedInstallerProgram {
+    param(
+        [Parameter(Mandatory)]
+        [string]$ProgramPath
+    )
+
+    if ([string]::IsNullOrWhiteSpace($ProgramPath)) {
+        throw "No program was specified."
+    }
+
+    $candidate = [Environment]::ExpandEnvironmentVariables($ProgramPath.Trim().Trim('"'))
+    $hasPathSeparator = $candidate.Contains('\') -or $candidate.Contains('/')
+
+    if ([System.IO.Path]::IsPathRooted($candidate) -or $hasPathSeparator) {
+        $fullPath = [System.IO.Path]::GetFullPath($candidate)
+        if (-not (Test-Path -LiteralPath $fullPath -PathType Leaf)) {
+            throw "Program path not found: $fullPath"
+        }
+        return $fullPath
+    }
+
+    $command = Get-Command -Name $candidate -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($command) {
+        return $command.Source
+    }
+
+    $system32Candidate = Join-Path -Path $env:WINDIR -ChildPath "System32\$candidate"
+    if (Test-Path -LiteralPath $system32Candidate -PathType Leaf) {
+        return $system32Candidate
+    }
+
+    throw "Program not found in PATH or System32: $candidate"
+}
 
 function Invoke-TrustedInstallerProcess {
     param(
@@ -59,17 +131,7 @@ function Invoke-TrustedInstallerProcess {
     )
 
     try {
-        # Check if NtObjectManager module is installed
-        Write-Host "Checking for NtObjectManager module..."
-        if (-not (Get-Module -ListAvailable -Name NtObjectManager)) {
-            Write-Host "Installing NtObjectManager module..." -ForegroundColor Yellow
-            Install-Module -Name NtObjectManager -Force -Scope CurrentUser -AllowClobber -SkipPublisherCheck -Confirm:$false -ErrorAction Stop
-            Write-Host "Module installed successfully" -ForegroundColor Green
-        }
-
-        # Import the module
-        Import-Module NtObjectManager -ErrorAction Stop
-        Write-Host "Module loaded successfully"
+        Import-TrustedInstallerModule -InstallIfMissing:$AllowModuleInstall
 
         # Get TrustedInstaller process
         Write-Host "Getting TrustedInstaller parent process..."
@@ -145,7 +207,8 @@ function Start-TrustedInstallerProcess {
 
 # Main execution
 try {
-    $exitCode = Start-TrustedInstallerProcess -ExecutablePath $Program -ExecutableArgs $Arguments
+    $resolvedProgram = Resolve-TrustedInstallerProgram -ProgramPath $Program
+    $exitCode = Start-TrustedInstallerProcess -ExecutablePath $resolvedProgram -ExecutableArgs $Arguments
     exit $exitCode
 }
 catch {

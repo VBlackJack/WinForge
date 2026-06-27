@@ -107,30 +107,47 @@ if (-not (Test-Path $ReportsPath)) {
     New-Item -Path $ReportsPath -ItemType Directory -Force | Out-Null
 }
 
-# Files to analyze
-$filesToAnalyze = @(
-    # Main scripts
-    (Join-Path $RootPath 'Deploy-Win11Environment.ps1'),
-    (Join-Path $RootPath 'GUI.ps1'),
+# Files to analyze. Keep this aligned with CI while also checking root scripts
+# and local tooling so new files cannot silently bypass static analysis.
+$scriptExtensions = @('.ps1', '.psm1', '.psd1')
+$excludedDirectoryNames = @('.git', '.vs', 'bin', 'obj', 'Reports', 'Results', 'Dist', 'Backups')
 
-    # Core module
-    (Join-Path $RootPath 'Core\Core.psm1'),
+function Test-AnalysisFileIncluded {
+    param(
+        [Parameter(Mandatory)]
+        [System.IO.FileInfo]$File
+    )
 
-    # Modules
-    (Join-Path $RootPath 'Modules\InstallationEngine.psm1'),
-    (Join-Path $RootPath 'Modules\ApplicationDatabase.psm1'),
-    (Join-Path $RootPath 'Modules\ProfileManager.psm1'),
-    (Join-Path $RootPath 'Modules\EnvironmentDetection.psm1'),
-    (Join-Path $RootPath 'Modules\Prerequisites.psm1'),
-    (Join-Path $RootPath 'Modules\SystemConfig.psm1'),
-    (Join-Path $RootPath 'Modules\StartMenuLayout.psm1'),
-    (Join-Path $RootPath 'Modules\StartMenuPinning.psm1'),
-    (Join-Path $RootPath 'Modules\StartupManager.psm1'),
-    (Join-Path $RootPath 'Modules\WinForgeGUI.psm1')
-)
+    if ($File.Extension -notin $scriptExtensions) {
+        return $false
+    }
 
-# Filter existing files
-$filesToAnalyze = $filesToAnalyze | Where-Object { Test-Path $_ }
+    $relativePath = $File.FullName.Substring($RootPath.Length).TrimStart('\', '/')
+    $pathParts = $relativePath -split '[\\/]'
+    foreach ($part in $pathParts) {
+        if ($part -in $excludedDirectoryNames) {
+            return $false
+        }
+    }
+
+    return $true
+}
+
+$rootScriptFiles = @(Get-ChildItem -Path $RootPath -File -ErrorAction SilentlyContinue |
+    Where-Object { Test-AnalysisFileIncluded -File $_ })
+
+$recursiveAnalysisRoots = @('Core', 'Modules', 'Tools', 'Tests') |
+    ForEach-Object { Join-Path $RootPath $_ } |
+    Where-Object { Test-Path -Path $_ -PathType Container }
+
+$recursiveScriptFiles = foreach ($analysisRoot in $recursiveAnalysisRoots) {
+    Get-ChildItem -Path $analysisRoot -Recurse -File -ErrorAction SilentlyContinue |
+        Where-Object { Test-AnalysisFileIncluded -File $_ }
+}
+
+$filesToAnalyze = @($rootScriptFiles + @($recursiveScriptFiles) |
+    Sort-Object -Property FullName -Unique |
+    ForEach-Object { $_.FullName })
 
 Write-Host "Files to analyze: $($filesToAnalyze.Count)" -ForegroundColor White
 Write-Host "Minimum severity: $Severity" -ForegroundColor White

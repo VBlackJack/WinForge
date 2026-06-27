@@ -143,12 +143,13 @@ if ($Coverage) {
     Write-Host ""
 
     $config.CodeCoverage.Enabled = $true
-    $config.CodeCoverage.Path = @(
-        (Join-Path $PSScriptRoot '..\Modules\InstallationEngine.psm1'),
-        (Join-Path $PSScriptRoot '..\Modules\ApplicationDatabase.psm1'),
-        (Join-Path $PSScriptRoot '..\Modules\ProfileManager.psm1'),
-        (Join-Path $PSScriptRoot '..\Modules\EnvironmentDetection.psm1')
-    )
+    $coverageRoots = @('..\Core', '..\Modules') |
+        ForEach-Object { Join-Path $PSScriptRoot $_ } |
+        Where-Object { Test-Path -Path $_ -PathType Container }
+    $coverageFiles = foreach ($coverageRoot in $coverageRoots) {
+        Get-ChildItem -Path $coverageRoot -Filter '*.psm1' -File -ErrorAction SilentlyContinue
+    }
+    $config.CodeCoverage.Path = @($coverageFiles | Sort-Object -Property FullName -Unique | ForEach-Object { $_.FullName })
     $config.CodeCoverage.OutputPath = Join-Path $ResultsPath "Coverage_$(Get-Date -Format 'yyyyMMdd_HHmmss').xml"
     $config.CodeCoverage.OutputFormat = 'JaCoCo'
     $config.CodeCoverage.CoveragePercentTarget = $coverageTargetPercent

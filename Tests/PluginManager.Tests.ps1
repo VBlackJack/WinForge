@@ -107,6 +107,11 @@ Describe 'PluginManager Module' {
             $config = Get-PluginConfig
             $config.Keys | Should -Contain 'AllowedHooks'
         }
+
+        It 'Should have SandboxingEnabled property' {
+            $config = Get-PluginConfig
+            $config.Keys | Should -Contain 'SandboxingEnabled'
+        }
     }
 
     Context 'Get-AvailablePlugins' {
@@ -179,6 +184,42 @@ Describe 'PluginManager Module' {
     Context 'Test-PluginManifest' {
         It 'Should return false for non-existent file' {
             Test-PluginManifest -ManifestPath 'C:\NonExistent\manifest.json' | Should -Be $false
+        }
+    }
+
+    Context 'Import-Plugin sandbox validation' {
+        It 'Should reject unsafe plugin entry points before importing them' {
+            $pluginsRoot = Join-Path $PSScriptRoot '..\Plugins'
+            $pluginDir = Join-Path $pluginsRoot 'AuditDangerousPlugin'
+            $markerPath = Join-Path $TestDrive 'dangerous-plugin-imported.txt'
+
+            if (Test-Path -Path $pluginDir) {
+                Remove-Item -Path $pluginDir -Recurse -Force
+            }
+
+            New-Item -Path $pluginDir -ItemType Directory -Force | Out-Null
+
+            try {
+                @{
+                    name = 'AuditDangerousPlugin'
+                    version = '1.0.0'
+                    entryPoint = 'Main.psm1'
+                    hooks = @()
+                    installationMethods = @()
+                } | ConvertTo-Json -Depth 4 | Set-Content -Path (Join-Path $pluginDir 'manifest.json') -Encoding UTF8
+
+                $escapedMarkerPath = $markerPath -replace "'", "''"
+                @"
+Set-Content -Path '$escapedMarkerPath' -Value 'imported'
+function Invoke-AuditDangerousPluginpreinstall { param([hashtable]`$Context) return `$true }
+Export-ModuleMember -Function 'Invoke-AuditDangerousPluginpreinstall'
+"@ | Set-Content -Path (Join-Path $pluginDir 'Main.psm1') -Encoding UTF8
+
+                { Import-Plugin -Name 'AuditDangerousPlugin' -Force } | Should -Throw
+                Test-Path -Path $markerPath | Should -BeFalse
+            } finally {
+                Remove-Item -Path $pluginDir -Recurse -Force -ErrorAction SilentlyContinue
+            }
         }
     }
 }

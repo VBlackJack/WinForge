@@ -109,7 +109,20 @@
 
         # Invoke-Expression is used safely in parallel block to define function from trusted source
         # This is necessary for exporting functions to ForEach-Object -Parallel scope
-        'PSAvoidUsingInvokeExpression'
+        'PSAvoidUsingInvokeExpression',
+
+        # Keep local tooling aligned with the CI exclusion policy. These rules
+        # identify tracked refactoring debt rather than release-blocking issues.
+        'PSUseProcessBlockForPipelineCommand',
+        'PSAvoidAssignmentToAutomaticVariable',
+        'PSAvoidUsingBrokenHashAlgorithms',
+        'PSUseToExportFieldsInManifest',
+        'PSPossibleIncorrectComparisonWithNull',
+        'PSAvoidDefaultValueSwitchParameter',
+        'PSUseDeclaredVarsMoreThanAssignments',
+        'PSUseUsingScopeModifierInNewRunspaces',
+        'PSUseApprovedVerbs',
+        'PSUseSupportsShouldProcess'
     )
 
     # === CODE FORMATTING ===

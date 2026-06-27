@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
   "DatabaseVersion": "3.7.4",
-  "LastUpdated": "2026-06-07",
+  "LastUpdated": "2026-06-27",
   "TotalApplications": 195,
   "PriorityRanges": {
     "Description": "Priority ranges for application installation order",
@@ -4161,7 +4161,8 @@
         "Winget": "amir1376.ABDownloadManager",
         "Chocolatey": "ab-download-manager",
         "Store": null,
-        "DirectUrl": "https://github.com/amir1376/ab-download-manager/releases/download/v1.8.4/ABDownloadManager_1.8.4_windows_x64.exe"
+        "DirectUrl": "https://github.com/amir1376/ab-download-manager/releases/download/v1.8.4/ABDownloadManager_1.8.4_windows_x64.exe",
+        "ExpectedSHA256": "013B929FB3787078C7B9C686EFF3EE49B555446B3C490FA1B4DA4199D4B0A3F7"
       },
       "Detection": {
         "Method": "File",
@@ -4177,7 +4178,7 @@
         "open-source",
         "privacy"
       ],
-      "LastVerified": "2026-01-16",
+      "LastVerified": "2026-06-27",
       "Verified": true,
       "Homepage": "https://abdownloadmanager.com/"
     },
@@ -4803,8 +4804,8 @@
         "Winget": null,
         "Chocolatey": null,
         "Store": null,
-        "DirectUrl": "https://github.com/builtbybel/FluentCleaner/releases/latest/download/FluentCleaner-win-x64.zip",
-        "ExpectedSHA256": "SKIP_VALIDATION"
+        "DirectUrl": "https://github.com/builtbybel/FluentCleaner/releases/download/26.06.04/FluentCleaner-win-x64.zip",
+        "ExpectedSHA256": "11B2D1485F1E3B09F16633E9A2C601288265E6A3D8283F547AEC83F36F787C28"
       },
       "Detection": {
         "Method": "File",
@@ -4826,10 +4827,10 @@
           "Reason": "FluentCleaner is a WinUI 3 application and requires the Windows App SDK 2.1 runtime"
         }
       ],
-      "LastVerified": "2026-06-07",
+      "LastVerified": "2026-06-27",
       "Verified": true,
       "Homepage": "https://github.com/builtbybel/FluentCleaner",
-      "KnownIssues": "Portable ZIP from GitHub (unsigned, no Winget/Chocolatey). DirectUrl uses the 'latest' release asset, so the SHA256 rolls per release and Authenticode does not apply to a ZIP archive; integrity validation is therefore opted out via ExpectedSHA256 SKIP_VALIDATION."
+      "KnownIssues": "Portable ZIP from GitHub (unsigned, no Winget/Chocolatey). DirectUrl is pinned to release 26.06.04 and validated with ExpectedSHA256 because Authenticode does not apply to ZIP archives."
     },
     "MicrosoftPCManager": {
       "Name": "Microsoft PC Manager",

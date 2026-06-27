@@ -47,7 +47,9 @@ Ce dossier contient les scripts utilitaires et outils pour configurer, valider e
 - Exécution avec privilèges NT AUTHORITY\SYSTEM
 - GUI visible dans la session utilisateur (Session 1)
 - Support automatique des fichiers .msc (via mmc.exe)
-- Auto-installation du module NtObjectManager si nécessaire
+- Confirmation explicite avant élévation TrustedInstaller
+- Module NtObjectManager requis ; installation manuelle recommandée :
+  `Install-Module -Name NtObjectManager -Scope CurrentUser -Force -AllowClobber`
 
 **Script PowerShell associé** : `Launch-TrustedInstallerGUI.ps1`
 
@@ -363,7 +365,7 @@ $proc = Start-Process powershell -ArgumentList "-File", "MonScript.ps1" -PassThr
 - **175 applications** dans la base de données principale
 - **65 applications** dans le bundle standalone ProfileCreator
 - **100% de taux de validation** sur les sources principales
-- **TrustedInstaller launcher** : Testé et fonctionnel
+- **TrustedInstaller launcher** : Confirmation explicite et module externe non installé automatiquement
 - **ProfileCreator** : Support complet du bundle standalone + custom
 
 ---

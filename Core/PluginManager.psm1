@@ -104,6 +104,7 @@ $script:DefaultConfig = @{
     )
     DisabledPlugins = @()
     PluginTimeout = 30
+    SandboxingEnabled = $true
 }
 
 # === INITIALIZATION ===
@@ -187,6 +188,10 @@ function Get-PluginConfig {
                 AllowedHooks = if ($null -ne $json.allowedHooks) { @($json.allowedHooks) } else { $script:DefaultConfig.AllowedHooks }
                 DisabledPlugins = if ($null -ne $json.disabledPlugins) { @($json.disabledPlugins) } else { $script:DefaultConfig.DisabledPlugins }
                 PluginTimeout = if ($null -ne $json.pluginTimeout) { $json.pluginTimeout } else { $script:DefaultConfig.PluginTimeout }
+                SandboxingEnabled = if (
+                    $null -ne $json.sandboxing -and
+                    $json.sandboxing.PSObject.Properties.Name -contains 'enabled'
+                ) { [bool]$json.sandboxing.enabled } else { $script:DefaultConfig.SandboxingEnabled }
             }
         } catch {
             return $script:DefaultConfig
@@ -359,8 +364,20 @@ function Import-Plugin {
     Write-Status -Message (Get-LogString -Key 'plugins.loading' -Parameters @{ Name = $Name }) -Level 'Info' -Category 'Plugin'
 
     try {
+        if ($config.SandboxingEnabled) {
+            if (-not $script:SandboxingEnabled -or -not (Get-Command -Name Invoke-PluginLoadSandboxed -ErrorAction SilentlyContinue)) {
+                throw "Plugin sandboxing is enabled, but the sandbox module is unavailable. Refusing to load plugin '$Name'."
+            }
+
+            $loadValidation = Invoke-PluginLoadSandboxed -PluginPath $canonicalEntryPath -PluginName $Name
+            if (-not $loadValidation.Success) {
+                $reason = if ($loadValidation.Error) { $loadValidation.Error } else { 'Unknown sandbox validation error' }
+                throw "Plugin '$Name' failed sandbox load validation: $reason"
+            }
+        }
+
         # Import the plugin module
-        Import-Module $entryPointPath -Force -ErrorAction Stop
+        Import-Module $canonicalEntryPath -Force -ErrorAction Stop
 
         # Register hooks
         foreach ($hook in $plugin.Hooks) {
@@ -548,16 +565,21 @@ function Invoke-PluginHook {
         return $results
     }
 
-    # Check if sandboxing should be used
+    # Check if sandboxing should be used. The JSON config enables it by default;
+    # the feature flag remains as an additional opt-in path for older configs.
     $useSandbox = $ForceSandbox.IsPresent
     if (-not $useSandbox -and $script:SandboxingEnabled) {
-        # Check feature flag
+        $useSandbox = [bool]$config.SandboxingEnabled
         if (Get-Command -Name Test-FeatureEnabled -ErrorAction SilentlyContinue) {
-            $useSandbox = Test-FeatureEnabled -FeatureName 'pluginSandboxing'
+            $useSandbox = $useSandbox -or (Test-FeatureEnabled -FeatureName 'pluginSandboxing')
         }
     }
 
-    if ($useSandbox -and (Get-Command -Name Invoke-PluginHookSandboxed -ErrorAction SilentlyContinue)) {
+    if ($useSandbox) {
+        if (-not (Get-Command -Name Invoke-PluginHookSandboxed -ErrorAction SilentlyContinue)) {
+            throw "Plugin sandboxing is enabled, but sandboxed hook execution is unavailable."
+        }
+
         # Use sandboxed execution
         Write-Status -Message (Get-LogString -Key 'plugins.sandbox.hook_sandboxed' -Parameters @{ Hook = $HookName; Count = $handlers.Count }) -Level 'Verbose' -Category 'Plugin'
         return Invoke-PluginHookSandboxed -HookName $HookName -Context $Context -Handlers $handlers

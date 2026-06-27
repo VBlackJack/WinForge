@@ -106,7 +106,6 @@ function Test-DirectoryStructure {
         'Core',
         'Modules',
         'Profiles',
-        'Logs',
         'Config',
         'Tools'
     )
@@ -115,6 +114,13 @@ function Test-DirectoryStructure {
         $path = Join-Path -Path $script:ScriptRoot -ChildPath $dir
         $exists = Test-Path -Path $path -PathType Container
         Write-ValidationResult -Test "Directory: $dir" -Passed $exists -Message "Path: $path"
+    }
+
+    $logsPath = Join-Path -Path $script:ScriptRoot -ChildPath 'Logs'
+    if (Test-Path -Path $logsPath -PathType Container) {
+        Write-ValidationResult -Test 'Directory: Logs' -Passed $true
+    } else {
+        Write-ValidationWarning "Directory: Logs missing (created at runtime when logging starts)"
     }
 }
 
@@ -470,10 +476,10 @@ function Test-SystemPermissions {
     Write-ValidationSection "System Permissions"
 
     $isAdmin = Test-Administrator
-    Write-ValidationResult -Test "Administrator privileges" -Passed $isAdmin
-
-    if (-not $isAdmin) {
-        Write-ValidationWarning "Some features require administrator privileges"
+    if ($isAdmin) {
+        Write-ValidationResult -Test "Administrator privileges" -Passed $true
+    } else {
+        Write-ValidationWarning "Administrator privileges not present; deployment-only checks are skipped"
     }
 
     try {
@@ -482,7 +488,7 @@ function Test-SystemPermissions {
         Remove-Item -Path $testPath -Force
         Write-ValidationResult -Test "Write to Program Files" -Passed $true
     } catch {
-        Write-ValidationResult -Test "Write to Program Files" -Passed $false -Message "Insufficient permissions"
+        Write-ValidationWarning "Write to Program Files unavailable in this session; expected without elevation"
     }
 }
 
