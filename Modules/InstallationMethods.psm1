@@ -686,12 +686,98 @@ function Start-ProcessWithTimeout {
     }
 }
 
+function ConvertTo-NormalizedPublisherName {
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [AllowNull()]
+        [string]$Value
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Value)) {
+        return ''
+    }
+
+    $normalized = $Value.Trim()
+    if ($normalized -match '^\s*(CN|O|OU)\s*=\s*(.+?)\s*$') {
+        $normalized = $Matches[2]
+    }
+
+    $normalized = $normalized.Trim().Trim('"')
+    $normalized = $normalized -replace '\\,', ','
+    $normalized = $normalized -replace '\\"', '"'
+    $normalized = $normalized -replace '\\\\', '\'
+    $normalized = $normalized -replace '\s+', ' '
+
+    return $normalized.Trim().ToLowerInvariant()
+}
+
+function ConvertTo-PublisherExpectation {
+    [CmdletBinding()]
+    [OutputType([hashtable])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$ExpectedPublisher
+    )
+
+    $attribute = $null
+    $value = $ExpectedPublisher
+
+    if ($ExpectedPublisher -match '^\s*(CN|O|OU)\s*=\s*(.+?)\s*$') {
+        $attribute = $Matches[1].ToUpperInvariant()
+        $value = $Matches[2]
+    }
+
+    return @{
+        Attribute = $attribute
+        NormalizedValue = ConvertTo-NormalizedPublisherName -Value $value
+    }
+}
+
+function Get-CertificateSubjectPublisherValues {
+    [CmdletBinding()]
+    [OutputType([array])]
+    param(
+        [AllowNull()]
+        [string]$Subject
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Subject)) {
+        return @()
+    }
+
+    $values = @()
+    $subjectParts = [regex]::Split($Subject, '(?<!\\),')
+    foreach ($part in $subjectParts) {
+        if ($part -match '^\s*([A-Za-z][A-Za-z0-9]*)\s*=\s*(.*?)\s*$') {
+            $attribute = $Matches[1].ToUpperInvariant()
+            if ($attribute -notin @('CN', 'O', 'OU')) {
+                continue
+            }
+
+            $rawValue = $Matches[2].Trim().Trim('"')
+            $rawValue = $rawValue -replace '\\,', ','
+            $rawValue = $rawValue -replace '\\"', '"'
+            $rawValue = $rawValue -replace '\\\\', '\'
+
+            $values += [PSCustomObject]@{
+                Attribute = $attribute
+                Value = $rawValue
+                NormalizedValue = ConvertTo-NormalizedPublisherName -Value $rawValue
+            }
+        }
+    }
+
+    return $values
+}
+
 function Test-InstallerSignature {
     <#
     .SYNOPSIS
         Validates an installer Authenticode signature against an expected publisher.
     .DESCRIPTION
         Fails closed for missing, invalid, mismatched, or unreadable signatures.
+        Publisher matching is exact against certificate subject CN/O/OU values.
     #>
     [CmdletBinding()]
     [OutputType([bool])]
@@ -716,7 +802,22 @@ function Test-InstallerSignature {
     }
 
     $subject = if ($signature.SignerCertificate) { $signature.SignerCertificate.Subject } else { $null }
-    if ($subject -and $subject.ToLowerInvariant().Contains($ExpectedPublisher.ToLowerInvariant())) {
+    $expectation = ConvertTo-PublisherExpectation -ExpectedPublisher $ExpectedPublisher
+    $subjectPublisherValues = @(Get-CertificateSubjectPublisherValues -Subject $subject)
+
+    $publisherMatches = @(
+        $subjectPublisherValues | Where-Object {
+            $_.NormalizedValue -eq $expectation.NormalizedValue -and
+            (-not $expectation.Attribute -or $_.Attribute -eq $expectation.Attribute)
+        }
+    )
+
+    if ($publisherMatches.Count -gt 0) {
+        Write-Status -Message (Get-LogString -Key 'download.signature.valid' -Parameters @{ Publisher = $ExpectedPublisher }) -Level 'Success'
+        return $true
+    }
+
+    if ($subjectPublisherValues.Count -eq 0 -and (ConvertTo-NormalizedPublisherName -Value $subject) -eq $expectation.NormalizedValue) {
         Write-Status -Message (Get-LogString -Key 'download.signature.valid' -Parameters @{ Publisher = $ExpectedPublisher }) -Level 'Success'
         return $true
     }

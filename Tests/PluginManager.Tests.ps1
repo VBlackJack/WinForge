@@ -221,5 +221,39 @@ Export-ModuleMember -Function 'Invoke-AuditDangerousPluginpreinstall'
                 Remove-Item -Path $pluginDir -Recurse -Force -ErrorAction SilentlyContinue
             }
         }
+
+        It 'Should reject dynamically composed unsafe plugin entry points before importing them' {
+            $pluginsRoot = Join-Path $PSScriptRoot '..\Plugins'
+            $pluginDir = Join-Path $pluginsRoot 'AuditDynamicDangerousPlugin'
+            $markerPath = Join-Path $TestDrive 'dynamic-dangerous-plugin-imported.txt'
+
+            if (Test-Path -Path $pluginDir) {
+                Remove-Item -Path $pluginDir -Recurse -Force
+            }
+
+            New-Item -Path $pluginDir -ItemType Directory -Force | Out-Null
+
+            try {
+                @{
+                    name = 'AuditDynamicDangerousPlugin'
+                    version = '1.0.0'
+                    entryPoint = 'Main.psm1'
+                    hooks = @()
+                    installationMethods = @()
+                } | ConvertTo-Json -Depth 4 | Set-Content -Path (Join-Path $pluginDir 'manifest.json') -Encoding UTF8
+
+                $escapedMarkerPath = $markerPath -replace "'", "''"
+                @"
+& ('Set-' + 'Content') -Path '$escapedMarkerPath' -Value 'imported'
+function Invoke-AuditDynamicDangerousPluginpreinstall { param([hashtable]`$Context) return `$true }
+Export-ModuleMember -Function 'Invoke-AuditDynamicDangerousPluginpreinstall'
+"@ | Set-Content -Path (Join-Path $pluginDir 'Main.psm1') -Encoding UTF8
+
+                { Import-Plugin -Name 'AuditDynamicDangerousPlugin' -Force } | Should -Throw
+                Test-Path -Path $markerPath | Should -BeFalse
+            } finally {
+                Remove-Item -Path $pluginDir -Recurse -Force -ErrorAction SilentlyContinue
+            }
+        }
     }
 }

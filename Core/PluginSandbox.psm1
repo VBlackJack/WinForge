@@ -75,12 +75,19 @@ $script:DangerousCommands = @(
     'Add-Type',
     'New-Object',
     'Start-Process',
+    'saps',
     '[System.Reflection',
     '[System.Runtime.InteropServices',
     'Set-ExecutionPolicy',
     'Remove-Item',
+    'rm',
+    'del',
+    'erase',
+    'rmdir',
+    'rd',
     'Clear-Content',
     'Set-Content',
+    'sc',
     'Out-File',
     '[scriptblock]::Create',
     'Invoke-Command',
@@ -94,7 +101,9 @@ $script:DangerousCommands = @(
     'downloadstring',
     'downloadfile',
     'Invoke-WebRequest',
+    'iwr',
     'Invoke-RestMethod',
+    'irm',
     'ConvertTo-SecureString',
     'Get-Credential'
 )
@@ -150,11 +159,40 @@ function Test-ScriptblockSafe {
 
         foreach ($cmdAst in $commandAsts) {
             $commandName = $cmdAst.GetCommandName()
-            if ($commandName) {
+            if ([string]::IsNullOrWhiteSpace($commandName)) {
+                $result.IsValid = $false
+                $result.Errors += "Dynamic command invocation blocked: $($cmdAst.Extent.Text)"
+                continue
+            }
+
+            $commandsToCheck = @($commandName)
+            try {
+                $resolvedCommand = Get-Command -Name $commandName -ErrorAction SilentlyContinue | Select-Object -First 1
+                if ($resolvedCommand) {
+                    if ($resolvedCommand.CommandType -eq 'Application') {
+                        $result.IsValid = $false
+                        $result.Errors += "External command blocked: $commandName"
+                    }
+                    elseif ($resolvedCommand.CommandType -eq 'Alias' -and $resolvedCommand.Definition) {
+                        $commandsToCheck += $resolvedCommand.Definition
+                    }
+                }
+            } catch {
+                $result.IsValid = $false
+                $result.Errors += "Command resolution failed: $commandName"
+            }
+
+            if ($commandName -match '(^\.{0,2}[\\/]|[\\/]|\.((exe)|(cmd)|(bat)|(ps1)|(vbs)|(js))$)') {
+                $result.IsValid = $false
+                $result.Errors += "External command blocked: $commandName"
+            }
+
+            foreach ($nameToCheck in $commandsToCheck) {
                 foreach ($dangerous in $script:DangerousCommands) {
-                    if ($commandName -match [regex]::Escape($dangerous)) {
+                    if ([string]::Equals($nameToCheck, $dangerous, [StringComparison]::OrdinalIgnoreCase)) {
                         $result.IsValid = $false
                         $result.Errors += (Get-LogString 'plugins.sandbox.validation.dangerous_command' @{ Command = $commandName })
+                        break
                     }
                 }
             }
@@ -311,9 +349,32 @@ function Invoke-PluginSandboxed {
             $commandAsts = $ast.FindAll({ param($n) $n -is [System.Management.Automation.Language.CommandAst] }, $true)
             foreach ($cmdAst in $commandAsts) {
                 $cmdName = $cmdAst.GetCommandName()
-                if ($cmdName) {
+                if ([string]::IsNullOrWhiteSpace($cmdName)) {
+                    throw "Security: Dynamic command invocation blocked in job context: $($cmdAst.Extent.Text)"
+                }
+
+                $commandsToCheck = @($cmdName)
+                try {
+                    $resolvedCommand = Get-Command -Name $cmdName -ErrorAction SilentlyContinue | Select-Object -First 1
+                    if ($resolvedCommand) {
+                        if ($resolvedCommand.CommandType -eq 'Application') {
+                            throw "Security: External command blocked in job context: $cmdName"
+                        }
+                        elseif ($resolvedCommand.CommandType -eq 'Alias' -and $resolvedCommand.Definition) {
+                            $commandsToCheck += $resolvedCommand.Definition
+                        }
+                    }
+                } catch {
+                    throw
+                }
+
+                if ($cmdName -match '(^\.{0,2}[\\/]|[\\/]|\.((exe)|(cmd)|(bat)|(ps1)|(vbs)|(js))$)') {
+                    throw "Security: External command blocked in job context: $cmdName"
+                }
+
+                foreach ($nameToCheck in $commandsToCheck) {
                     foreach ($dangerous in $DangerousCommands) {
-                        if ($cmdName -match [regex]::Escape($dangerous)) {
+                        if ([string]::Equals($nameToCheck, $dangerous, [StringComparison]::OrdinalIgnoreCase)) {
                             throw "Security: Blocked command detected in job context: $cmdName"
                         }
                     }
@@ -581,9 +642,32 @@ function Invoke-PluginLoadSandboxed {
             $commandAsts = $ast.FindAll({ param($n) $n -is [System.Management.Automation.Language.CommandAst] }, $true)
             foreach ($cmdAst in $commandAsts) {
                 $cmdName = $cmdAst.GetCommandName()
-                if ($cmdName) {
+                if ([string]::IsNullOrWhiteSpace($cmdName)) {
+                    throw "Security: Dynamic command invocation blocked in module: $($cmdAst.Extent.Text)"
+                }
+
+                $commandsToCheck = @($cmdName)
+                try {
+                    $resolvedCommand = Get-Command -Name $cmdName -ErrorAction SilentlyContinue | Select-Object -First 1
+                    if ($resolvedCommand) {
+                        if ($resolvedCommand.CommandType -eq 'Application') {
+                            throw "Security: External command blocked in module: $cmdName"
+                        }
+                        elseif ($resolvedCommand.CommandType -eq 'Alias' -and $resolvedCommand.Definition) {
+                            $commandsToCheck += $resolvedCommand.Definition
+                        }
+                    }
+                } catch {
+                    throw
+                }
+
+                if ($cmdName -match '(^\.{0,2}[\\/]|[\\/]|\.((exe)|(cmd)|(bat)|(ps1)|(vbs)|(js))$)') {
+                    throw "Security: External command blocked in module: $cmdName"
+                }
+
+                foreach ($nameToCheck in $commandsToCheck) {
                     foreach ($dangerous in $DangerousCommands) {
-                        if ($cmdName -match [regex]::Escape($dangerous)) {
+                        if ([string]::Equals($nameToCheck, $dangerous, [StringComparison]::OrdinalIgnoreCase)) {
                             throw "Security: Blocked command detected in module: $cmdName"
                         }
                     }

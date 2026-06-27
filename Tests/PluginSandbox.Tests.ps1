@@ -112,6 +112,26 @@ Describe 'PluginSandbox Module' {
         }
     }
 
+    Context 'Test-ScriptblockSafe - Command Resolution' {
+        It 'Should reject dynamically composed command invocation' {
+            $result = Test-ScriptblockSafe -ScriptText "& ('Set-' + 'Content') -Path 'x' -Value 'y'"
+            $result.IsValid | Should -Be $false
+            ($result.Errors -join '; ') | Should -Match 'Dynamic command invocation blocked'
+        }
+
+        It 'Should reject aliases that resolve to dangerous commands' {
+            $result = Test-ScriptblockSafe -ScriptText "rm 'x'"
+            $result.IsValid | Should -Be $false
+            ($result.Errors -join '; ') | Should -Match 'Dangerous command blocked'
+        }
+
+        It 'Should reject direct external executable invocation' {
+            $result = Test-ScriptblockSafe -ScriptText 'cmd.exe /c echo test'
+            $result.IsValid | Should -Be $false
+            ($result.Errors -join '; ') | Should -Match 'External command blocked'
+        }
+    }
+
     Context 'Invoke-PluginSandboxed - Basic Execution' {
         It 'Should execute simple handler' {
             $handler = { return 'Hello World' }
@@ -143,6 +163,18 @@ Describe 'PluginSandbox Module' {
             $context = @{ TestValue = 'ContextPassed' }
             $result = Invoke-PluginSandboxed -Handler $handler -Context $context -PluginName 'TestPlugin'
             $result.Result | Should -Be 'ContextPassed'
+        }
+
+        It 'Should reject dynamically composed commands before execution' {
+            $markerPath = Join-Path $TestDrive 'dynamic-command-marker.txt'
+            $handler = {
+                param($ctx)
+                & ('Set-' + 'Content') -Path $ctx.MarkerPath -Value 'created'
+            }
+
+            $result = Invoke-PluginSandboxed -Handler $handler -Context @{ MarkerPath = $markerPath } -PluginName 'DynamicPlugin'
+            $result.Success | Should -Be $false
+            Test-Path -Path $markerPath | Should -BeFalse
         }
     }
 

@@ -312,6 +312,45 @@ Describe 'InstallationMethods Module' {
             Test-InstallerSignature -FilePath 'x' -ExpectedPublisher 'Mozilla Corporation' | Should -BeTrue
         }
 
+        It 'Should return true when explicit publisher attribute matches exactly' {
+            Mock Get-AuthenticodeSignature {
+                [pscustomobject]@{
+                    Status            = 'Valid'
+                    SignerCertificate = [pscustomobject]@{
+                        Subject = 'CN=Installer Signing, O=Mozilla Corporation, C=US'
+                    }
+                }
+            } -ModuleName InstallationMethods
+
+            Test-InstallerSignature -FilePath 'x' -ExpectedPublisher 'O=Mozilla Corporation' | Should -BeTrue
+        }
+
+        It 'Should reject publisher substring matches' {
+            Mock Get-AuthenticodeSignature {
+                [pscustomobject]@{
+                    Status            = 'Valid'
+                    SignerCertificate = [pscustomobject]@{
+                        Subject = 'CN=Mozilla Corporation Malware, O=Mozilla Corporation Malware, C=US'
+                    }
+                }
+            } -ModuleName InstallationMethods
+
+            Test-InstallerSignature -FilePath 'x' -ExpectedPublisher 'Mozilla Corporation' | Should -BeFalse
+        }
+
+        It 'Should reject explicit publisher attribute mismatches' {
+            Mock Get-AuthenticodeSignature {
+                [pscustomobject]@{
+                    Status            = 'Valid'
+                    SignerCertificate = [pscustomobject]@{
+                        Subject = 'CN=Installer Signing, O=Mozilla Corporation, C=US'
+                    }
+                }
+            } -ModuleName InstallationMethods
+
+            Test-InstallerSignature -FilePath 'x' -ExpectedPublisher 'CN=Mozilla Corporation' | Should -BeFalse
+        }
+
         It 'Should return false when signature status is not valid' {
             Mock Get-AuthenticodeSignature {
                 [pscustomobject]@{
