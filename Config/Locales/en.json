@@ -1457,6 +1457,7 @@
       "handler_dangerous_pattern": "SECURITY: Handler contains dangerous pattern '{Pattern}'. Handler registration denied.",
       "handler_syntax_errors": "SECURITY: Handler has syntax errors: {Message}",
       "handler_dangerous_command": "SECURITY: Handler contains dangerous command '{Command}'. Handler registration denied.",
+      "type_allowlist_unavailable": "Plugin sandbox module unavailable: endpoint handler validation is running in degraded mode with the legacy denylist.",
       "handler_dangerous_type": "SECURITY: Handler uses dangerous type '{TypeName}'. Handler registration denied.",
       "handler_dangerous_static_method": "SECURITY: Handler uses dangerous static method. Handler registration denied.",
       "handler_validation_failed": "Handler validation failed",

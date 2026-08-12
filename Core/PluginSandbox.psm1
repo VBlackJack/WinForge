@@ -254,6 +254,11 @@ function Test-PluginTypeNameAllowed {
         import performed by Import-Plugin, which runs in FullLanguage.
     .PARAMETER TypeName
         The type name as written in the plugin source.
+    .PARAMETER AdditionalAllowedTypes
+        Extra type names to accept on top of the plugin baseline. This exists so another
+        caller can reuse the same predicate without widening the plugin sandbox itself:
+        the REST API handler validator needs a slightly larger surface than plugin code,
+        and that difference belongs at the call site rather than in the shared baseline.
     .OUTPUTS
         [bool] $true when the type is allowed.
     #>
@@ -261,7 +266,10 @@ function Test-PluginTypeNameAllowed {
     [OutputType([bool])]
     param(
         [AllowNull()]
-        [string]$TypeName
+        [string]$TypeName,
+
+        [Parameter()]
+        [string[]]$AdditionalAllowedTypes = @()
     )
 
     if ([string]::IsNullOrWhiteSpace($TypeName)) {
@@ -279,7 +287,18 @@ function Test-PluginTypeNameAllowed {
         return $false
     }
 
-    return $script:AllowedPluginTypeSet.ContainsKey($normalized.ToLowerInvariant())
+    $lookup = $normalized.ToLowerInvariant()
+    if ($script:AllowedPluginTypeSet.ContainsKey($lookup)) {
+        return $true
+    }
+
+    foreach ($additionalType in $AdditionalAllowedTypes) {
+        if (-not [string]::IsNullOrWhiteSpace($additionalType) -and $additionalType.ToLowerInvariant() -eq $lookup) {
+            return $true
+        }
+    }
+
+    return $false
 }
 
 function Test-PluginCommandAstSafe {

@@ -689,6 +689,38 @@ Describe 'RestApiServer Module' {
         }
     }
 
+    Context 'Handler validation shares the sandbox type allowlist' {
+        # The handler validator used a denylist while the plugin sandbox uses an
+        # allowlist. Both validate untrusted script text before execution, so a denylist
+        # here is the same gap that let [System.Diagnostics.Process]::Start through the
+        # sandbox.
+        It 'Should reject <Name>' -ForEach @(
+            @{ Name = 'process creation';   Handler = { [System.Diagnostics.Process]::Start('cmd.exe', '/c whoami') } }
+            @{ Name = 'file write';         Handler = { [System.IO.File]::WriteAllText('C:\Windows\Temp\x.txt', 'y') } }
+            @{ Name = 'file delete';        Handler = { [System.IO.File]::Delete('C:\Windows\Temp\x.txt') } }
+            @{ Name = 'registry write';     Handler = { [Microsoft.Win32.Registry]::SetValue('HKCU:\X', 'R', 'e') } }
+            @{ Name = 'assembly load';      Handler = { [System.Reflection.Assembly]::Load('x') } }
+            @{ Name = 'reflective create';  Handler = { [System.Activator]::CreateInstance('System.Object') } }
+        ) {
+            { Register-ApiEndpoint -Path '/api/rejected' -Method 'GET' -Handler $Handler } | Should -Throw
+        }
+
+        It 'Should accept the extra pure-computation types endpoint handlers need' {
+            { Register-ApiEndpoint -Path '/api/regex-probe' -Method 'GET' -Handler { return [regex]::Escape('a.b') } } |
+                Should -Not -Throw
+            { Register-ApiEndpoint -Path '/api/path-probe' -Method 'GET' -Handler { return [System.IO.Path]::GetFileName('a/b.txt') } } |
+                Should -Not -Throw
+        }
+
+        It 'Should still accept every built-in endpoint handler' {
+            $apiEndpointsPath = Join-Path $script:ModuleRoot 'ApiEndpoints.psm1'
+            Import-Module $apiEndpointsPath -Force -ErrorAction Stop
+
+            { Register-DefaultEndpoints } | Should -Not -Throw
+            @(Get-RegisteredEndpoints).Count | Should -BeGreaterOrEqual 8
+        }
+    }
+
     Context 'Read-BoundedRequestBody' {
         # ContentLength64 is -1 for chunked transfer encoding, so the declared-length
         # check alone let a chunked body stream in unbounded. The reader must cap

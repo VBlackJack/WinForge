@@ -55,6 +55,34 @@ if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
     }
 }
 
+# Import PluginSandbox for the shared .NET type allowlist. Endpoint handlers and plugin
+# code are both untrusted script text validated before execution, so they must not drift
+# apart: a denylist here while the sandbox uses an allowlist is exactly the gap that let
+# [System.Diagnostics.Process]::Start through the sandbox before.
+$script:PluginSandboxPath = Join-Path $script:ModuleRoot 'PluginSandbox.psm1'
+if (-not (Get-Command -Name Test-PluginTypeNameAllowed -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:PluginSandboxPath) {
+        Import-Module -Name $script:PluginSandboxPath -Force -ErrorAction SilentlyContinue
+    }
+}
+
+# Types endpoint handlers may use on top of the plugin baseline. Endpoint handlers are
+# registered in-process by the framework rather than dropped in by a third party, so a
+# slightly wider surface is warranted - but it is enumerated here rather than widening the
+# plugin sandbox, and every entry is pure computation with no side effect:
+#   regex            - response filtering
+#   StringComparison - explicit culture-invariant comparisons
+#   System.IO.Path   - path string manipulation only (Combine/GetFileName); the types that
+#                      actually touch the filesystem (System.IO.File, System.IO.Directory)
+#                      are deliberately absent.
+$script:HandlerAdditionalAllowedTypes = @(
+    'regex',
+    'System.Text.RegularExpressions.Regex',
+    'StringComparison',
+    'System.StringComparison',
+    'System.IO.Path'
+)
+
 # Import SecureStorage module for DPAPI encryption
 $script:UseSecureStorage = $false
 if (Test-Path -Path $script:SecureStoragePath) {
@@ -1253,28 +1281,59 @@ function Test-SafeHandlerScriptblock {
             }
         }
 
-        # Check for dangerous type usage
+        # Check .NET type usage against the shared allowlist. A denylist cannot bound the
+        # reachable surface: every unlisted type is a potential execution primitive, which
+        # is why this defers to the same predicate the plugin sandbox uses.
+        $useSharedTypeAllowlist = [bool](Get-Command -Name Test-PluginTypeNameAllowed -ErrorAction SilentlyContinue)
+        if (-not $useSharedTypeAllowlist) {
+            Write-Status -Message (Get-LogString -Key 'api.security.type_allowlist_unavailable') -Level 'Warning' -Category 'Api'
+        }
+
         $typeAsts = $ast.FindAll({
             param($node)
-            $node -is [System.Management.Automation.Language.TypeExpressionAst]
+            $node -is [System.Management.Automation.Language.TypeExpressionAst] -or
+            $node -is [System.Management.Automation.Language.TypeConstraintAst]
         }, $true)
 
         foreach ($typeAst in $typeAsts) {
             $typeName = $typeAst.TypeName.FullName
-            if ($typeName -match 'System\.Reflection|System\.Runtime\.InteropServices|System\.Net\.WebClient') {
+
+            $typeIsRejected = if ($useSharedTypeAllowlist) {
+                -not (Test-PluginTypeNameAllowed -TypeName $typeName -AdditionalAllowedTypes $script:HandlerAdditionalAllowedTypes)
+            } else {
+                # Degraded mode: without the sandbox module only the historical denylist
+                # is available, which is weaker. The warning above records that.
+                $typeName -match 'System\.Reflection|System\.Runtime\.InteropServices|System\.Net\.WebClient'
+            }
+
+            if ($typeIsRejected) {
                 throw [System.Security.SecurityException]::new((Get-LogString -Key 'api.security.handler_dangerous_type' -Parameters @{ TypeName = $typeName }))
             }
         }
 
-        # Check for static method invocations like [scriptblock]::Create
+        # Static member access is a direct execution primitive, so reject it unless the
+        # owning type is allowlisted.
         $memberAsts = $ast.FindAll({
             param($node)
-            $node -is [System.Management.Automation.Language.InvokeMemberExpressionAst]
+            ($node -is [System.Management.Automation.Language.InvokeMemberExpressionAst] -or
+             $node -is [System.Management.Automation.Language.MemberExpressionAst]) -and
+            $node.Static
         }, $true)
 
         foreach ($memberAst in $memberAsts) {
-            $memberText = $memberAst.Extent.Text.ToLower()
-            if ($memberText -match 'scriptblock.*::create|assembly.*::load') {
+            $ownerTypeName = $null
+            if ($memberAst.Expression -is [System.Management.Automation.Language.TypeExpressionAst]) {
+                $ownerTypeName = $memberAst.Expression.TypeName.FullName
+            }
+
+            $memberIsRejected = if ($useSharedTypeAllowlist) {
+                -not (Test-PluginTypeNameAllowed -TypeName $ownerTypeName -AdditionalAllowedTypes $script:HandlerAdditionalAllowedTypes)
+            } else {
+                # Degraded mode, as above.
+                $memberAst.Extent.Text.ToLower() -match 'scriptblock.*::create|assembly.*::load'
+            }
+
+            if ($memberIsRejected) {
                 throw [System.Security.SecurityException]::new((Get-LogString -Key 'api.security.handler_dangerous_static_method'))
             }
         }

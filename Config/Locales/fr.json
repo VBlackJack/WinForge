@@ -1457,6 +1457,7 @@
       "handler_dangerous_pattern": "SÉCURITÉ : Le handler contient un motif dangereux '{Pattern}'. Enregistrement refusé.",
       "handler_syntax_errors": "SÉCURITÉ : Le handler contient des erreurs de syntaxe : {Message}",
       "handler_dangerous_command": "SÉCURITÉ : Le handler contient une commande dangereuse '{Command}'. Enregistrement refusé.",
+      "type_allowlist_unavailable": "Module de sandbox de plugins indisponible : la validation des gestionnaires d'endpoints fonctionne en mode dégradé avec l'ancienne liste noire.",
       "handler_dangerous_type": "SÉCURITÉ : Le handler utilise un type dangereux '{TypeName}'. Enregistrement refusé.",
       "handler_dangerous_static_method": "SÉCURITÉ : Le handler utilise une méthode statique dangereuse. Enregistrement refusé.",
       "handler_validation_failed": "Échec de la validation du handler",
