@@ -175,4 +175,41 @@ foreach ($manifest in Get-ChildItem -Path $manifestRoots -Filter *.psd1 -ErrorAc
     }
 }
 
+# Documentation carries the display version too. It was previously outside this check,
+# so the docs could state an older release while CI stayed green.
+$documentationFiles = @(
+    @{ Path = Join-Path $repoRoot 'README.md'; Description = 'README heading and version badge' },
+    @{ Path = Join-Path $repoRoot 'Docs\README.md'; Description = 'documentation index' },
+    @{ Path = Join-Path $repoRoot 'Docs\USER_GUIDE.md'; Description = 'user guide' },
+    @{ Path = Join-Path $repoRoot 'Tests\README.md'; Description = 'test suite readme' }
+)
+
+foreach ($doc in $documentationFiles) {
+    if (-not (Test-Path $doc.Path)) {
+        Write-Host "[MISMATCH] Documentation file not found: $($doc.Path)" -ForegroundColor Red
+        $fail = $true
+        continue
+    }
+
+    $content = Get-Content -Path $doc.Path -Raw -Encoding UTF8
+
+    # Any YYYYMMDDxx token in the document must be the current display version.
+    $staleVersions = @(
+        [Regex]::Matches($content, '\b\d{10}\b') |
+            ForEach-Object { $_.Value } |
+            Where-Object { $_ -ne $versionInfo.DisplayVersion } |
+            Select-Object -Unique
+    )
+
+    if ($staleVersions.Count -gt 0) {
+        Write-Host "[MISMATCH] $($doc.Path) ($($doc.Description)) references stale version(s): $($staleVersions -join ', '). Expected $($versionInfo.DisplayVersion)" -ForegroundColor Red
+        $fail = $true
+    } elseif ($content -notmatch [Regex]::Escape($versionInfo.DisplayVersion)) {
+        Write-Host "[MISMATCH] $($doc.Path) ($($doc.Description)) does not reference version $($versionInfo.DisplayVersion)" -ForegroundColor Red
+        $fail = $true
+    } else {
+        Write-Host "[OK] $($doc.Path) matches version $($versionInfo.DisplayVersion)" -ForegroundColor Green
+    }
+}
+
 if ($fail) { exit 1 } else { exit 0 }

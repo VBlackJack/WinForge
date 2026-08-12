@@ -1,8 +1,8 @@
-# WinForge v2026062301
+# WinForge v2026062701
 
 **Configurez un PC Windows 10/11 avec des profils d'applications reproductibles.**
 
-[![Version](https://img.shields.io/badge/version-2026062301-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2026062701-blue.svg)](CHANGELOG.md)
 [![Windows](https://img.shields.io/badge/Windows-10%20%2F%2011-0078D4.svg)](https://www.microsoft.com/windows)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 
@@ -10,10 +10,18 @@ WinForge automatise l'installation et la mise a jour d'applications Windows a pa
 
 ## Demarrage rapide
 
-1. Telechargez la derniere archive depuis les [releases](https://github.com/VBlackJack/WinForge/releases/latest).
-2. Decompressez l'archive dans un dossier local.
-3. Lancez `WinForge.cmd` ou `WinForge.GUI.exe`.
-4. Choisissez un profil, ajustez les applications si besoin, puis lancez l'installation.
+1. Telechargez la derniere archive depuis les [releases](https://github.com/VBlackJack/WinForge/releases/latest), ainsi que le fichier `.zip.sha256` associe.
+2. Verifiez l'integrite de l'archive avant de l'extraire :
+
+   ```powershell
+   $attendu = ((Get-Content .\WinForge_vXXXXXXXXXX.zip.sha256 -Raw).Trim() -split '\s+')[0]
+   $obtenu = (Get-FileHash .\WinForge_vXXXXXXXXXX.zip -Algorithm SHA256).Hash
+   if ($attendu -eq $obtenu) { 'OK' } else { 'ARCHIVE ALTEREE' }
+   ```
+
+3. Decompressez l'archive dans un dossier local.
+4. Lancez `WinForge.cmd` ou `WinForge.GUI.exe`.
+5. Choisissez un profil, ajustez les applications si besoin, puis lancez l'installation.
 
 ## Profils inclus
 

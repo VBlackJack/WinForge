@@ -211,8 +211,15 @@ BREAKING CHANGE: Error responses now use generic messages
 
 2. **Run Linter**
    ```powershell
-   Invoke-ScriptAnalyzer -Path . -Recurse -ExcludeRule PSAvoidUsingWriteHost
+   .\Tools\Invoke-PSScriptAnalyzer.ps1
    ```
+
+   Always run the wrapper rather than `Invoke-ScriptAnalyzer` directly: it applies
+   `PSScriptAnalyzerSettings.psd1`, which is what CI uses. The settings file deliberately
+   declares no `IncludeRules` — the full default rule set runs, and each exclusion carries
+   its justification inline. Errors fail the build; the expected steady state is
+   **0 errors and 7 warnings**, all documented at the top of the settings file. If you add
+   a suppression, state why in the same place.
 
 3. **Update Documentation** if adding new features
 
@@ -221,7 +228,7 @@ BREAKING CHANGE: Error responses now use generic messages
 ### PR Requirements
 
 - [ ] All tests pass
-- [ ] No new PSScriptAnalyzer warnings
+- [ ] `.\Tools\Invoke-PSScriptAnalyzer.ps1` reports 0 errors and no new warnings
 - [ ] Code follows style guidelines
 - [ ] Commit messages follow convention
 - [ ] Documentation updated (if applicable)
