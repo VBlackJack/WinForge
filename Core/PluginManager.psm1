@@ -105,6 +105,7 @@ $script:DefaultConfig = @{
     DisabledPlugins = @()
     PluginTimeout = 30
     SandboxingEnabled = $true
+    TrustedPublishers = @()
 }
 
 # === INITIALIZATION ===
@@ -192,6 +193,7 @@ function Get-PluginConfig {
                     $null -ne $json.sandboxing -and
                     $json.sandboxing.PSObject.Properties.Name -contains 'enabled'
                 ) { [bool]$json.sandboxing.enabled } else { $script:DefaultConfig.SandboxingEnabled }
+                TrustedPublishers = if ($null -ne $json.trustedPublishers) { @($json.trustedPublishers) } else { $script:DefaultConfig.TrustedPublishers }
             }
         } catch {
             return $script:DefaultConfig
@@ -199,6 +201,68 @@ function Get-PluginConfig {
     }
 
     return $script:DefaultConfig
+}
+
+function Assert-PluginPublisherTrusted {
+    <#
+    .SYNOPSIS
+        Enforces the trustedPublishers allowlist for a plugin entry point.
+
+    .DESCRIPTION
+        When plugins-settings.json declares one or more trustedPublishers, the plugin
+        entry point must carry a valid Authenticode signature whose subject matches one
+        of them. An empty list keeps the previous behaviour (unsigned local plugins are
+        accepted and bounded by the sandbox allowlist), so the control is opt-in and does
+        not break existing installations.
+
+    .PARAMETER EntryPointPath
+        Canonical path to the plugin entry point module.
+
+    .PARAMETER PluginName
+        Plugin name, used in the failure message.
+
+    .PARAMETER Config
+        The plugin configuration hashtable from Get-PluginConfig.
+
+    .OUTPUTS
+        None. Throws when the plugin is not signed by a trusted publisher.
+    #>
+    [CmdletBinding()]
+    [OutputType([void])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$EntryPointPath,
+
+        [Parameter(Mandatory)]
+        [string]$PluginName,
+
+        [Parameter(Mandatory)]
+        [hashtable]$Config
+    )
+
+    $trustedPublishers = @($Config.TrustedPublishers | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    if ($trustedPublishers.Count -eq 0) {
+        return
+    }
+
+    if (-not (Get-Command -Name Get-AuthenticodeSignature -ErrorAction SilentlyContinue)) {
+        throw "Plugin '$PluginName' requires a trusted publisher, but Authenticode verification is unavailable on this system."
+    }
+
+    $signature = Get-AuthenticodeSignature -FilePath $EntryPointPath -ErrorAction Stop
+    if ($signature.Status -ne 'Valid') {
+        throw "Plugin '$PluginName' has no valid Authenticode signature (status: $($signature.Status))."
+    }
+
+    $subject = if ($signature.SignerCertificate) { $signature.SignerCertificate.Subject } else { '' }
+    foreach ($publisher in $trustedPublishers) {
+        if ($subject -like "*$publisher*") {
+            Write-Status -Message (Get-LogString -Key 'plugins.security.publisher_trusted' -Parameters @{ Name = $PluginName; Publisher = $publisher }) -Level 'Verbose' -Category 'Plugin'
+            return
+        }
+    }
+
+    throw "Plugin '$PluginName' is signed by an untrusted publisher: $subject"
 }
 
 # === PLUGIN DISCOVERY ===
@@ -364,6 +428,12 @@ function Import-Plugin {
     Write-Status -Message (Get-LogString -Key 'plugins.loading' -Parameters @{ Name = $Name }) -Level 'Info' -Category 'Plugin'
 
     try {
+        # Security: enforce publisher trust before any validation work. When
+        # plugins-settings.json declares trustedPublishers, an entry point must carry a
+        # valid Authenticode signature from one of them; an empty list keeps the
+        # allowlist-only model for unsigned local plugins.
+        Assert-PluginPublisherTrusted -EntryPointPath $canonicalEntryPath -PluginName $Name -Config $config
+
         if ($config.SandboxingEnabled) {
             if (-not $script:SandboxingEnabled -or -not (Get-Command -Name Invoke-PluginLoadSandboxed -ErrorAction SilentlyContinue)) {
                 throw "Plugin sandboxing is enabled, but the sandbox module is unavailable. Refusing to load plugin '$Name'."
@@ -373,6 +443,18 @@ function Import-Plugin {
             if (-not $loadValidation.Success) {
                 $reason = if ($loadValidation.Error) { $loadValidation.Error } else { 'Unknown sandbox validation error' }
                 throw "Plugin '$Name' failed sandbox load validation: $reason"
+            }
+
+            # Security: Import-Module below re-reads the file, so re-fingerprint it and
+            # compare against what the sandbox validated. Without this, a write between
+            # validation and import (TOCTOU) would load unvalidated code into this
+            # session, which runs in FullLanguage at the host's privilege level.
+            if ($loadValidation.ContentSha256) {
+                $currentContent = Get-Content -Path $canonicalEntryPath -Raw -ErrorAction Stop
+                $currentHash = Get-PluginContentHash -Content $currentContent
+                if ($currentHash -ne $loadValidation.ContentSha256) {
+                    throw "Plugin '$Name' entry point changed after sandbox validation. Refusing to import."
+                }
             }
         }
 
@@ -441,8 +523,6 @@ function Remove-Plugin {
         Write-Warning (Get-LogString -Key 'plugins.not_loaded' -Parameters @{ Name = $Name })
         return
     }
-
-    $plugin = $script:PluginState.LoadedPlugins[$Name]
 
     # Unregister hooks
     foreach ($hookName in $script:PluginState.RegisteredHooks.Keys) {

@@ -222,6 +222,40 @@ function Test-ProfileFiles {
     }
 }
 
+function Test-ConfigurationSchemas {
+    Write-ValidationSection "Configuration Schemas"
+
+    # The Schemas directory describes the whole configuration surface, but only the
+    # profile and applications-database schemas ever ran. Every other loader reads its
+    # configuration field by field with fallbacks, so a misspelled key is silently
+    # ignored and the setting just never applies. Validating here turns that into a
+    # build failure instead of a silent behaviour change.
+    $schemaModule = Join-Path -Path $script:ScriptRoot -ChildPath 'Modules\JsonSchemaValidation.psm1'
+
+    if (-not (Test-Path -Path $schemaModule)) {
+        Write-ValidationResult -Test "Configuration schema validation" -Passed $false -Message "JsonSchemaValidation module not found"
+        return
+    }
+
+    try {
+        Import-Module -Name $schemaModule -Force -ErrorAction Stop
+        $results = @(Test-AllConfigurationFiles)
+
+        if ($results.Count -eq 0) {
+            Write-ValidationWarning -Message "No configuration file matched a schema"
+            return
+        }
+
+        foreach ($result in $results) {
+            $fileName = Split-Path -Path $result.FilePath -Leaf
+            $message = if ($result.IsValid) { 'Matches schema' } else { ($result.Errors -join '; ') }
+            Write-ValidationResult -Test "Config: $fileName" -Passed $result.IsValid -Message $message
+        }
+    } catch {
+        Write-ValidationResult -Test "Configuration schema validation" -Passed $false -Message $_.Exception.Message
+    }
+}
+
 function Test-ModuleLoading {
     Write-ValidationSection "Module Loading"
 
@@ -529,6 +563,7 @@ Write-Host "Validation Time: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" -Foregro
 Test-DirectoryStructure
 Test-RequiredFiles
 Test-ProfileFiles
+Test-ConfigurationSchemas
 Test-ModuleLoading
 Test-CoreFunctions
 Test-EnvironmentDetection

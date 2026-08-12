@@ -574,7 +574,7 @@ Describe 'StructuredLogging Module' {
 
         It 'Should sort exported entries by timestamp' {
             $outputPath = Join-Path $TestDrive 'export-sorted.json'
-            $count = Export-LogsToJson -OutputPath $outputPath
+            $null = Export-LogsToJson -OutputPath $outputPath
             $exported = Get-Content -Path $outputPath -Raw | ConvertFrom-Json
             for ($i = 1; $i -lt $exported.Count; $i++) {
                 $ts1 = if ($exported[$i].timestamp -is [datetime]) { $exported[$i].timestamp } else { [datetimeoffset]::Parse($exported[$i].timestamp).LocalDateTime }
@@ -1089,7 +1089,6 @@ Describe 'StructuredLogging Module' {
 
             # Create the zip manually first
             Compress-Archive -Path $file -DestinationPath "$file.zip" -Force
-            $originalZipSize = (Get-Item "$file.zip").Length
 
             # Re-create the jsonl (it was consumed by Compress-Archive destination check)
             '{"timestamp":"2026-01-15T10:00:00","level":"Info","message":"Already compressed"}' | Set-Content -Path $file -Encoding UTF8
@@ -1452,7 +1451,7 @@ Describe 'StructuredLogging Module' {
             }
 
             $outputPath = Join-Path $TestDrive 'export-missing-dir.json'
-            $result = Export-LogsToJson -OutputPath $outputPath 3>&1
+            $null = Export-LogsToJson -OutputPath $outputPath 3>&1
             # The function should return without creating the output file (warns and returns)
             # or return null/0
         }

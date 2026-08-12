@@ -831,7 +831,7 @@ function Update-DeploymentState {
         [string]$AppName,
 
         [Parameter()]
-        [string]$Error
+        [string]$ErrorMessage
     )
 
     if ($PSBoundParameters.ContainsKey('Status')) {
@@ -849,9 +849,9 @@ function Update-DeploymentState {
         }
     }
 
-    if ($Error) {
+    if ($ErrorMessage) {
         $script:DeploymentState.Errors += @{
-            message = $Error
+            message = $ErrorMessage
             timestamp = (Get-Date).ToString('o')
         }
     }

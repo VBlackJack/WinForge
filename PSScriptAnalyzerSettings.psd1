@@ -1,170 +1,100 @@
 @{
-    # PSScriptAnalyzer configuration for WinForge v2.6.0
+    # PSScriptAnalyzer configuration for WinForge
     # https://github.com/PowerShell/PSScriptAnalyzer
+    #
+    # This file deliberately does NOT declare IncludeRules. IncludeRules is an allowlist:
+    # declaring it means only the listed rules ever run, and any rule added to
+    # PSScriptAnalyzer later is silently ignored. The previous configuration combined an
+    # IncludeRules allowlist with an ExcludeRules list that cancelled 21 of the rules it
+    # had just enabled, and then configured 6 rules that were themselves excluded. The
+    # effective gate could not fail.
+    #
+    # The full default rule set now runs. Every entry in ExcludeRules below states why it
+    # is suppressed; anything not listed here is expected to stay clean.
+    #
+    # Expected steady state: 0 errors (errors fail the build) and 7 warnings, all of which
+    # are deliberate and left visible rather than suppressed:
+    #   - PSAvoidDefaultValueSwitchParameter x4 - -AutoLoad / -CreateBackup /
+    #     -IncludeMetadata / -RemoveDuplicates are on by default by design; callers opt out
+    #     with -Switch:$false. Changing the defaults would change behaviour.
+    #   - PSAvoidUsingBrokenHashAlgorithms x2 - Core.Tests.ps1 asserts that Get-StringHash
+    #     still supports MD5 and SHA1 for legacy comparisons.
+    #   - PSAvoidUsingInvokeExpression x1 - RestApiServer.Tests.ps1 feeds an
+    #     Invoke-Expression handler to the endpoint validator to prove it is rejected.
+    # Suppressing these repo-wide would also hide a genuine future occurrence in
+    # production code, so they stay reported.
 
     # === SEVERITY ===
     Severity = @('Error', 'Warning', 'Information')
 
-    # === INCLUDE RULES ===
-    IncludeRules = @(
-        # Best Practices
-        'PSAvoidDefaultValueForMandatoryParameter',
-        'PSAvoidDefaultValueSwitchParameter',
-        'PSAvoidGlobalVars',
-        'PSAvoidInvokingEmptyMembers',
-        'PSAvoidNullOrEmptyHelpMessageAttribute',
-        'PSAvoidOverwritingBuiltInCmdlets',
-        'PSAvoidShouldContinueWithoutForce',
-        'PSAvoidTrailingWhitespace',
-        'PSAvoidUsingCmdletAliases',
-        'PSAvoidUsingComputerNameHardcoded',
-        'PSAvoidUsingConvertToSecureStringWithPlainText',
-        'PSAvoidUsingDeprecatedManifestFields',
-        'PSAvoidUsingEmptyCatchBlock',
-        'PSAvoidUsingPlainTextForPassword',
-        'PSAvoidUsingPositionalParameters',
-        'PSAvoidUsingWMICmdlet',
-        'PSDSCDscExamplesPresent',
-        'PSDSCDscTestsPresent',
-        'PSDSCReturnCorrectTypesForDSCFunctions',
-        'PSDSCStandardDSCFunctionsInResource',
-        'PSDSCUseIdenticalMandatoryParametersForDSC',
-        'PSDSCUseIdenticalParametersForDSC',
-        'PSDSCUseVerboseMessageInDSCResource',
-        'PSMisleadingBacktick',
-        'PSMissingModuleManifestField',
-        'PSPlaceCloseBrace',
-        'PSPlaceOpenBrace',
-        'PSPossibleIncorrectComparisonWithNull',
-        'PSPossibleIncorrectUsageOfAssignmentOperator',
-        'PSPossibleIncorrectUsageOfRedirectionOperator',
-        'PSProvideCommentHelp',
-        'PSReservedCmdletChar',
-        'PSReservedParams',
-        'PSReviewUnusedParameter',
-        'PSShouldProcess',
-        'PSUseApprovedVerbs',
-        'PSUseBOMForUnicodeEncodedFile',
-        'PSUseCmdletCorrectly',
-        'PSUseCompatibleCmdlets',
-        'PSUseCompatibleCommands',
-        'PSUseCompatibleSyntax',
-        'PSUseCompatibleTypes',
-        'PSUseConsistentIndentation',
-        'PSUseConsistentWhitespace',
-        'PSUseCorrectCasing',
-        'PSUseDeclaredVarsMoreThanAssignments',
-        'PSUseLiteralInitializerForHashtable',
-        'PSUseOutputTypeCorrectly',
-        'PSUseProcessBlockForPipelineCommand',
-        'PSUsePSCredentialType',
-        'PSUseSingularNouns',
-        'PSUseSupportsShouldProcess',
-        'PSUseToExportFieldsInManifest',
-        'PSUseUsingScopeModifierInNewRunspaces',
-        'PSUseUTF8EncodingForHelpFile'
-    )
-
     # === EXCLUDE RULES ===
-    # Rules we intentionally disable for WinForge
     ExcludeRules = @(
-        # We use Write-Host extensively for UI (GUI.ps1, Deploy-Win11Environment.ps1)
+        # Write-Host is the intended output mechanism for the console-facing scripts
+        # (Deploy-Win11Environment.ps1, Build-Release.ps1, the Tools/* validators). Their
+        # output is a UI, not a pipeline contract.
         'PSAvoidUsingWriteHost',
 
-        # We use positional parameters in some internal functions for brevity
-        'PSAvoidUsingPositionalParameters',
-
-        # Comment help is provided but may not match strict format
-        'PSProvideCommentHelp',
-
-        # Some unused parameters are intentional for interface compatibility
-        'PSReviewUnusedParameter',
-
-        # Plural nouns are more descriptive for our module functions
+        # Plural nouns are used where the command genuinely acts on a collection
+        # (Get-AvailablePlugins, Get-ApiKeys). Renaming them would break the public
+        # module surface for no behavioural gain.
         'PSUseSingularNouns',
 
-        # Formatting rules - enforced manually, not via analyzer
+        # -WhatIf/-Confirm support across the state-changing surface (Set-* in
+        # SystemConfig, Start-*, Update-*, New-*, Reset-*) is a deliberate, tracked
+        # enhancement rather than a defect. Enabling the rule today would report ~70
+        # findings with no fix in this pass.
+        'PSUseShouldProcessForStateChangingFunctions',
+        'PSUseSupportsShouldProcess',
+
+        # Positional parameters are used inside private helpers for brevity; call sites
+        # are local and covered by tests.
+        'PSAvoidUsingPositionalParameters',
+
+        # Comment-based help is present throughout but does not always match the strict
+        # shape this rule expects (for example .OUTPUTS without a type name).
+        'PSProvideCommentHelp',
+
+        # Several handlers accept parameters they do not read in order to satisfy a shared
+        # signature (hook handlers, detection strategies). The unused parameter is the
+        # interface contract.
+        'PSReviewUnusedParameter',
+
+        # False positive for this codebase: the flagged scriptblocks are passed to
+        # Start-Job with an explicit param() block and -ArgumentList, which is the correct
+        # way to marshal values into a new runspace. $using: would be wrong there.
+        'PSUseUsingScopeModifierInNewRunspaces',
+
+        # The manifests are generated by Tools/Generate-ModuleManifests.ps1. Replacing the
+        # wildcard exports with explicit lists belongs to that generator, not to hand
+        # edits that would be overwritten on the next run.
+        'PSUseToExportFieldsInManifest',
+
+        # Formatting is enforced by .editorconfig and EnforceCodeStyleInBuild rather than
+        # by the analyzer, so these would duplicate an existing gate.
         'PSPlaceCloseBrace',
         'PSPlaceOpenBrace',
         'PSUseConsistentIndentation',
         'PSUseConsistentWhitespace',
         'PSUseCorrectCasing',
 
-        # Output type declarations are informational, not enforced
+        # [OutputType] is documentation here; several functions legitimately return
+        # different shapes depending on the failure path.
         'PSUseOutputTypeCorrectly',
 
-        # BOM for Unicode not required for UTF-8
-        'PSUseBOMForUnicodeEncodedFile',
-
-        # False positive - hardcoded 8.8.8.8 for internet connectivity test is intentional
+        # 8.8.8.8 is hardcoded on purpose as the internet-connectivity probe target.
         'PSAvoidUsingComputerNameHardcoded',
 
-        # False positive - Write-Log is standard logging function name
-        'PSAvoidOverwritingBuiltInCmdlets',
-
-        # ShouldProcess support planned for v3.0 - requires extensive refactoring
-        # 15 functions affected: Set-* in SystemConfig, Start-*, Update-*, New-*, Reset-*
-        # Current implementation is stable and tested - adding -WhatIf/-Confirm is enhancement, not bug fix
-        'PSUseShouldProcessForStateChangingFunctions',
-
-        # Invoke-Expression is used safely in parallel block to define function from trusted source
-        # This is necessary for exporting functions to ForEach-Object -Parallel scope
-        'PSAvoidUsingInvokeExpression',
-
-        # Keep local tooling aligned with the CI exclusion policy. These rules
-        # identify tracked refactoring debt rather than release-blocking issues.
-        'PSUseProcessBlockForPipelineCommand',
-        'PSAvoidAssignmentToAutomaticVariable',
-        'PSAvoidUsingBrokenHashAlgorithms',
-        'PSUseToExportFieldsInManifest',
-        'PSPossibleIncorrectComparisonWithNull',
-        'PSAvoidDefaultValueSwitchParameter',
-        'PSUseDeclaredVarsMoreThanAssignments',
-        'PSUseUsingScopeModifierInNewRunspaces',
-        'PSUseApprovedVerbs',
-        'PSUseSupportsShouldProcess'
+        # Write-Log is the project's own logging function, not the built-in cmdlet the
+        # rule is guarding.
+        'PSAvoidOverwritingBuiltInCmdlets'
     )
 
     # === CODE FORMATTING ===
+    # Only rules that actually run are configured here. Formatting rules are excluded
+    # above and therefore carry no configuration block.
     Rules = @{
-        # Indentation: 4 spaces
-        PSUseConsistentIndentation = @{
-            Enable = $true
-            Kind = 'space'
-            IndentationSize = 4
-        }
-
-        # Whitespace
-        PSUseConsistentWhitespace = @{
-            Enable = $true
-            CheckOpenBrace = $true
-            CheckOpenParen = $true
-            CheckOperator = $true
-            CheckSeparator = $true
-        }
-
-        # Brace placement
-        PSPlaceOpenBrace = @{
-            Enable = $true
-            OnSameLine = $true
-            NewLineAfter = $true
-            IgnoreOneLineBlock = $true
-        }
-
-        PSPlaceCloseBrace = @{
-            Enable = $true
-            NewLineAfter = $true
-            IgnoreOneLineBlock = $true
-            NoEmptyLineBefore = $false
-        }
-
         # Cmdlet aliases
         PSAvoidUsingCmdletAliases = @{
-            Enable = $true
-        }
-
-        # Correct casing
-        PSUseCorrectCasing = @{
             Enable = $true
         }
 

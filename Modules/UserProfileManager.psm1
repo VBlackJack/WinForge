@@ -176,7 +176,7 @@ function Save-UserProfile {
         }
     }
 
-    $profile = [ordered]@{
+    $deploymentProfile = [ordered]@{
         '$schema' = 'WinForge-UserProfile-v1.0'
         Name = $Name
         Description = $Description
@@ -193,7 +193,7 @@ function Save-UserProfile {
     }
 
     try {
-        $profile | ConvertTo-Json -Depth 10 | Set-Content $profilePath -Encoding UTF8
+        $deploymentProfile | ConvertTo-Json -Depth 10 | Set-Content $profilePath -Encoding UTF8
         Write-Status -Message (Get-LogString -Key 'userProfiles.saved' -Parameters @{ Name = $Name }) -Level 'Success' -Category 'Configuration'
         return $profilePath
     } catch {
@@ -287,7 +287,7 @@ function Get-UserProfile {
         Profile object or null if not found.
 
     .EXAMPLE
-        $profile = Get-UserProfile -Name 'MyDevSetup'
+        $deploymentProfile = Get-UserProfile -Name 'MyDevSetup'
     #>
     [CmdletBinding()]
     param(
@@ -394,22 +394,22 @@ function Export-UserProfile {
         [switch]$IncludeMetadata = $true
     )
 
-    $profile = Get-UserProfile -Name $Name
-    if (-not $profile) {
+    $deploymentProfile = Get-UserProfile -Name $Name
+    if (-not $deploymentProfile) {
         throw (Get-LogString -Key 'userProfiles.not_found' -Parameters @{ Name = $Name })
     }
 
     $exportData = [ordered]@{
         '$schema' = 'WinForge-UserProfile-v1.0'
-        Name = $profile.Name
-        Description = $profile.Description
-        Applications = $profile.Applications
-        Settings = $profile.Settings
+        Name = $deploymentProfile.Name
+        Description = $deploymentProfile.Description
+        Applications = $deploymentProfile.Applications
+        Settings = $deploymentProfile.Settings
     }
 
     if ($IncludeMetadata) {
-        $exportData.Author = $profile.Author
-        $exportData.Tags = $profile.Tags
+        $exportData.Author = $deploymentProfile.Author
+        $exportData.Tags = $deploymentProfile.Tags
         $exportData.ExportedAt = (Get-Date).ToString('o')
         $exportData.ExportedFrom = $env:COMPUTERNAME
     }
@@ -486,7 +486,7 @@ function Import-UserProfile {
         }
 
         # Create new profile with import data
-        $profile = [ordered]@{
+        $deploymentProfile = [ordered]@{
             '$schema' = 'WinForge-UserProfile-v1.0'
             Name = $profileName
             Description = if ($importData.Description) { $importData.Description } else { '' }
@@ -500,7 +500,7 @@ function Import-UserProfile {
             ImportedAt = (Get-Date).ToString('o')
         }
 
-        $profile | ConvertTo-Json -Depth 10 | Set-Content $destPath -Encoding UTF8
+        $deploymentProfile | ConvertTo-Json -Depth 10 | Set-Content $destPath -Encoding UTF8
 
         Write-Status -Message (Get-LogString -Key 'userProfiles.imported' -Parameters @{ Name = $profileName }) -Level 'Success' -Category 'Configuration'
         return $destPath
@@ -598,11 +598,11 @@ function Merge-UserProfiles {
     $allTags = @()
 
     foreach ($name in $Names) {
-        $profile = Get-UserProfile -Name $name
-        if ($profile) {
-            $allApplications += $profile.Applications
-            if ($profile.Tags) {
-                $allTags += $profile.Tags
+        $deploymentProfile = Get-UserProfile -Name $name
+        if ($deploymentProfile) {
+            $allApplications += $deploymentProfile.Applications
+            if ($deploymentProfile.Tags) {
+                $allTags += $deploymentProfile.Tags
             }
         } else {
             Write-Warning "Profile not found: $name"
@@ -646,11 +646,11 @@ function Get-UserProfileStatistics {
     $allTags = @()
     $appCounts = @{}
 
-    foreach ($profile in $profiles) {
-        $totalApps += $profile.ApplicationCount
-        $allTags += $profile.Tags
+    foreach ($deploymentProfile in $profiles) {
+        $totalApps += $deploymentProfile.ApplicationCount
+        $allTags += $deploymentProfile.Tags
 
-        foreach ($app in $profile.Applications) {
+        foreach ($app in $deploymentProfile.Applications) {
             if (-not $appCounts.ContainsKey($app)) {
                 $appCounts[$app] = 0
             }

@@ -359,9 +359,7 @@ Describe 'RollbackManager Module' {
         }
 
         It 'Should store RegisteredAt timestamp' {
-            $before = Get-Date
             Register-CriticalFailureHandler -Handler { param($d) } -Name 'TimedHandler'
-            $after = Get-Date
             InModuleScope RollbackManager {
                 $handler = $script:CriticalFailureHandlers | Where-Object { $_.Id -eq 'TimedHandler' }
                 $handler.RegisteredAt | Should -Not -BeNullOrEmpty
@@ -559,7 +557,6 @@ Describe 'RollbackManager Module' {
         }
 
         It 'Should invoke registered critical failure handlers' {
-            $handlerInvoked = $false
             InModuleScope RollbackManager {
                 $script:CriticalFailureHandlers = @()
             }

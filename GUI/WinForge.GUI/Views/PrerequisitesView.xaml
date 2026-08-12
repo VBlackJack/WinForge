@@ -403,6 +403,7 @@
                                       HorizontalScrollBarVisibility="Auto"
                                       x:Name="LogScroller">
                             <TextBox Text="{Binding LogOutput, Mode=OneWay}"
+                                 AutomationProperties.Name="{loc:Loc A11y_Prerequisites_LogOutput}"
                                      IsReadOnly="True"
                                      TextWrapping="NoWrap"
                                      FontFamily="Consolas"

@@ -127,7 +127,15 @@ public sealed class ProfileMigrationService : IProfileMigrationService
         return copied;
     }
 
-    // TODO: add resumption-after-failure coverage.
+    /// <summary>
+    /// Copies legacy install profiles that are not identical to a shipped default.
+    /// </summary>
+    /// <remarks>
+    /// Safe to resume: the sentinel is written only after this returns, so an interrupted
+    /// run leaves migration pending and the next start retries. Re-running does not
+    /// duplicate work because <see cref="GetLegacyProfileTargetPath"/> returns null when a
+    /// target with identical content already exists.
+    /// </remarks>
     private bool MigrateLegacyProfiles(string userProfilesDirectory)
     {
         string legacyProfilesDirectory = _pathService.LegacyInstallProfilesDirectory;

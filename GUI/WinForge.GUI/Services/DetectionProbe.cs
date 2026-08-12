@@ -407,6 +407,17 @@ public sealed class DetectionProbe : IDetectionProbe
 
             string arguments = parts.Length > 1 ? parts[1] : string.Empty;
 
+            // Security: the executable allowlist alone is not sufficient, because it permits
+            // interpreters (python, node, pwsh, ruby, perl, php) that accept code as an
+            // argument. This mirrors Test-DetectionArgumentDangerous on the PowerShell paths
+            // so the same catalog entry is refused wherever detection runs.
+            if (DetectionArgumentGuard.IsDangerous(arguments))
+            {
+                _logger.LogWarning(
+                    $"Command detection blocked: arguments for '{executable}' contain shell metacharacters.");
+                return DetectionProbeResult.NotFound("Command arguments are not allowed for command detection.");
+            }
+
             ProcessStartInfo processStartInfo = new ProcessStartInfo
             {
                 FileName = executable,

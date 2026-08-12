@@ -398,7 +398,7 @@ Describe 'StateManager Module' {
     Context 'State Persistence' {
         It 'Should persist state across module reloads' {
             # Initialize and save state
-            $sessionId = Initialize-RollbackSession
+            $null = Initialize-RollbackSession
             Save-RollbackState
 
             # Reload module

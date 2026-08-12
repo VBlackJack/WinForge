@@ -38,8 +38,13 @@ Authentication:
 ## Security Defaults
 - Local binding by default.
 - API key auth enabled.
-- CSRF protection enabled for state-changing endpoints.
-- Rate limiting enabled.
+- CSRF protection enabled for state-changing endpoints. Tokens are single-use and bound to the issuing key.
+- Rate limiting enabled, applied twice per request:
+  - **Per client IP** — `maxRequestsPerMinute` / `maxRequestsPerHour`. On a localhost-only listener every caller is `127.0.0.1`, so this bucket is shared by all local processes.
+  - **Per API key** — `maxRequestsPerHour`, evaluated after authentication. This is what separates callers on a local listener.
+  Both return `429` with a `Retry-After` header.
+- Repeated authentication failures block the client IP for `blockDurationMinutes` (`403`, code `AUTH_BLOCKED`).
+- Request bodies are read under a hard cap (`maxRequestBodyBytes`, default 5 MB) regardless of the declared `Content-Length`, so a chunked request cannot stream an unbounded body. Oversize requests fail with `HANDLER_ERROR`.
 
 ## Notes
 - Configure API behavior in `Config/api-settings.json`.

@@ -156,7 +156,7 @@ jobs:
           $config.CodeCoverage.Path = @('Core/*.psm1', 'Modules/*.psm1')
           $config.CodeCoverage.OutputPath = 'Coverage-Pester.xml'
           $config.CodeCoverage.OutputFormat = 'JaCoCo'
-          $config.CodeCoverage.CoveragePercentTarget = 40
+          $config.CodeCoverage.CoveragePercentTarget = 48
 
           Invoke-Pester -Configuration $config
 
@@ -173,7 +173,9 @@ jobs:
               $missed = [int]$counters.missed
               $total = $covered + $missed
               $percentage = if ($total -gt 0) { [math]::Round(($covered / $total) * 100, 2) } else { 0 }
-              $minCoverage = 40
+              # Ratchet: the floor tracks just below the measured coverage (51.76%).
+              # Raise it when real coverage moves up; never lower it to make a build pass.
+              $minCoverage = 48
               Write-Host "=== PowerShell Code Coverage ===" -ForegroundColor Cyan
               Write-Host "Lines Covered: $covered / $total ($percentage%) (minimum: $minCoverage%)" -ForegroundColor $(if ($percentage -ge $minCoverage) { 'Green' } elseif ($percentage -ge 70) { 'Yellow' } else { 'Red' })
 
@@ -261,8 +263,11 @@ jobs:
               $summary = Get-Content 'coverage-report-gui/Summary.json' | ConvertFrom-Json
               $lineCoverage = $summary.summary.linecoverage
               $branchCoverage = $summary.summary.branchcoverage
-              $minCoverage = 35
-              $targetCoverage = 35
+              # Ratchet: the floor tracks just below the measured coverage (40.46%) so a
+              # regression fails the build while normal fluctuation does not. Raise it
+              # whenever real coverage moves up; never lower it to make a build pass.
+              $minCoverage = 38
+              $targetCoverage = 38
 
               Write-Host "=== .NET GUI Code Coverage ===" -ForegroundColor Cyan
               Write-Host "Line Coverage: $lineCoverage% (minimum: $minCoverage%, target: $targetCoverage%)" -ForegroundColor $(if ($lineCoverage -ge $targetCoverage) { 'Green' } elseif ($lineCoverage -ge $minCoverage) { 'Yellow' } else { 'Red' })
@@ -475,9 +480,32 @@ jobs:
           }
           echo "VERSION=$version" >> $env:GITHUB_OUTPUT
 
+      - name: Verify Release Checksum
+        shell: pwsh
+        run: |
+          $zip = "Dist/WinForge_v${{ steps.version.outputs.VERSION }}.zip"
+          $checksumFile = "$zip.sha256"
+
+          if (-not (Test-Path $checksumFile)) {
+            Write-Host "::error::Checksum file not produced by Build-Release.ps1: $checksumFile"
+            exit 1
+          }
+
+          $expected = ((Get-Content $checksumFile -Raw).Trim() -split '\s+')[0]
+          $actual = (Get-FileHash -Path $zip -Algorithm SHA256).Hash
+
+          if ($expected -ne $actual) {
+            Write-Host "::error::Checksum mismatch. Expected $expected, got $actual"
+            exit 1
+          }
+
+          Write-Host "Release archive SHA256 verified: $actual"
+
       - name: Upload Release Artifact
         uses: actions/upload-artifact@v7
         with:
           name: WinForge_v${{ steps.version.outputs.VERSION }}
-          path: Dist/WinForge_v${{ steps.version.outputs.VERSION }}.zip
+          path: |
+            Dist/WinForge_v${{ steps.version.outputs.VERSION }}.zip
+            Dist/WinForge_v${{ steps.version.outputs.VERSION }}.zip.sha256
           retention-days: 30

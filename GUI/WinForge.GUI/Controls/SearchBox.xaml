@@ -56,6 +56,7 @@
 
                     <!-- Suggestions List -->
                     <ListBox x:Name="SuggestionsList"
+                     AutomationProperties.Name="{loc:Loc A11y_SearchBox_Suggestions}"
                              Grid.Row="1"
                              MaxHeight="200"
                              ScrollViewer.VerticalScrollBarVisibility="Auto"

@@ -55,6 +55,34 @@ if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
     }
 }
 
+# Import PluginSandbox for the shared .NET type allowlist. Endpoint handlers and plugin
+# code are both untrusted script text validated before execution, so they must not drift
+# apart: a denylist here while the sandbox uses an allowlist is exactly the gap that let
+# [System.Diagnostics.Process]::Start through the sandbox before.
+$script:PluginSandboxPath = Join-Path $script:ModuleRoot 'PluginSandbox.psm1'
+if (-not (Get-Command -Name Test-PluginTypeNameAllowed -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:PluginSandboxPath) {
+        Import-Module -Name $script:PluginSandboxPath -Force -ErrorAction SilentlyContinue
+    }
+}
+
+# Types endpoint handlers may use on top of the plugin baseline. Endpoint handlers are
+# registered in-process by the framework rather than dropped in by a third party, so a
+# slightly wider surface is warranted - but it is enumerated here rather than widening the
+# plugin sandbox, and every entry is pure computation with no side effect:
+#   regex            - response filtering
+#   StringComparison - explicit culture-invariant comparisons
+#   System.IO.Path   - path string manipulation only (Combine/GetFileName); the types that
+#                      actually touch the filesystem (System.IO.File, System.IO.Directory)
+#                      are deliberately absent.
+$script:HandlerAdditionalAllowedTypes = @(
+    'regex',
+    'System.Text.RegularExpressions.Regex',
+    'StringComparison',
+    'System.StringComparison',
+    'System.IO.Path'
+)
+
 # Import SecureStorage module for DPAPI encryption
 $script:UseSecureStorage = $false
 if (Test-Path -Path $script:SecureStoragePath) {
@@ -515,12 +543,14 @@ function Get-CorsAllowedOrigins {
     $origins = @()
     $hostCandidates = @($config.Host, 'localhost', '127.0.0.1') | Select-Object -Unique
 
-    foreach ($host in $hostCandidates) {
-        if ([string]::IsNullOrWhiteSpace($host)) { continue }
-        $origins += "http://${host}"
-        $origins += "http://${host}:$($config.Port)"
-        $origins += "https://${host}"
-        $origins += "https://${host}:$($config.Port)"
+    foreach ($hostCandidate in $hostCandidates) {
+        if ([string]::IsNullOrWhiteSpace($hostCandidate)) { continue }
+        # Braces are required before ':' so the parser does not read the colon as a
+        # scope qualifier ($scope:name).
+        $origins += "http://${hostCandidate}"
+        $origins += "http://${hostCandidate}:$($config.Port)"
+        $origins += "https://${hostCandidate}"
+        $origins += "https://${hostCandidate}:$($config.Port)"
     }
 
     return @($origins | Select-Object -Unique)
@@ -929,7 +959,6 @@ function Test-FailedAuthBlock {
         [string]$ClientIp
     )
 
-    $config = Get-ApiConfig
     $result = @{
         Blocked = $false
         RetryAfterSeconds = 0
@@ -1136,6 +1165,58 @@ $script:DangerousHandlerPatterns = @(
     '\[scriptblock\]::Create'         # Recursive scriptblock creation
 )
 
+function Read-BoundedRequestBody {
+    <#
+    .SYNOPSIS
+        Reads a request body, refusing anything past the configured maximum.
+
+    .DESCRIPTION
+        Reads through a hard cap rather than trusting the declared Content-Length, so a
+        chunked request (which reports ContentLength64 = -1 and therefore passes a
+        '-gt $maxBodySize' check) cannot stream an unbounded body into memory. Reading
+        one character past the cap is enough to prove the body is oversize, so the
+        buffer never grows beyond the limit.
+
+    .PARAMETER Reader
+        The StreamReader over the request input stream.
+
+    .PARAMETER MaxBytes
+        The configured body-size limit. It is applied as a decoded-character count, which
+        is never larger than the byte count for UTF-8, so the check stays conservative and
+        the buffer cannot grow past the limit.
+
+    .OUTPUTS
+        [string] The request body.
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [System.IO.StreamReader]$Reader,
+
+        [Parameter(Mandatory)]
+        [int]$MaxBytes
+    )
+
+    $builder = [System.Text.StringBuilder]::new()
+    $buffer = [char[]]::new(8192)
+    $totalChars = 0
+
+    while ($true) {
+        $charsRead = $Reader.Read($buffer, 0, $buffer.Length)
+        if ($charsRead -le 0) { break }
+
+        $totalChars += $charsRead
+        if ($totalChars -gt $MaxBytes) {
+            throw (Get-LogString -Key 'api.error.request_body_too_large' -Parameters @{ MaxSize = $MaxBytes })
+        }
+
+        $null = $builder.Append($buffer, 0, $charsRead)
+    }
+
+    return $builder.ToString()
+}
+
 function Test-SafeHandlerScriptblock {
     <#
     .SYNOPSIS
@@ -1200,28 +1281,59 @@ function Test-SafeHandlerScriptblock {
             }
         }
 
-        # Check for dangerous type usage
+        # Check .NET type usage against the shared allowlist. A denylist cannot bound the
+        # reachable surface: every unlisted type is a potential execution primitive, which
+        # is why this defers to the same predicate the plugin sandbox uses.
+        $useSharedTypeAllowlist = [bool](Get-Command -Name Test-PluginTypeNameAllowed -ErrorAction SilentlyContinue)
+        if (-not $useSharedTypeAllowlist) {
+            Write-Status -Message (Get-LogString -Key 'api.security.type_allowlist_unavailable') -Level 'Warning' -Category 'Api'
+        }
+
         $typeAsts = $ast.FindAll({
             param($node)
-            $node -is [System.Management.Automation.Language.TypeExpressionAst]
+            $node -is [System.Management.Automation.Language.TypeExpressionAst] -or
+            $node -is [System.Management.Automation.Language.TypeConstraintAst]
         }, $true)
 
         foreach ($typeAst in $typeAsts) {
             $typeName = $typeAst.TypeName.FullName
-            if ($typeName -match 'System\.Reflection|System\.Runtime\.InteropServices|System\.Net\.WebClient') {
+
+            $typeIsRejected = if ($useSharedTypeAllowlist) {
+                -not (Test-PluginTypeNameAllowed -TypeName $typeName -AdditionalAllowedTypes $script:HandlerAdditionalAllowedTypes)
+            } else {
+                # Degraded mode: without the sandbox module only the historical denylist
+                # is available, which is weaker. The warning above records that.
+                $typeName -match 'System\.Reflection|System\.Runtime\.InteropServices|System\.Net\.WebClient'
+            }
+
+            if ($typeIsRejected) {
                 throw [System.Security.SecurityException]::new((Get-LogString -Key 'api.security.handler_dangerous_type' -Parameters @{ TypeName = $typeName }))
             }
         }
 
-        # Check for static method invocations like [scriptblock]::Create
+        # Static member access is a direct execution primitive, so reject it unless the
+        # owning type is allowlisted.
         $memberAsts = $ast.FindAll({
             param($node)
-            $node -is [System.Management.Automation.Language.InvokeMemberExpressionAst]
+            ($node -is [System.Management.Automation.Language.InvokeMemberExpressionAst] -or
+             $node -is [System.Management.Automation.Language.MemberExpressionAst]) -and
+            $node.Static
         }, $true)
 
         foreach ($memberAst in $memberAsts) {
-            $memberText = $memberAst.Extent.Text.ToLower()
-            if ($memberText -match 'scriptblock.*::create|assembly.*::load') {
+            $ownerTypeName = $null
+            if ($memberAst.Expression -is [System.Management.Automation.Language.TypeExpressionAst]) {
+                $ownerTypeName = $memberAst.Expression.TypeName.FullName
+            }
+
+            $memberIsRejected = if ($useSharedTypeAllowlist) {
+                -not (Test-PluginTypeNameAllowed -TypeName $ownerTypeName -AdditionalAllowedTypes $script:HandlerAdditionalAllowedTypes)
+            } else {
+                # Degraded mode, as above.
+                $memberAst.Extent.Text.ToLower() -match 'scriptblock.*::create|assembly.*::load'
+            }
+
+            if ($memberIsRejected) {
                 throw [System.Security.SecurityException]::new((Get-LogString -Key 'api.security.handler_dangerous_static_method'))
             }
         }
@@ -1754,6 +1866,30 @@ function Invoke-ApiServerLoop {
                     continue
                 }
 
+                # Per-API-key rate limiting. The IP-based limiter above cannot separate
+                # callers on a localhost-only listener (every client is 127.0.0.1), so
+                # without this a single noisy local process throttles every other one.
+                $apiKeyRateLimit = Test-ApiKeyRateLimit -ApiKeyId $authResult.KeyId
+                if (-not $apiKeyRateLimit.Allowed) {
+                    $response.StatusCode = 429
+                    $response.Headers.Add('Retry-After', $apiKeyRateLimit.RetryAfterSeconds.ToString())
+                    $errorResponse = @{
+                        error = $apiKeyRateLimit.Message
+                        code = 'RATE_LIMIT_EXCEEDED'
+                        retryAfter = $apiKeyRateLimit.RetryAfterSeconds
+                    } | ConvertTo-Json
+                    $buffer = [System.Text.Encoding]::UTF8.GetBytes($errorResponse)
+                    $response.ContentLength64 = $buffer.Length
+                    $response.ContentType = 'application/json'
+                    $response.OutputStream.Write($buffer, 0, $buffer.Length)
+                    $response.Close()
+
+                    if ($config.LogRequests) {
+                        Write-Status -Message (Get-LogString -Key 'api.rate_limit.api_key_exceeded') -Level 'Warning' -Category 'Api'
+                    }
+                    continue
+                }
+
                 # CSRF validation for state-changing methods (POST, PUT, DELETE)
                 if ($config.CsrfEnabled -and $method -in @('POST', 'PUT', 'DELETE')) {
                     # Skip CSRF for token generation endpoint
@@ -1798,11 +1934,17 @@ function Invoke-ApiServerLoop {
                     if ($request.HasEntityBody) {
                         # Security: Validate request body size to prevent DoS
                         $maxBodySize = $script:ServerState.Config.MaxRequestBodyBytes
+
+                        # ContentLength64 is -1 for chunked transfer encoding, so a
+                        # '-gt $maxBodySize' test alone lets a chunked body through
+                        # unbounded. Declared oversize is refused up front; an undeclared
+                        # length is read through a hard cap instead of being trusted.
                         if ($request.ContentLength64 -gt $maxBodySize) {
                             throw (Get-LogString -Key 'api.error.request_body_too_large' -Parameters @{ MaxSize = $maxBodySize })
                         }
+
                         $reader = [System.IO.StreamReader]::new($request.InputStream)
-                        $requestBody = $reader.ReadToEnd()
+                        $requestBody = Read-BoundedRequestBody -Reader $reader -MaxBytes $maxBodySize
 
                         if ($request.ContentType -match 'application/json') {
                             $requestBody = $requestBody | ConvertFrom-Json
@@ -1955,7 +2097,7 @@ function Test-ApiServerRunning {
 
     try {
         $url = "http://$($script:ServerState.Host):$($script:ServerState.Port)/api/version"
-        $response = Invoke-RestMethod -Uri $url -Method GET -TimeoutSec 5 -ErrorAction Stop
+        $null = Invoke-RestMethod -Uri $url -Method GET -TimeoutSec 5 -ErrorAction Stop
         return $true
     } catch {
         return $false
@@ -2215,6 +2357,7 @@ Export-ModuleMember -Function @(
     # Rate Limiting
     'Test-RateLimit',
     'Test-ApiKeyRateLimit',
+    'Read-BoundedRequestBody',
     'Test-FailedAuthBlock',
     'Add-FailedAuthAttempt',
     'Invoke-RateLimitCleanup',

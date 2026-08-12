@@ -3195,4 +3195,40 @@ Cette action est irréversible.</value>
   <data name="Severity_Critical" xml:space="preserve">
     <value>Critique</value>
   </data>
+  <data name="A11y_SearchBox_Suggestions" xml:space="preserve">
+    <value>Suggestions de recherche</value>
+    <comment>Accessibility name for the search suggestions list</comment>
+  </data>
+  <data name="A11y_Apps_LogOutput" xml:space="preserve">
+    <value>Sortie du journal de l'application</value>
+    <comment>Accessibility name for the per-application log viewer</comment>
+  </data>
+  <data name="A11y_Deployment_LogOutput" xml:space="preserve">
+    <value>Sortie du journal de déploiement</value>
+    <comment>Accessibility name for the deployment log viewer</comment>
+  </data>
+  <data name="A11y_Prerequisites_LogOutput" xml:space="preserve">
+    <value>Sortie du journal des prérequis</value>
+    <comment>Accessibility name for the prerequisites log viewer</comment>
+  </data>
+  <data name="A11y_Logs_FileGrid" xml:space="preserve">
+    <value>Fichiers journaux</value>
+    <comment>Accessibility name for the log file list</comment>
+  </data>
+  <data name="A11y_Settings_ScheduledDeployments" xml:space="preserve">
+    <value>Déploiements planifiés</value>
+    <comment>Accessibility name for the scheduled deployments list</comment>
+  </data>
+  <data name="A11y_Editor_WingetResults" xml:space="preserve">
+    <value>Résultats de recherche Winget</value>
+    <comment>Accessibility name for the Winget package search results</comment>
+  </data>
+  <data name="A11y_Editor_ChocolateyResults" xml:space="preserve">
+    <value>Résultats de recherche Chocolatey</value>
+    <comment>Accessibility name for the Chocolatey package search results</comment>
+  </data>
+  <data name="A11y_Editor_StoreResults" xml:space="preserve">
+    <value>Résultats de recherche Microsoft Store</value>
+    <comment>Accessibility name for the Microsoft Store search results</comment>
+  </data>
 </root>

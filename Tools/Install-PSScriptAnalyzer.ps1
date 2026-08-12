@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Install PSScriptAnalyzer for WinForge v2.5.0
 

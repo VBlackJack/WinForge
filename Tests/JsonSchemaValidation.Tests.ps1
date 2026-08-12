@@ -263,4 +263,83 @@ Describe 'JsonSchemaValidation Module' {
             $summary.TotalErrors | Should -Be 0
         }
     }
+
+    Context 'Test-AllConfigurationFiles' {
+        BeforeAll {
+            $script:ConfigResults = @(Test-AllConfigurationFiles)
+        }
+
+        It 'Should validate every Config file that declares a schema' {
+            $configDirectory = Join-Path $PSScriptRoot '..\Config'
+            $schemasDirectory = Join-Path $PSScriptRoot '..\Schemas'
+            $overrides = @{ 'SystemSettings.json' = 'system-settings.schema.json' }
+
+            $expected = @(
+                Get-ChildItem -Path $configDirectory -Filter '*.json' -File | Where-Object {
+                    $schemaName = if ($overrides.ContainsKey($_.Name)) {
+                        $overrides[$_.Name]
+                    } else {
+                        '{0}.schema.json' -f [System.IO.Path]::GetFileNameWithoutExtension($_.Name)
+                    }
+                    Test-Path (Join-Path $schemasDirectory $schemaName)
+                }
+            )
+
+            $script:ConfigResults.Count | Should -Be $expected.Count
+            $script:ConfigResults.Count | Should -BeGreaterThan 0
+        }
+
+        It 'Should report every shipped configuration file as valid' {
+            $invalid = @($script:ConfigResults | Where-Object { -not $_.IsValid })
+            $details = ($invalid | ForEach-Object { "$(Split-Path $_.FilePath -Leaf): $($_.Errors -join ', ')" }) -join ' | '
+            $invalid.Count | Should -Be 0 -Because $details
+        }
+    }
+
+    Context 'Null property handling' {
+        # A JSON null deserializes to $null, and a Mandatory parameter refuses an explicit
+        # $null at binding time. Before AllowNull was added, any file containing a null
+        # value (for example plugins-settings.json pluginRegistry.url) aborted validation
+        # with "Cannot bind argument to parameter 'Object' because it is null".
+        It 'Should accept a null value where the schema permits one' {
+            $jsonPath = Join-Path $TestDrive 'nullable.json'
+            $schemaPath = Join-Path $TestDrive 'nullable.schema.json'
+
+            Set-Content -Path $jsonPath -Value '{ "url": null, "enabled": false }'
+            Set-Content -Path $schemaPath -Value @'
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "url": { "oneOf": [ { "type": "string" }, { "type": "null" } ] },
+    "enabled": { "type": "boolean" }
+  }
+}
+'@
+
+            $result = Test-JsonAgainstSchema -JsonPath $jsonPath -SchemaPath $schemaPath
+            $result.IsValid | Should -Be $true -Because ($result.Errors -join '; ')
+        }
+
+        It 'Should still reject a null where the schema requires a typed value' {
+            $jsonPath = Join-Path $TestDrive 'not-nullable.json'
+            $schemaPath = Join-Path $TestDrive 'not-nullable.schema.json'
+
+            Set-Content -Path $jsonPath -Value '{ "port": null }'
+            Set-Content -Path $schemaPath -Value @'
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "port": { "type": "integer" }
+  }
+}
+'@
+
+            $result = Test-JsonAgainstSchema -JsonPath $jsonPath -SchemaPath $schemaPath
+            $result.IsValid | Should -Be $false
+        }
+    }
 }

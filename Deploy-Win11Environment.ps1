@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     WinForge - Main Deployment Script v3.7.2
 

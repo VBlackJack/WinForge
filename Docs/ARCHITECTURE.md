@@ -70,6 +70,35 @@ When a profile inherits from a parent, inherited applications remain owned by th
 
 The PowerShell REST API is configured through `Config/api-settings.json` and implemented in `Core/RestApiServer.psm1`. It is local-first by default and supports API-key authentication, CSRF protection for mutating requests, rate limiting, version checks, profile discovery, application discovery, deployment, rollback, and cache status endpoints.
 
+## Plugin isolation
+
+Plugins are PowerShell modules discovered under `Plugins/`. Two independent controls bound
+what they can do, because the import in `Import-Plugin` ultimately runs in the main session
+at the host's privilege level:
+
+- **Static validation** (`Core/PluginSandbox.psm1`) parses the plugin AST and enforces
+  allowlists: an allowlist of cmdlets, and an allowlist of .NET types. Any type reference or
+  static member access outside that list is rejected. This is an allowlist rather than a
+  denylist because every unlisted type is a potential execution primitive.
+- **Runtime isolation** runs hook handlers and load probes inside a background job, in a
+  runspace whose `InitialSessionState` declares ConstrainedLanguage. The language mode must
+  be declared on the session state rather than assigned afterwards: a scriptblock carries
+  the language mode it was compiled under.
+
+`Import-Plugin` fingerprints the validated source and re-checks it immediately before
+`Import-Module`, so the file cannot be swapped between validation and import. When
+`trustedPublishers` is non-empty in `Config/plugins-settings.json`, entry points must also
+carry a valid Authenticode signature from one of those publishers.
+
+## Configuration validation
+
+`Schemas/` describes the configuration surface. `Test-AllConfigurationFiles`
+(`Modules/JsonSchemaValidation.psm1`) pairs each `Config/*.json` with its schema by
+convention and validates it. This matters because the runtime loaders read configuration
+field by field with fallbacks: without schema validation a misspelled key is silently
+ignored and the setting simply never applies. The check runs through
+`Invoke-JsonSchemaValidation` and as a section of `Tools/Validate-Framework.ps1`.
+
 ## Validation
 
 Common validation commands:

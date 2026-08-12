@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Catalog freshness check - detects broken external sources in applications.json.
 

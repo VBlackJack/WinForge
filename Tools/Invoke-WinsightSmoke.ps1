@@ -367,7 +367,7 @@ function Wait-WinsightElement {
     throw "Timed out waiting for AutomationId '$AutomationId'. First visible AutomationIds: $knownIds"
 }
 
-function Click-WinsightElement {
+function Invoke-WinsightElementClick {
     param(
         [Parameter(Mandatory)]
         [int]$ProcessId,
@@ -382,7 +382,7 @@ function Click-WinsightElement {
     }
 }
 
-function Capture-WinsightScreenshot {
+function Save-WinsightScreenshot {
     param(
         [Parameter(Mandatory)]
         [int]$ProcessId,
@@ -454,17 +454,17 @@ try {
     Write-Host "WinForge window found: pid=$processId title='$($window.title)'" -ForegroundColor Green
 
     $null = Wait-WinsightElement -ProcessId $processId -AutomationId 'NavDashboard'
-    Click-WinsightElement -ProcessId $processId -AutomationId 'NavDashboard'
+    Invoke-WinsightElementClick -ProcessId $processId -AutomationId 'NavDashboard'
     $null = Wait-WinsightElement -ProcessId $processId -AutomationId 'PageDashboard'
-    $null = Capture-WinsightScreenshot -ProcessId $processId -Name '01-dashboard' -OutputDirectory $ArtifactDirectory
+    $null = Save-WinsightScreenshot -ProcessId $processId -Name '01-dashboard' -OutputDirectory $ArtifactDirectory
 
-    Click-WinsightElement -ProcessId $processId -AutomationId 'NavSettings'
+    Invoke-WinsightElementClick -ProcessId $processId -AutomationId 'NavSettings'
     $null = Wait-WinsightElement -ProcessId $processId -AutomationId 'ThemePicker'
-    $null = Capture-WinsightScreenshot -ProcessId $processId -Name '02-settings' -OutputDirectory $ArtifactDirectory
+    $null = Save-WinsightScreenshot -ProcessId $processId -Name '02-settings' -OutputDirectory $ArtifactDirectory
 
-    Click-WinsightElement -ProcessId $processId -AutomationId 'NavAppCatalog'
+    Invoke-WinsightElementClick -ProcessId $processId -AutomationId 'NavAppCatalog'
     $null = Wait-WinsightElement -ProcessId $processId -AutomationId 'PageAppCatalog'
-    $null = Capture-WinsightScreenshot -ProcessId $processId -Name '03-app-catalog' -OutputDirectory $ArtifactDirectory
+    $null = Save-WinsightScreenshot -ProcessId $processId -Name '03-app-catalog' -OutputDirectory $ArtifactDirectory
 
     Write-Host "Winsight smoke completed successfully." -ForegroundColor Green
 }

@@ -1,6 +1,6 @@
 # WinForge Documentation
 
-Current framework display version: `2026062301`.
+Current framework display version: `2026062701`.
 
 ## User Documentation
 

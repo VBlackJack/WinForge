@@ -4,6 +4,38 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 
 ## [Unreleased]
 
+### Security
+- Plugin AST validation now uses a type allowlist instead of a denylist. Plugin code may only reference value types and PowerShell container types, and static member access is rejected unless the owning type is allowlisted. The previous denylist admitted `[System.Diagnostics.Process]::Start`, `[System.IO.File]::WriteAllText`/`Delete`, `[Microsoft.Win32.Registry]::SetValue`, `[System.Activator]::CreateInstance` and `[System.AppDomain]` reflection.
+- Plugin handlers and plugin-load probes are now compiled inside a runspace whose `InitialSessionState` declares ConstrainedLanguage. Setting `$ExecutionContext.SessionState.LanguageMode` after `[scriptblock]::Create` had no effect, because a scriptblock carries the language mode it was compiled under, so handlers ran in FullLanguage.
+- `Import-Plugin` re-fingerprints the entry point immediately before `Import-Module` and refuses the import if the file changed after sandbox validation, closing a time-of-check/time-of-use window on an import that runs in the main session at the host's privilege level.
+- `trustedPublishers` in `Config/plugins-settings.json` is now enforced: when the list is non-empty, a plugin entry point must carry a valid Authenticode signature from one of the listed publishers. An empty list preserves the previous behaviour.
+- The GUI detection probe now applies the same argument guard as the PowerShell detection paths before launching a Command detection. The executable allowlist alone was insufficient because it permits interpreters (`python`, `node`, `pwsh`, `ruby`, `perl`, `php`) that accept code as an argument.
+- REST API endpoint handlers are validated against the same .NET type allowlist as plugin code instead of a separate denylist that admitted `[System.Diagnostics.Process]::Start`, `[System.IO.File]` and reflective activation. Handlers keep a slightly wider surface than plugins (`regex`, `StringComparison`, `System.IO.Path`), enumerated at the call site with the reason for each, so the plugin sandbox is not widened to accommodate them.
+- REST API request bodies are now read under a hard cap instead of trusting the declared `Content-Length`. A chunked request reports `ContentLength64 = -1`, which passed the previous size check and allowed an unbounded read.
+- Per-API-key rate limiting is now enforced in the request loop. The limiter was implemented, exported and unit-tested but never called, so only IP-based limiting ran — and on a localhost-only listener every caller shares one bucket.
+
+### Changed
+- `Build-Release.ps1` publishes a `.zip.sha256` alongside the release archive, CI verifies the digest before publishing, and the README documents the verification step.
+- PSScriptAnalyzer now runs the full default rule set. The configuration previously combined an `IncludeRules` allowlist with an `ExcludeRules` list that cancelled 21 of the rules it had just enabled, and configured six rules that were themselves excluded, so the gate could not fail. Every remaining exclusion carries a specific justification.
+- Application settings are validated when loaded: per-property constraints are enforced and invalid values are reset to their defaults and logged. The `Range`, `StringLength` and `RegularExpression` annotations on `AppSettings` were previously declarative only. The documented cross-field performance hint does not trigger a reset.
+- Every `Config/*.json` file that declares a schema is now validated against it through `Test-AllConfigurationFiles`, wired into `Invoke-JsonSchemaValidation` and `Validate-Framework.ps1`. Twelve of the sixteen shipped schemas previously had no runtime consumer.
+- `Verify-VersionConsistency.ps1` now covers the documentation files, which could previously state an older release while the check stayed green.
+- GUI PowerShell timeouts are derived from `Config/timeouts-settings.json` instead of being hardcoded, with the built-in values kept only as fallbacks. The installation timeout is computed from the slowest configured install plus explicit headroom, so raising a timeout in configuration no longer leaves the GUI killing installs early and reporting a timeout the engine never saw.
+- Removed the unused `PowerShellProcessWrapper` (271 lines). It had no production call site, its stated rationale (the PowerShell SDK not working in single-file deployments) no longer applies since `Build-Release.ps1` sets `PublishSingleFile=false`, and its `Invoke()` read stdout to completion before stderr and before `WaitForExit`, which deadlocks on a child that fills the stderr pipe — past the reach of the timeout below it. Its UTF-8 decoding coverage moved to the execution path that actually runs.
+
+### Fixed
+- `Test-ObjectAgainstSchema` rejected any JSON `null`: `$Object` was declared mandatory without `[AllowNull()]`, and a mandatory parameter refuses an explicit `$null` at binding time. Any configuration file containing a null value failed validation with a misleading binding error, and the function's own null-handling branch was unreachable.
+- Locale tests never restored the current locale. `$originalLocale` was assigned in `BeforeEach`/`BeforeAll` and read in `AfterEach`/`AfterAll`, which is out of scope under Pester v5, so the tests leaked locale state.
+- Removed 57 assignments to PowerShell automatic variables (`$profile`, `$Error`, `$host`, `$input`, `$args`) and 18 dead assignments across modules and tests, plus a reversed `$null` comparison and two unapproved cmdlet verbs.
+- Nine controls that cannot derive an automation name from their content now declare a localized accessible name.
+- `LoadSettingsAsync` no longer races: the cache check could not be held across the file read, so two concurrent first-callers each loaded the file and walked away with a different `AppSettings` instance, making a mutation through one invisible to the other.
+- `Test-DirectDownloadChecksumGate` hashes the downloaded file once instead of twice, which is measurable on installer-sized payloads.
+- PowerShell files containing non-ASCII characters now carry a UTF-8 BOM. Windows PowerShell 5.1 reads a BOM-less file as ANSI, so those characters rendered as mojibake there — and 5.1 is a real execution path: every module manifest declares `PowerShellVersion = '5.1'`, the GUI falls back to `powershell.exe`, and the analyzer targets `desktop-5.1` compatibility. `.editorconfig` now specifies `utf-8-bom` for PowerShell files and `PSUseBOMForUnicodeEncodedFile` is enforced so this cannot regress.
+
+### Tests
+- Added regression coverage for the plugin type allowlist, effective constrained-language enforcement, plugin content fingerprinting, GUI/PowerShell detection-guard parity, bounded request-body reads, per-key rate-limit wiring, settings normalization, configuration schema validation, JSON null handling, accessible names across all XAML, endpoint-handler type validation including every built-in handler, GUI timeouts tracking their configured source, and profile-migration resumption after an interrupted run.
+- Coverage floors are ratcheted to just below measured coverage so a regression fails the build while normal fluctuation does not: .NET from 35% to 38% (measured 40.46%) and Pester from 40% to 48% (measured 51.76%).
+
 ## [2026062701] - 2026-06-27
 
 ### Security

@@ -73,6 +73,7 @@
                                 <ScrollViewer VerticalScrollBarVisibility="Auto"
                                               HorizontalScrollBarVisibility="Auto">
                                     <TextBox Text="{Binding LogViewerApplication.LogOutput, Mode=OneWay}"
+                                 AutomationProperties.Name="{loc:Loc A11y_Apps_LogOutput}"
                                              IsReadOnly="True"
                                              TextWrapping="NoWrap"
                                              FontFamily="Consolas"

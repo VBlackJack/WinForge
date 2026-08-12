@@ -33,6 +33,19 @@ public class AppSettingsService : IAppSettingsService
     private readonly string _settingsFilePath;
     private readonly object _cacheLock = new();
     private readonly ILoggingService _logger;
+    private readonly IValidationService _validation;
+
+    /// <summary>
+    /// Serializes the asynchronous load path.
+    /// </summary>
+    /// <remarks>
+    /// The cache check cannot stay held across the file read (a lock cannot span an
+    /// await), so without this gate two concurrent first-callers both miss the cache,
+    /// both read and deserialize the file, and each walks away with a *different*
+    /// AppSettings instance — a mutation made through one is invisible to the other.
+    /// </remarks>
+    private readonly SemaphoreSlim _asyncLoadGate = new(1, 1);
+
     private AppSettings? _cachedSettings;
 
     static AppSettingsService()
@@ -71,6 +84,77 @@ public class AppSettingsService : IAppSettingsService
             ? new RepositoryPathService().SettingsFilePath
             : settingsFilePath;
         _logger = (loggerFactory ?? new LoggerFactory()).CreateLogger<AppSettingsService>();
+        _validation = new ValidationService();
+    }
+
+    /// <summary>
+    /// Repairs any persisted value that violates the model's own constraints.
+    /// </summary>
+    /// <remarks>
+    /// The <see cref="AppSettings"/> annotations (<c>Range</c>, <c>StringLength</c>,
+    /// <c>RegularExpression</c>) and its <c>IValidatableObject</c> implementation used to be
+    /// declarative only: nothing ran them, so a hand-edited or corrupted settings.json
+    /// flowed straight into the app (for example MaxParallelInstalls far outside 1-10,
+    /// which sizes real work queues). Invalid members are reset to the model default
+    /// rather than rejecting the whole file, so one bad value never costs the user every
+    /// other setting.
+    /// </remarks>
+    /// <param name="settings">The freshly deserialized settings.</param>
+    /// <returns>The same instance, with invalid members reset to their defaults.</returns>
+    private AppSettings NormalizeSettings(AppSettings settings)
+    {
+        IList<System.ComponentModel.DataAnnotations.ValidationResult> results = _validation.Validate(settings);
+        if (results.Count == 0)
+        {
+            return settings;
+        }
+
+        AppSettings defaults = new AppSettings();
+
+        foreach (System.ComponentModel.DataAnnotations.ValidationResult result in results)
+        {
+            foreach (string memberName in result.MemberNames)
+            {
+                System.Reflection.PropertyInfo? property = typeof(AppSettings).GetProperty(memberName);
+                if (property == null || !property.CanWrite)
+                {
+                    continue;
+                }
+
+                // Only per-property constraints justify a reset. AppSettings also carries a
+                // cross-field advisory rule (MaxParallelInstalls vs MaxParallelScans) that is
+                // documented as a performance hint, and resetting both fields because of a
+                // hint would silently discard a deliberate user choice.
+                if (IsPropertyValid(settings, property))
+                {
+                    continue;
+                }
+
+                object? fallback = property.GetValue(defaults);
+                property.SetValue(settings, fallback);
+                _logger.LogWarning(
+                    $"Settings value '{memberName}' was invalid ({result.ErrorMessage}); reset to default '{fallback}'.");
+            }
+        }
+
+        return settings;
+    }
+
+    /// <summary>
+    /// Validates a single property against its own DataAnnotations constraints.
+    /// </summary>
+    private static bool IsPropertyValid(AppSettings settings, System.Reflection.PropertyInfo property)
+    {
+        System.ComponentModel.DataAnnotations.ValidationContext context =
+            new System.ComponentModel.DataAnnotations.ValidationContext(settings)
+            {
+                MemberName = property.Name
+            };
+
+        return System.ComponentModel.DataAnnotations.Validator.TryValidateProperty(
+            property.GetValue(settings),
+            context,
+            new List<System.ComponentModel.DataAnnotations.ValidationResult>());
     }
 
     /// <inheritdoc/>
@@ -93,6 +177,8 @@ public class AppSettingsService : IAppSettingsService
                         AppSettings? settings = JsonSerializer.Deserialize<AppSettings>(json, JsonOptions);
                         if (settings != null)
                         {
+                            settings = NormalizeSettings(settings);
+
                             if (TryMigrateThemeSettings(settings, json))
                             {
                                 PersistMigratedSettings(settings);
@@ -146,7 +232,7 @@ public class AppSettingsService : IAppSettingsService
     /// <inheritdoc/>
     public async Task<AppSettings> LoadSettingsAsync(CancellationToken cancellationToken = default)
     {
-        // Check cache first (thread-safe read)
+        // Fast path: cache already populated.
         lock (_cacheLock)
         {
             if (_cachedSettings != null)
@@ -155,8 +241,19 @@ public class AppSettingsService : IAppSettingsService
             }
         }
 
+        await _asyncLoadGate.WaitAsync(cancellationToken);
+
         try
         {
+            // Re-check: another caller may have populated the cache while we waited.
+            lock (_cacheLock)
+            {
+                if (_cachedSettings != null)
+                {
+                    return _cachedSettings;
+                }
+            }
+
             if (File.Exists(_settingsFilePath))
             {
                 string json = await File.ReadAllTextAsync(_settingsFilePath, cancellationToken);
@@ -165,6 +262,8 @@ public class AppSettingsService : IAppSettingsService
                     AppSettings? settings = JsonSerializer.Deserialize<AppSettings>(json, JsonOptions);
                     if (settings != null)
                     {
+                        settings = NormalizeSettings(settings);
+
                         bool migrated = TryMigrateThemeSettings(settings, json);
                         lock (_cacheLock)
                         {
@@ -190,14 +289,18 @@ public class AppSettingsService : IAppSettingsService
             // If file is corrupted, return defaults
             _logger.LogError("Failed to load settings async (using defaults)", ex);
         }
+        finally
+        {
+            _asyncLoadGate.Release();
+        }
 
         // Return and cache default settings
         AppSettings defaultSettings = new AppSettings();
         lock (_cacheLock)
         {
-            _cachedSettings = defaultSettings;
+            _cachedSettings ??= defaultSettings;
+            return _cachedSettings;
         }
-        return defaultSettings;
     }
 
     /// <inheritdoc/>

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Pester tests for ProfileManager module
 
@@ -168,43 +168,43 @@ Describe 'ProfileManager Module' {
     Context 'Import-ProfileJson' {
         It 'Should load Base profile successfully' {
             $profilePath = Join-Path $script:ProfilesDirectory 'Base.json'
-            $profile = Import-ProfileJson -Path $profilePath
+            $deploymentProfile = Import-ProfileJson -Path $profilePath
 
-            $profile | Should -Not -BeNullOrEmpty
-            $profile.Name | Should -Be 'Base'
+            $deploymentProfile | Should -Not -BeNullOrEmpty
+            $deploymentProfile.Name | Should -Be 'Base'
         }
 
         It 'Should have correct profile properties' {
             $profilePath = Join-Path $script:ProfilesDirectory 'Base.json'
-            $profile = Import-ProfileJson -Path $profilePath
+            $deploymentProfile = Import-ProfileJson -Path $profilePath
 
-            $profile.Name | Should -Not -BeNullOrEmpty
-            $profile.Description | Should -Not -BeNullOrEmpty
-            $profile.Version | Should -Not -BeNullOrEmpty
-            $profile.Applications | Should -Not -BeNullOrEmpty
+            $deploymentProfile.Name | Should -Not -BeNullOrEmpty
+            $deploymentProfile.Description | Should -Not -BeNullOrEmpty
+            $deploymentProfile.Version | Should -Not -BeNullOrEmpty
+            $deploymentProfile.Applications | Should -Not -BeNullOrEmpty
         }
 
         It 'Should load profile version' {
             $profilePath = Join-Path $script:ProfilesDirectory 'Base.json'
-            $profile = Import-ProfileJson -Path $profilePath
+            $deploymentProfile = Import-ProfileJson -Path $profilePath
 
-            $profile.Version | Should -Match '^\d+\.\d+\.\d+$'
+            $deploymentProfile.Version | Should -Match '^\d+\.\d+\.\d+$'
         }
 
         It 'Should load applications array' {
             $profilePath = Join-Path $script:ProfilesDirectory 'Base.json'
-            $profile = Import-ProfileJson -Path $profilePath
+            $deploymentProfile = Import-ProfileJson -Path $profilePath
 
-            $profile.Applications | Should -Not -BeNullOrEmpty
-            $profile.Applications.Count | Should -BeGreaterThan 0
+            $deploymentProfile.Applications | Should -Not -BeNullOrEmpty
+            $deploymentProfile.Applications.Count | Should -BeGreaterThan 0
         }
 
         It 'Should load SystemConfig' {
             $profilePath = Join-Path $script:ProfilesDirectory 'Base.json'
-            $profile = Import-ProfileJson -Path $profilePath
+            $deploymentProfile = Import-ProfileJson -Path $profilePath
 
-            $profile.SystemConfig | Should -Not -BeNullOrEmpty
-            $profile.SystemConfig.Keys | Should -Contain 'Explorer'
+            $deploymentProfile.SystemConfig | Should -Not -BeNullOrEmpty
+            $deploymentProfile.SystemConfig.Keys | Should -Contain 'Explorer'
         }
 
         It 'Should throw for non-existent file' {
@@ -220,17 +220,17 @@ Describe 'ProfileManager Module' {
 
         It 'Should handle empty Inherits array' {
             $profilePath = Join-Path $script:ProfilesDirectory 'Base.json'
-            $profile = Import-ProfileJson -Path $profilePath
+            $deploymentProfile = Import-ProfileJson -Path $profilePath
 
             # Base has empty Inherits
-            $profile.Inherits | Should -BeNullOrEmpty -Or { $profile.Inherits.Count -eq 0 }
+            $deploymentProfile.Inherits | Should -BeNullOrEmpty -Or { $deploymentProfile.Inherits.Count -eq 0 }
         }
 
         It 'Should handle single inheritance' {
             $profilePath = Join-Path $script:ProfilesDirectory 'Office.json'
-            $profile = Import-ProfileJson -Path $profilePath
+            $deploymentProfile = Import-ProfileJson -Path $profilePath
 
-            $profile.Inherits | Should -Contain 'Base'
+            $deploymentProfile.Inherits | Should -Contain 'Base'
         }
     }
 
@@ -507,28 +507,28 @@ Describe 'ProfileManager Module' {
 
     Context 'Get-DeploymentProfile' {
         It 'Should load Base profile with all properties' {
-            $profile = Get-DeploymentProfile -ProfileName 'Base' -ProfilesDirectory $script:ProfilesDirectory
+            $deploymentProfile = Get-DeploymentProfile -ProfileName 'Base' -ProfilesDirectory $script:ProfilesDirectory
 
-            $profile | Should -Not -BeNullOrEmpty
-            $profile.Name | Should -Be 'Base'
-            $profile.Applications | Should -Not -BeNullOrEmpty
-            $profile.SystemConfig | Should -Not -BeNullOrEmpty
+            $deploymentProfile | Should -Not -BeNullOrEmpty
+            $deploymentProfile.Name | Should -Be 'Base'
+            $deploymentProfile.Applications | Should -Not -BeNullOrEmpty
+            $deploymentProfile.SystemConfig | Should -Not -BeNullOrEmpty
         }
 
         It 'Should have InheritanceChain property' {
-            $profile = Get-DeploymentProfile -ProfileName 'Gaming' -ProfilesDirectory $script:ProfilesDirectory
+            $deploymentProfile = Get-DeploymentProfile -ProfileName 'Gaming' -ProfilesDirectory $script:ProfilesDirectory
 
-            $profile.InheritanceChain | Should -Not -BeNullOrEmpty
-            $profile.InheritanceChain | Should -Contain 'Base'
-            $profile.InheritanceChain | Should -Contain 'Office'
-            $profile.InheritanceChain | Should -Contain 'Gaming'
+            $deploymentProfile.InheritanceChain | Should -Not -BeNullOrEmpty
+            $deploymentProfile.InheritanceChain | Should -Contain 'Base'
+            $deploymentProfile.InheritanceChain | Should -Contain 'Office'
+            $deploymentProfile.InheritanceChain | Should -Contain 'Gaming'
         }
 
         It 'Should load correct application count for Base' {
-            $profile = Get-DeploymentProfile -ProfileName 'Base' -ProfilesDirectory $script:ProfilesDirectory
+            $deploymentProfile = Get-DeploymentProfile -ProfileName 'Base' -ProfilesDirectory $script:ProfilesDirectory
 
             # Base has 30 applications
-            $profile.Applications.Count | Should -BeGreaterOrEqual 25
+            $deploymentProfile.Applications.Count | Should -BeGreaterOrEqual 25
         }
 
         It 'Should load more applications for Office than Base' {
@@ -550,10 +550,10 @@ Describe 'ProfileManager Module' {
         }
 
         It 'Should have ProfilePath property' {
-            $profile = Get-DeploymentProfile -ProfileName 'Base' -ProfilesDirectory $script:ProfilesDirectory
+            $deploymentProfile = Get-DeploymentProfile -ProfileName 'Base' -ProfilesDirectory $script:ProfilesDirectory
 
-            $profile.ProfilePath | Should -Not -BeNullOrEmpty
-            Test-Path $profile.ProfilePath | Should -BeTrue
+            $deploymentProfile.ProfilePath | Should -Not -BeNullOrEmpty
+            Test-Path $deploymentProfile.ProfilePath | Should -BeTrue
         }
     }
 
@@ -636,23 +636,23 @@ Describe 'ProfileManager Module' {
 
     Context 'Get-ApplicationsByCategory' {
         It 'Should group applications by category' {
-            $profile = Get-DeploymentProfile -ProfileName 'Base' -ProfilesDirectory $script:ProfilesDirectory
-            $grouped = Get-ApplicationsByCategory -Applications $profile.Applications
+            $deploymentProfile = Get-DeploymentProfile -ProfileName 'Base' -ProfilesDirectory $script:ProfilesDirectory
+            $grouped = Get-ApplicationsByCategory -Applications $deploymentProfile.Applications
 
             $grouped | Should -Not -BeNullOrEmpty
             $grouped | Should -BeOfType [hashtable]
         }
 
         It 'Should have multiple categories' {
-            $profile = Get-DeploymentProfile -ProfileName 'Base' -ProfilesDirectory $script:ProfilesDirectory
-            $grouped = Get-ApplicationsByCategory -Applications $profile.Applications
+            $deploymentProfile = Get-DeploymentProfile -ProfileName 'Base' -ProfilesDirectory $script:ProfilesDirectory
+            $grouped = Get-ApplicationsByCategory -Applications $deploymentProfile.Applications
 
             $grouped.Keys.Count | Should -BeGreaterThan 1
         }
 
         It 'Should categorize apps correctly' {
-            $profile = Get-DeploymentProfile -ProfileName 'Base' -ProfilesDirectory $script:ProfilesDirectory
-            $grouped = Get-ApplicationsByCategory -Applications $profile.Applications
+            $deploymentProfile = Get-DeploymentProfile -ProfileName 'Base' -ProfilesDirectory $script:ProfilesDirectory
+            $grouped = Get-ApplicationsByCategory -Applications $deploymentProfile.Applications
 
             # Should have common categories
             $allCategories = $grouped.Keys -join ', '
@@ -784,30 +784,30 @@ Describe 'ProfileManager Module' {
 Describe 'ProfileManager Integration Tests' {
     Context 'Full Profile Loading Pipeline' {
         It 'Should load Personnel profile with complete inheritance' {
-            $profile = Get-DeploymentProfile -ProfileName 'Personnel' -ProfilesDirectory $script:ProfilesDirectory
+            $deploymentProfile = Get-DeploymentProfile -ProfileName 'Personnel' -ProfilesDirectory $script:ProfilesDirectory
 
-            $profile | Should -Not -BeNullOrEmpty
-            $profile.InheritanceChain.Count | Should -Be 4
-            $profile.Applications.Count | Should -BeGreaterThan 50
+            $deploymentProfile | Should -Not -BeNullOrEmpty
+            $deploymentProfile.InheritanceChain.Count | Should -Be 4
+            $deploymentProfile.Applications.Count | Should -BeGreaterThan 50
         }
 
         It 'Should have merged system config from all profiles' {
-            $profile = Get-DeploymentProfile -ProfileName 'Personnel' -ProfilesDirectory $script:ProfilesDirectory
+            $deploymentProfile = Get-DeploymentProfile -ProfileName 'Personnel' -ProfilesDirectory $script:ProfilesDirectory
 
             # Should have Explorer from Base
-            $profile.SystemConfig.Explorer | Should -Not -BeNullOrEmpty
+            $deploymentProfile.SystemConfig.Explorer | Should -Not -BeNullOrEmpty
 
             # Should have Performance settings
-            $profile.SystemConfig.Performance | Should -Not -BeNullOrEmpty
+            $deploymentProfile.SystemConfig.Performance | Should -Not -BeNullOrEmpty
         }
 
         It 'Should maintain application order by priority' {
-            $profile = Get-DeploymentProfile -ProfileName 'Base' -ProfilesDirectory $script:ProfilesDirectory
+            $deploymentProfile = Get-DeploymentProfile -ProfileName 'Base' -ProfilesDirectory $script:ProfilesDirectory
 
-            $priorities = $profile.Applications | ForEach-Object { $_.Priority }
+            $priorities = $deploymentProfile.Applications | ForEach-Object { $_.Priority }
 
             # Most apps should have priorities defined
-            ($priorities | Where-Object { $null -ne $_ }).Count | Should -BeGreaterThan ($profile.Applications.Count / 2)
+            ($priorities | Where-Object { $null -ne $_ }).Count | Should -BeGreaterThan ($deploymentProfile.Applications.Count / 2)
         }
     }
 

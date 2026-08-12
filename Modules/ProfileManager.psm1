@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     WinForge - Profile Manager v3.7.2
 
@@ -130,13 +130,13 @@ function script:Set-CachedProfile {
     [CmdletBinding()]
     param(
         [string]$Path,
-        [DeploymentProfile]$Profile
+        [DeploymentProfile]$DeploymentProfile
     )
 
     $absPath = [System.IO.Path]::GetFullPath($Path)
 
     try {
-        $script:ProfileCache[$absPath] = $Profile
+        $script:ProfileCache[$absPath] = $DeploymentProfile
         $script:ProfileCacheLastModified[$absPath] = (Get-Item $absPath -ErrorAction Stop).LastWriteTime
     } catch {
         # Cache update is non-critical, but log for debugging
@@ -387,7 +387,7 @@ function Import-ProfileJson {
         Write-Status -Message (Get-LogString -Key 'profile.loaded' -Parameters @{ Name = "$($deploymentProfile.Name) v$($deploymentProfile.Version)"; AppCount = $deploymentProfile.Applications.Count }) -Level 'Success'
 
         # Store in cache
-        Set-CachedProfile -Path $Path -Profile $deploymentProfile
+        Set-CachedProfile -Path $Path -DeploymentProfile $deploymentProfile
 
         return $deploymentProfile
 
@@ -449,10 +449,10 @@ function Test-ProfileCycles {
 
         try {
             $path = Get-ProfilePath -ProfileName $Name -ProfilesDirectory $Dir -ErrorAction Stop
-            $profile = Import-ProfileJson -Path $path -NoCache -ErrorAction Stop
+            $deploymentProfile = Import-ProfileJson -Path $path -NoCache -ErrorAction Stop
 
             $result.InheritanceGraph[$Name] = @{
-                Inherits = if ($profile.Inherits) { @($profile.Inherits) } else { @() }
+                Inherits = if ($deploymentProfile.Inherits) { @($deploymentProfile.Inherits) } else { @() }
                 Path = $path
             }
 
@@ -1225,11 +1225,11 @@ function Test-ProfileAppIds {
     }
 
     try {
-        $profile = Import-ProfileJson -Path $ProfilePath
+        $deploymentProfile = Import-ProfileJson -Path $ProfilePath
 
         # Extract AppIds from profile
         $profileAppIds = @()
-        foreach ($app in $profile.Applications) {
+        foreach ($app in $deploymentProfile.Applications) {
             if ($app -is [string]) {
                 $profileAppIds += $app
             } elseif ($app.PSObject.Properties['AppId']) {

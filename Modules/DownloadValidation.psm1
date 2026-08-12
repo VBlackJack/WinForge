@@ -184,12 +184,15 @@ function Test-DirectDownloadChecksumGate {
         }
     }
 
-    $proceed = Assert-FileChecksum -Path $Path -ExpectedSHA256 $ExpectedSHA256
+    # Hash once and compare here rather than calling Assert-FileChecksum and then hashing
+    # again for the diagnostic value: installers are large enough that the second pass is
+    # measurable. The comparison stays case-insensitive because Get-FileHash returns
+    # upper-case hex while catalogue checksums may be either case.
     $actual = (Get-FileHash -Path $Path -Algorithm SHA256).Hash
 
     return [PSCustomObject]@{
         Enforced   = $true
-        Proceed    = $proceed
+        Proceed    = ($actual -eq $ExpectedSHA256)
         ActualHash = $actual
     }
 }

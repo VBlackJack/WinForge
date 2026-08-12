@@ -122,6 +122,7 @@ if (Test-Path $manifestScript) {
 $ReleaseName = "WinForge_v$Version"
 $ReleasePath = Join-Path $DistRoot $ReleaseName
 $ZipPath = Join-Path $DistRoot "$ReleaseName.zip"
+$ChecksumPath = "$ZipPath.sha256"
 
 # Header
 Write-Host ""
@@ -359,6 +360,16 @@ if (-not $NoZip) {
 
     $zipSize = [math]::Round((Get-Item $ZipPath).Length / 1MB, 2)
     Write-Host "  $(Get-Text -Key 'build.created_zip' -Parameters @{ Name = "$ReleaseName.zip"; Size = $zipSize } -Default "Created: $ReleaseName.zip ($zipSize MB)")" -ForegroundColor Green
+
+    # Publish a checksum alongside the archive. WinForge enforces publisher signatures and
+    # SHA256 on the installers it consumes; shipping its own artifact without anything
+    # verifiable left users no way to apply the same standard to WinForge itself.
+    $zipHash = (Get-FileHash -Path $ZipPath -Algorithm SHA256).Hash
+    $checksumLine = '{0}  {1}' -f $zipHash, (Split-Path -Leaf $ZipPath)
+    Set-Content -Path $ChecksumPath -Value $checksumLine -Encoding ASCII -NoNewline
+
+    Write-Host "  $(Get-Text -Key 'build.created_checksum' -Parameters @{ Name = (Split-Path -Leaf $ChecksumPath) } -Default "Created: $(Split-Path -Leaf $ChecksumPath)")" -ForegroundColor Green
+    Write-Host "  SHA256: $zipHash" -ForegroundColor Gray
 }
 
 # ============================================
@@ -387,6 +398,7 @@ Write-Host (Get-Text -Key 'build.output_title' -Default 'Output Locations:') -Fo
 Write-Host "  $(Get-Text -Key 'build.output_folder' -Parameters @{ Path = $ReleasePath } -Default "Folder: $ReleasePath")" -ForegroundColor Cyan
 if (-not $NoZip) {
     Write-Host "  $(Get-Text -Key 'build.output_zip' -Parameters @{ Path = $ZipPath } -Default "ZIP: $ZipPath")" -ForegroundColor Cyan
+    Write-Host "  $(Get-Text -Key 'build.output_checksum' -Parameters @{ Path = $ChecksumPath } -Default "SHA256: $ChecksumPath")" -ForegroundColor Cyan
 }
 Write-Host ""
 

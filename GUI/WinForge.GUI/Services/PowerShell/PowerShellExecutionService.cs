@@ -17,6 +17,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using WinForge.GUI.Services;
 
@@ -36,11 +37,29 @@ public class PowerShellExecutionService : IPowerShellExecutionService
     /// </summary>
     private const int MaxOutputSizeBytes = 100 * 1024 * 1024;
 
-    /// <inheritdoc/>
-    public int DefaultQueryTimeoutMs => 300000; // 5 minutes
+    /// <summary>
+    /// Fallbacks used when Config/timeouts-settings.json cannot be read.
+    /// </summary>
+    private const int FallbackQueryTimeoutMs = 300000;      // 5 minutes
+    private const int FallbackInstallationTimeoutMs = 2850000; // 47.5 minutes
+
+    /// <summary>
+    /// Headroom added on top of the slowest configured install timeout.
+    /// </summary>
+    /// <remarks>
+    /// The GUI must outlive the PowerShell installer it launched, otherwise it kills a
+    /// still-running install and reports a timeout the engine never saw. The margin
+    /// covers process startup, module import and result marshalling.
+    /// </remarks>
+    private const int InstallationTimeoutHeadroomMs = 150000; // 2.5 minutes
+
+    private readonly Lazy<TimeoutSettings> _timeouts;
 
     /// <inheritdoc/>
-    public int InstallationTimeoutMs => 2850000; // 47.5 minutes (must exceed Office C2R 45 min timeout)
+    public int DefaultQueryTimeoutMs => _timeouts.Value.QueryTimeoutMs;
+
+    /// <inheritdoc/>
+    public int InstallationTimeoutMs => _timeouts.Value.InstallationTimeoutMs;
 
     /// <summary>
     /// Initializes a new instance of the PowerShellExecutionService.
@@ -50,6 +69,71 @@ public class PowerShellExecutionService : IPowerShellExecutionService
     {
         _pathService = pathService ?? throw new ArgumentNullException(nameof(pathService));
         _logger = (loggerFactory ?? new LoggerFactory()).CreateLogger<PowerShellExecutionService>();
+        _timeouts = new Lazy<TimeoutSettings>(LoadTimeoutSettings);
+    }
+
+    /// <summary>
+    /// Timeouts the GUI applies when it drives a PowerShell installation.
+    /// </summary>
+    private readonly record struct TimeoutSettings(int QueryTimeoutMs, int InstallationTimeoutMs);
+
+    /// <summary>
+    /// Derives the GUI-side timeouts from Config/timeouts-settings.json.
+    /// </summary>
+    /// <remarks>
+    /// These values used to be hardcoded here while the authoritative numbers lived in
+    /// the JSON, with a comment tying the installation timeout to the Office Click-to-Run
+    /// value. Raising the Office timeout in configuration therefore silently left the GUI
+    /// killing installs early. Reading the same file keeps one source of truth; the
+    /// constants remain only as fallbacks when the file is missing or malformed.
+    /// </remarks>
+    private TimeoutSettings LoadTimeoutSettings()
+    {
+        try
+        {
+            string configPath = _pathService.GetPath("Config", "timeouts-settings.json");
+            if (!File.Exists(configPath))
+            {
+                return new TimeoutSettings(FallbackQueryTimeoutMs, FallbackInstallationTimeoutMs);
+            }
+
+            using JsonDocument document = JsonDocument.Parse(File.ReadAllText(configPath));
+            JsonElement root = document.RootElement;
+
+            int queryTimeoutMs = ReadSeconds(root, "download", "timeoutSeconds") is int downloadSeconds
+                ? downloadSeconds * 1000
+                : FallbackQueryTimeoutMs;
+
+            // The slowest configured install governs how long the GUI must wait.
+            int slowestInstallSeconds = Math.Max(
+                ReadSeconds(root, "installation", "officeTimeoutSeconds") ?? 0,
+                ReadSeconds(root, "installation", "defaultTimeoutSeconds") ?? 0);
+
+            int installationTimeoutMs = slowestInstallSeconds > 0
+                ? (slowestInstallSeconds * 1000) + InstallationTimeoutHeadroomMs
+                : FallbackInstallationTimeoutMs;
+
+            return new TimeoutSettings(queryTimeoutMs, installationTimeoutMs);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                $"[PowerShellExecutionService] Falling back to built-in timeouts: {ex.Message}");
+            return new TimeoutSettings(FallbackQueryTimeoutMs, FallbackInstallationTimeoutMs);
+        }
+    }
+
+    private static int? ReadSeconds(JsonElement root, string sectionName, string propertyName)
+    {
+        if (root.TryGetProperty(sectionName, out JsonElement section) &&
+            section.TryGetProperty(propertyName, out JsonElement value) &&
+            value.TryGetInt32(out int seconds) &&
+            seconds > 0)
+        {
+            return seconds;
+        }
+
+        return null;
     }
 
     /// <inheritdoc/>
@@ -193,16 +277,6 @@ public class PowerShellExecutionService : IPowerShellExecutionService
             }
         }
         return null;
-    }
-
-    /// <summary>
-    /// Creates a PowerShell instance wrapper for fluent script building.
-    /// Internal method for use by other services in this assembly.
-    /// </summary>
-    /// <returns>A PowerShellProcessWrapper instance.</returns>
-    internal PowerShellProcessWrapper CreatePowerShellInstance()
-    {
-        return new PowerShellProcessWrapper(GetPowerShellPath(), _pathService.GetSafeRepositoryRoot(), _logger);
     }
 
     /// <inheritdoc/>

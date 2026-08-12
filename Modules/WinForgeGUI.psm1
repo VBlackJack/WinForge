@@ -494,8 +494,8 @@ function Show-DeployProfileMenu {
     Write-Host ""
 
     for ($i = 0; $i -lt $profiles.Count; $i++) {
-        $profile = $profiles[$i]
-        $profileData = Get-Content -Path $profile.FullName -Raw -Encoding UTF8 | ConvertFrom-Json
+        $deploymentProfile = $profiles[$i]
+        $profileData = Get-Content -Path $deploymentProfile.FullName -Raw -Encoding UTF8 | ConvertFrom-Json
 
         $name = $profileData.Name
         $version = $profileData.Version
@@ -832,16 +832,16 @@ function Show-ApplicationDetails {
     Show-Header -Title (Get-LocalizedString -Key 'gui.apps.details_title')
 
     Write-Host (Get-LocalizedString -Key 'gui.apps.details_prompt') -ForegroundColor Yellow
-    $input = Read-Host (Get-LocalizedString -Key 'gui.apps.details_input')
+    $inputValue = Read-Host (Get-LocalizedString -Key 'gui.apps.details_input')
 
-    if ([string]::IsNullOrWhiteSpace($input)) { return }
+    if ([string]::IsNullOrWhiteSpace($inputValue)) { return }
 
     # Try to get by ID first
-    $app = Get-DatabaseAppById -AppId $input
+    $app = Get-DatabaseAppById -AppId $inputValue
 
     # If not found, try search
     if (-not $app) {
-        $results = Search-DatabaseApps -SearchTerm $input
+        $results = Search-DatabaseApps -SearchTerm $inputValue
         if ($results.Count -eq 1) {
             $app = $results[0]
         }
@@ -853,7 +853,7 @@ function Show-ApplicationDetails {
     }
 
     if (-not $app) {
-        Write-Host (Get-LocalizedString -Key 'gui.apps.not_found' -Parameters @{ Input = $input }) -ForegroundColor Red
+        Write-Host (Get-LocalizedString -Key 'gui.apps.not_found' -Parameters @{ Input = $inputValue }) -ForegroundColor Red
         Read-Host (Get-LocalizedString -Key 'gui.deploy.press_enter')
         return
     }
@@ -936,8 +936,8 @@ function Show-ProfileBrowser {
     Write-Host ""
 
     for ($i = 0; $i -lt $profiles.Count; $i++) {
-        $profile = $profiles[$i]
-        $profileData = Get-Content -Path $profile.FullName -Raw -Encoding UTF8 | ConvertFrom-Json
+        $deploymentProfile = $profiles[$i]
+        $profileData = Get-Content -Path $deploymentProfile.FullName -Raw -Encoding UTF8 | ConvertFrom-Json
 
         Write-Host "  $($i + 1). $(Get-LocalizedString -Key 'gui.profiles.profile_info' -Parameters @{ Name = $profileData.Name; Version = $profileData.Version })" -ForegroundColor White
         Write-Host "      $(Get-LocalizedString -Key 'gui.profiles.apps_count' -Parameters @{ Count = $profileData.Applications.Count })" -ForegroundColor Gray

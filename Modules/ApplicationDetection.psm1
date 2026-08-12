@@ -794,8 +794,6 @@ function Get-InstalledApplicationsCache {
     try {
         $packages = Get-AppxPackage -ErrorAction SilentlyContinue
         foreach ($pkg in $packages) {
-            # Use package name prefix for matching (e.g., "Microsoft.PowerToys" matches "Microsoft.PowerToys.SparseApp")
-            $prefix = $pkg.Name -replace '\..*$', ''
             if (-not $appxPackages.ContainsKey($pkg.Name)) {
                 $appxPackages[$pkg.Name] = [PSCustomObject]@{
                     Name            = $pkg.Name

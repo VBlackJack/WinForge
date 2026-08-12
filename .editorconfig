@@ -14,6 +14,13 @@ indent_size = 2
 [*.{bat,cmd}]
 end_of_line = crlf
 
+# Windows PowerShell 5.1 reads a BOM-less file as ANSI (Windows-1252), so any
+# non-ASCII character in a script renders as mojibake there. The module manifests
+# declare PowerShellVersion 5.1 and the GUI falls back to powershell.exe, so 5.1 is a
+# real execution path. Files that are pure ASCII are unaffected either way.
+[*.{ps1,psm1,psd1}]
+charset = utf-8-bom
+
 [*.md]
 trim_trailing_whitespace = false
 

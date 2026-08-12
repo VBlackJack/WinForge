@@ -64,11 +64,11 @@ Describe 'Localization Module' {
 
     Context 'Set-CurrentLocale' {
         BeforeEach {
-            $originalLocale = Get-CurrentLocale
+            $script:originalLocale = Get-CurrentLocale
         }
 
         AfterEach {
-            Set-CurrentLocale -Locale $originalLocale -ErrorAction SilentlyContinue
+            Set-CurrentLocale -Locale $script:originalLocale -ErrorAction SilentlyContinue
         }
 
         It 'Should change the current locale to en' {
@@ -189,11 +189,11 @@ Describe 'Localization Module' {
 
     Context 'Locale Switching' {
         BeforeAll {
-            $originalLocale = Get-CurrentLocale
+            $script:originalLocale = Get-CurrentLocale
         }
 
         AfterAll {
-            Set-CurrentLocale -Locale $originalLocale -ErrorAction SilentlyContinue
+            Set-CurrentLocale -Locale $script:originalLocale -ErrorAction SilentlyContinue
         }
 
         It 'Should return different strings for different locales' {

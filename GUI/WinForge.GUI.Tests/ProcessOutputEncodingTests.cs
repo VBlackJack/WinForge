@@ -27,22 +27,20 @@ namespace WinForge.GUI.Tests;
 public class ProcessOutputEncodingTests
 {
     [Fact]
-    public void PowerShellProcessWrapper_Invoke_DecodesUtf8Output()
+    public async Task ExecutePowerShellScriptAsync_DecodesUtf8Output()
     {
         RepositoryPathService pathService = new RepositoryPathService();
         PowerShellExecutionService executionService = new PowerShellExecutionService(pathService);
         string expected = "UTF8 sentinel \u00e9\u00e0\u2019";
 
-        using PowerShellProcessWrapper wrapper = new PowerShellProcessWrapper(
-            executionService.GetPowerShellPath(),
-            pathService.GetSafeRepositoryRoot());
+        string output = await executionService.ExecutePowerShellScriptAsync(
+            "$utf8 = New-Object System.Text.UTF8Encoding -ArgumentList $false; "
+            + "[Console]::OutputEncoding = $utf8; "
+            + "Write-Output ('UTF8 sentinel ' + [char]0x00e9 + [char]0x00e0 + [char]0x2019)");
 
-        IReadOnlyCollection<PSObject> result = wrapper
-            .AddScript("$utf8 = New-Object System.Text.UTF8Encoding -ArgumentList $false; [Console]::OutputEncoding = $utf8; Write-Output ('UTF8 sentinel ' + [char]0x00e9 + [char]0x00e0 + [char]0x2019)")
-            .Invoke();
+        Assert.Equal(expected, output.Trim());
 
-        string output = Assert.Single(result).ToString() ?? string.Empty;
-        Assert.Equal(expected, output);
+        // Mojibake sentinel: a UTF-8 sequence decoded as ANSI surfaces as '\u00c3'.
         Assert.DoesNotContain("\u00c3", output, StringComparison.Ordinal);
     }
 

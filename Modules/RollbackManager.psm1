@@ -428,7 +428,6 @@ function Invoke-RollbackWithConfirmation {
         Write-Host (Get-LogString -Key 'rollback.confirm_prompt' -Parameters @{ Timeout = $timeout }) -ForegroundColor Yellow
 
         $startTime = Get-Date
-        $response = $null
 
         while ($true) {
             if ([Console]::KeyAvailable) {

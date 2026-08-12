@@ -423,4 +423,86 @@ Export-ModuleMember -Function Get-TestValue
             $result.Plugin | Should -Be 'Plugin-With_Special.Chars'
         }
     }
+
+    Context 'Test-ScriptblockSafe - .NET type allowlist' {
+        # A denylist cannot bound the reachable .NET surface: every unlisted type is a
+        # potential execution primitive. These cases pinned the escape that the previous
+        # denylist allowed through.
+        It 'Should block <Name>' -ForEach @(
+            @{ Name = 'process creation';   Script = "[System.Diagnostics.Process]::Start('cmd.exe', '/c whoami')" }
+            @{ Name = 'arbitrary file write'; Script = "[System.IO.File]::WriteAllText('C:\Windows\Temp\pwn.txt', 'owned')" }
+            @{ Name = 'arbitrary file delete'; Script = "[System.IO.File]::Delete('C:\Windows\Temp\x.txt')" }
+            @{ Name = 'registry write';     Script = "[Microsoft.Win32.Registry]::SetValue('HKEY_CURRENT_USER\Software\X','Run','evil')" }
+            @{ Name = 'assembly enumeration'; Script = '[System.AppDomain]::CurrentDomain.GetAssemblies()' }
+            @{ Name = 'reflective activation'; Script = "[System.Activator]::CreateInstance('System.Object')" }
+            @{ Name = 'environment access'; Script = "[System.Environment]::GetEnvironmentVariable('PATH')" }
+        ) {
+            $result = Test-ScriptblockSafe -ScriptText $Script
+            $result.IsValid | Should -Be $false -Because "$Name must not pass plugin validation"
+        }
+
+        It 'Should still allow the value types plugins legitimately declare' {
+            $scriptText = @'
+function Invoke-TestPluginpreinstall {
+    param([hashtable]$Context, [string]$Name, [bool]$Force, [int]$Retries)
+    return $true
+}
+Export-ModuleMember -Function 'Invoke-TestPluginpreinstall'
+'@
+            $result = Test-ScriptblockSafe -ScriptText $scriptText
+            $result.IsValid | Should -Be $true -Because ($result.Errors -join '; ')
+        }
+
+        It 'Should validate the shipped plugin template' {
+            $templatePath = Join-Path $PSScriptRoot '..\Plugins\_template\Main.psm1'
+            $result = Test-ScriptblockSafe -ScriptText (Get-Content -Path $templatePath -Raw)
+            $result.IsValid | Should -Be $true -Because ($result.Errors -join '; ')
+        }
+    }
+
+    Context 'Invoke-PluginSandboxed - Constrained language enforcement' {
+        # A scriptblock carries the language mode it was compiled under, so creating it
+        # before flipping $ExecutionContext.SessionState.LanguageMode enforced nothing.
+        # The handler must now be compiled inside a ConstrainedLanguage runspace.
+        It 'Should execute the handler in ConstrainedLanguage' {
+            $handler = { return $ExecutionContext.SessionState.LanguageMode.ToString() }
+            $result = Invoke-PluginSandboxed -Handler $handler -PluginName 'LanguageModePlugin'
+            $result.Success | Should -Be $true
+            $result.Result | Should -Be 'ConstrainedLanguage'
+        }
+
+        It 'Should block a .NET static call that reaches execution' {
+            # Bypasses the AST gate via a variable so only the runtime boundary can stop it.
+            $handler = {
+                $typeName = 'System.Diagnostics.Process'
+                $type = $typeName -as [type]
+                return $type.GetMethod('Start')
+            }
+            $result = Invoke-PluginSandboxed -Handler $handler -PluginName 'RuntimeEscapePlugin'
+            $result.Success | Should -Be $false
+        }
+    }
+
+    Context 'Get-PluginContentHash' {
+        It 'Should be stable for identical content' {
+            Get-PluginContentHash -Content 'return $true' |
+                Should -Be (Get-PluginContentHash -Content 'return $true')
+        }
+
+        It 'Should change when a single byte changes' {
+            Get-PluginContentHash -Content 'return $true' |
+                Should -Not -Be (Get-PluginContentHash -Content 'return $false')
+        }
+    }
+
+    Context 'Invoke-PluginLoadSandboxed - TOCTOU fingerprint' {
+        It 'Should return the SHA256 of the content it validated' {
+            $pluginPath = Join-Path $TestDrive 'HashProbe.psm1'
+            $content = "function Invoke-HashProbepreinstall { param([hashtable]`$Context) return `$true }`nExport-ModuleMember -Function 'Invoke-HashProbepreinstall'`n"
+            Set-Content -Path $pluginPath -Value $content -NoNewline
+
+            $result = Invoke-PluginLoadSandboxed -PluginPath $pluginPath -PluginName 'HashProbe'
+            $result.ContentSha256 | Should -Be (Get-PluginContentHash -Content $content)
+        }
+    }
 }
