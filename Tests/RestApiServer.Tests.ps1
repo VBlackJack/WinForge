@@ -688,4 +688,73 @@ Describe 'RestApiServer Module' {
             $status.Count | Should -BeGreaterOrEqual 1
         }
     }
+
+    Context 'Read-BoundedRequestBody' {
+        # ContentLength64 is -1 for chunked transfer encoding, so the declared-length
+        # check alone let a chunked body stream in unbounded. The reader must cap
+        # regardless of what the request declared.
+        It 'Should read a body that fits within the cap' {
+            $stream = [System.IO.MemoryStream]::new([System.Text.Encoding]::UTF8.GetBytes('{"profile":"Base"}'))
+            $reader = [System.IO.StreamReader]::new($stream)
+            try {
+                Read-BoundedRequestBody -Reader $reader -MaxBytes 1024 | Should -Be '{"profile":"Base"}'
+            } finally {
+                $reader.Dispose()
+            }
+        }
+
+        It 'Should reject a body that exceeds the cap even with no declared length' {
+            $stream = [System.IO.MemoryStream]::new([System.Text.Encoding]::UTF8.GetBytes('x' * 5000))
+            $reader = [System.IO.StreamReader]::new($stream)
+            try {
+                { Read-BoundedRequestBody -Reader $reader -MaxBytes 1024 } | Should -Throw
+            } finally {
+                $reader.Dispose()
+            }
+        }
+
+        It 'Should return an empty string for an empty body' {
+            $stream = [System.IO.MemoryStream]::new([byte[]]::new(0))
+            $reader = [System.IO.StreamReader]::new($stream)
+            try {
+                Read-BoundedRequestBody -Reader $reader -MaxBytes 1024 | Should -Be ''
+            } finally {
+                $reader.Dispose()
+            }
+        }
+    }
+
+    Context 'Per-API-key rate limiting is wired into the request loop' {
+        # The limiter existed, was exported and was unit-tested, but no call site in
+        # Invoke-ApiServerLoop referenced it, so only IP-based limiting ever ran.
+        BeforeAll {
+            # Invoke-ApiServerLoop is intentionally not exported, and exercising it needs a
+            # live HttpListener, so the call site is asserted against the module AST.
+            $tokens = $null
+            $parseErrors = $null
+            $moduleAst = [System.Management.Automation.Language.Parser]::ParseFile(
+                $script:ModulePath, [ref]$tokens, [ref]$parseErrors)
+
+            $script:LoopAst = $moduleAst.Find({
+                param($node)
+                $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+                $node.Name -eq 'Invoke-ApiServerLoop'
+            }, $true)
+        }
+
+        It 'Should define Invoke-ApiServerLoop' {
+            $script:LoopAst | Should -Not -BeNullOrEmpty
+        }
+
+        It 'Should call Test-ApiKeyRateLimit with the authenticated key id' {
+            $calls = $script:LoopAst.FindAll({
+                param($node)
+                $node -is [System.Management.Automation.Language.CommandAst] -and
+                $node.GetCommandName() -eq 'Test-ApiKeyRateLimit'
+            }, $true)
+
+            @($calls).Count | Should -BeGreaterOrEqual 1
+            ($calls[0].Extent.Text) | Should -Match '-ApiKeyId\s+\$authResult\.KeyId'
+        }
+    }
 }
