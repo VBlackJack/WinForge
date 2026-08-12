@@ -86,6 +86,7 @@ public sealed class DetectionProbe : IDetectionProbe
     /// every Command detection rather than allowing all.
     /// </summary>
     private readonly HashSet<string> _allowedDetectionExecutables;
+    private readonly HashSet<string> _allowedDetectionArguments;
 
     /// <summary>
     /// Registry-path validation patterns, read from the same Config file as the
@@ -105,6 +106,7 @@ public sealed class DetectionProbe : IDetectionProbe
     {
         _logger = (loggerFactory ?? new LoggerFactory()).CreateLogger<DetectionProbe>();
         _allowedDetectionExecutables = DetectionExecutableAllowlist.Load(repositoryPathService, _logger);
+        _allowedDetectionArguments = DetectionExecutableAllowlist.LoadAllowedArguments(repositoryPathService, _logger);
         (_allowedRegistryPatterns, _blockedRegistryPatterns) = LoadRegistryPolicy(repositoryPathService);
     }
 
@@ -409,12 +411,13 @@ public sealed class DetectionProbe : IDetectionProbe
 
             // Security: the executable allowlist alone is not sufficient, because it permits
             // interpreters (python, node, pwsh, ruby, perl, php) that accept code as an
-            // argument. This mirrors Test-DetectionArgumentDangerous on the PowerShell paths
-            // so the same catalog entry is refused wherever detection runs.
-            if (DetectionArgumentGuard.IsDangerous(arguments))
+            // argument - and rejecting metacharacters does not stop them, since
+            // "pwsh -Command Start-Process calc" contains none. Detection only ever needs to
+            // ask a program for its version, so the arguments are allowlisted too.
+            if (!DetectionArgumentGuard.IsAllowed(arguments, _allowedDetectionArguments))
             {
                 _logger.LogWarning(
-                    $"Command detection blocked: arguments for '{executable}' contain shell metacharacters.");
+                    $"Command detection blocked: arguments for '{executable}' are not on the detection argument allowlist.");
                 return DetectionProbeResult.NotFound("Command arguments are not allowed for command detection.");
             }
 

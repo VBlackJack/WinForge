@@ -42,6 +42,11 @@ internal static class DetectionExecutableAllowlist
     private const string AllowedExecutablesPropertyName = "allowedExecutables";
 
     /// <summary>
+    /// Name of the JSON array property holding the permitted detection arguments.
+    /// </summary>
+    private const string AllowedArgumentsPropertyName = "allowedArguments";
+
+    /// <summary>
     /// Loads the allowed executable base names from the shared configuration file.
     /// </summary>
     /// <param name="repositoryPathService">Resolves the configuration file location.</param>
@@ -51,6 +56,34 @@ internal static class DetectionExecutableAllowlist
     /// allowlist cannot be loaded (fail-closed).
     /// </returns>
     public static HashSet<string> Load(IRepositoryPathService? repositoryPathService, ILoggingService logger)
+        => LoadStringSet(repositoryPathService, logger, AllowedExecutablesPropertyName);
+
+    /// <summary>
+    /// Loads the argument strings a Command detection is permitted to pass.
+    /// </summary>
+    /// <remarks>
+    /// The executable allowlist is not a boundary on its own: it permits interpreters
+    /// (python, node, pwsh, ruby, perl, php) that take code as an argument, and a
+    /// metacharacter filter does not stop them - "pwsh -Command Start-Process calc"
+    /// contains none. Detection only ever needs to ask a program for its version, so the
+    /// argument side is an allowlist too. Every entry shipped in the catalog uses
+    /// "--version", "-version" or "--list-runtimes".
+    /// </remarks>
+    /// <param name="repositoryPathService">Resolves the configuration file location.</param>
+    /// <param name="logger">Logger used to report fail-closed conditions.</param>
+    /// <returns>
+    /// A case-insensitive set of allowed argument strings. Empty when the allowlist
+    /// cannot be loaded (fail-closed).
+    /// </returns>
+    public static HashSet<string> LoadAllowedArguments(
+        IRepositoryPathService? repositoryPathService,
+        ILoggingService logger)
+        => LoadStringSet(repositoryPathService, logger, AllowedArgumentsPropertyName);
+
+    private static HashSet<string> LoadStringSet(
+        IRepositoryPathService? repositoryPathService,
+        ILoggingService logger,
+        string propertyName)
     {
         HashSet<string> allowed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -77,10 +110,10 @@ internal static class DetectionExecutableAllowlist
             string json = File.ReadAllText(allowlistPath);
             using JsonDocument document = JsonDocument.Parse(json);
 
-            if (document.RootElement.TryGetProperty(AllowedExecutablesPropertyName, out JsonElement executables) &&
-                executables.ValueKind == JsonValueKind.Array)
+            if (document.RootElement.TryGetProperty(propertyName, out JsonElement values) &&
+                values.ValueKind == JsonValueKind.Array)
             {
-                foreach (JsonElement entry in executables.EnumerateArray())
+                foreach (JsonElement entry in values.EnumerateArray())
                 {
                     string? value = entry.GetString();
                     if (!string.IsNullOrWhiteSpace(value))

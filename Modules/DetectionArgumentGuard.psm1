@@ -16,6 +16,19 @@
 
 Set-StrictMode -Version Latest
 
+# Import DetectionAllowlist here rather than relying on the caller having imported it.
+# A function defined in this module resolves commands against this module's scope and the
+# global scope only: when a parallel runspace imports this module indirectly (through
+# ParallelDetection), the allowlist module lands in that module's scope, not here, and the
+# lookup below would fail closed and silently report every application as not installed.
+$script:ModuleRoot = Split-Path -Parent $PSCommandPath
+$script:DetectionAllowlistModulePath = Join-Path $script:ModuleRoot 'DetectionAllowlist.psm1'
+if (-not (Get-Command -Name Get-DetectionArgumentAllowlist -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:DetectionAllowlistModulePath) {
+        Import-Module -Name $script:DetectionAllowlistModulePath -Force
+    }
+}
+
 function Test-DetectionArgumentDangerous {
     <#
     .SYNOPSIS
@@ -79,4 +92,56 @@ function ConvertTo-DetectionArgumentArray {
     return @($Arguments -split '\s+' | Where-Object { $_ -ne '' })
 }
 
-Export-ModuleMember -Function Test-DetectionArgumentDangerous, ConvertTo-DetectionArgumentArray
+function Test-DetectionArgumentAllowed {
+    <#
+    .SYNOPSIS
+        Returns whether command-detection arguments are permitted to run.
+    .DESCRIPTION
+        Rejecting shell metacharacters is necessary but not sufficient. The executable
+        allowlist permits interpreters (python, node, pwsh, ruby, perl, php) that accept
+        code as an argument, and 'pwsh -Command Start-Process calc' contains no
+        metacharacter at all. Detection only ever needs to ask a program for its version,
+        so the argument side is an allowlist as well, configured in
+        Config/detection-allowlist.json and shared with the GUI.
+
+        An empty argument string is allowed: running the bare executable is how several
+        programs report their presence.
+    .PARAMETER Arguments
+        The argument string parsed from a Detection.Command entry.
+    .PARAMETER AllowedArguments
+        The configured allowlist. Defaults to the shared configuration.
+    .OUTPUTS
+        [bool] $true when the arguments may be executed.
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [string]$Arguments,
+
+        [Parameter()]
+        [AllowNull()]
+        [string[]]$AllowedArguments
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Arguments)) {
+        return $true
+    }
+
+    if (Test-DetectionArgumentDangerous -Arguments $Arguments) {
+        return $false
+    }
+
+    if ($null -eq $AllowedArguments) {
+        if (Get-Command -Name Get-DetectionArgumentAllowlist -ErrorAction SilentlyContinue) {
+            $AllowedArguments = @(Get-DetectionArgumentAllowlist)
+        } else {
+            # Fail closed: without the allowlist there is no way to tell a version probe
+            # from an interpreter invocation.
+            return $false
+        }
+    }
+
+    return ($Arguments.Trim() -in $AllowedArguments)
+}
+
+Export-ModuleMember -Function Test-DetectionArgumentDangerous, ConvertTo-DetectionArgumentArray, Test-DetectionArgumentAllowed

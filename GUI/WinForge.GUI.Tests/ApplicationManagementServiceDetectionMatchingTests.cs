@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System.Reflection;
 using WinForge.GUI.Models;
 using WinForge.GUI.Services.Implementations;
 
@@ -51,13 +50,9 @@ public class ApplicationManagementServiceDetectionMatchingTests
             Name = appName
         };
 
-        MethodInfo? method = typeof(ApplicationManagementServiceImpl).GetMethod(
-            "FindDetectedPackage",
-            BindingFlags.NonPublic | BindingFlags.Static);
+        InstalledPackageInfo? match = PackageMatcher.FindDetectedPackage(app, detectionResult);
 
-        Assert.NotNull(method);
-        InstalledPackageInfo match = Assert.IsType<InstalledPackageInfo>(
-            method.Invoke(null, new object[] { app, detectionResult }));
+        Assert.NotNull(match);
         Assert.Equal(packageId, match.Id);
     }
 }

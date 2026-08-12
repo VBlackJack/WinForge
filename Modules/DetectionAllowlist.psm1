@@ -24,6 +24,8 @@ $script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
 $script:DetectionAllowlistPath = Join-Path $script:RepositoryRoot 'Config\detection-allowlist.json'
 $script:DetectionAllowlistCache = @()
 $script:DetectionAllowlistLoaded = $false
+$script:DetectionArgumentAllowlistCache = @()
+$script:DetectionArgumentAllowlistLoaded = $false
 
 function Write-DetectionAllowlistFailure {
     param([Parameter(Mandatory)][string]$Message)
@@ -92,4 +94,57 @@ function Get-DetectionAllowlist {
     return $allowlist
 }
 
-Export-ModuleMember -Function Get-DetectionAllowlist
+function Get-DetectionArgumentAllowlist {
+    <#
+    .SYNOPSIS
+        Returns the arguments a Command detection is permitted to pass.
+
+    .DESCRIPTION
+        Companion to Get-DetectionAllowlist, read from the same file so the C# and
+        PowerShell stacks cannot drift. The executable allowlist is not a boundary on its
+        own: it permits interpreters (python, node, pwsh, ruby, perl, php) that accept
+        code as an argument, and filtering shell metacharacters does not stop them because
+        'pwsh -Command Start-Process calc' contains none. Detection only ever needs to ask
+        a program for its version, so the argument side is an allowlist too.
+
+        Fails closed, like the executable allowlist, and logs loudly for the same reason.
+
+    .PARAMETER Force
+        Reload from disk, bypassing the cache.
+
+    .OUTPUTS
+        [string[]] The allowed argument strings (empty on load failure).
+    #>
+    [CmdletBinding()]
+    [OutputType([string[]])]
+    param(
+        [switch]$Force
+    )
+
+    if ($script:DetectionArgumentAllowlistLoaded -and -not $Force) {
+        return $script:DetectionArgumentAllowlistCache
+    }
+
+    $allowlist = @()
+    try {
+        if (-not (Test-Path -Path $script:DetectionAllowlistPath)) {
+            Write-DetectionAllowlistFailure "Detection allowlist not found at '$script:DetectionAllowlistPath'; Command detection is disabled (fail-closed)."
+        } else {
+            $data = Get-Content -Path $script:DetectionAllowlistPath -Raw -Encoding UTF8 | ConvertFrom-Json
+            if ($data.PSObject.Properties['allowedArguments'] -and $data.allowedArguments) {
+                $allowlist = @($data.allowedArguments | Where-Object { $_ })
+            } else {
+                Write-DetectionAllowlistFailure "Detection allowlist '$script:DetectionAllowlistPath' has no 'allowedArguments' entries; Command detection is disabled (fail-closed)."
+            }
+        }
+    } catch {
+        Write-DetectionAllowlistFailure "Failed to load detection argument allowlist from '$script:DetectionAllowlistPath': $($_.Exception.Message); Command detection is disabled (fail-closed)."
+        $allowlist = @()
+    }
+
+    $script:DetectionArgumentAllowlistCache = $allowlist
+    $script:DetectionArgumentAllowlistLoaded = $true
+    return $allowlist
+}
+
+Export-ModuleMember -Function Get-DetectionAllowlist, Get-DetectionArgumentAllowlist

@@ -305,6 +305,29 @@ public class DetectionProbeTests
     public async Task ProbeAsync_CommandExecutableInAllowlist_ReturnsFound()
     {
         using TestWorkspace workspace = new TestWorkspace();
+        WriteDetectionAllowlist(workspace, "dotnet", "dotnet.exe");
+        DetectionProbe probe = CreateProbeWithAllowlist(workspace);
+        DetectionConfiguration configuration = new DetectionConfiguration
+        {
+            Method = DetectionMethodStrings.Command,
+            Command = "dotnet --version"
+        };
+
+        DetectionProbeResult result = await probe.ProbeAsync(configuration, PathValidationPolicy.AdHoc);
+
+        Assert.Equal(DetectionOutcome.Found, result.Outcome);
+        Assert.Equal(DetectionSource.Command, result.Source);
+    }
+
+    /// <summary>
+    /// The executable allowlist is not a boundary on its own: it permits interpreters that
+    /// take code as an argument, and "cmd /c echo X" carries no shell metacharacter, so
+    /// only the argument allowlist rejects it.
+    /// </summary>
+    [Fact]
+    public async Task ProbeAsync_CommandArgumentsNotInAllowlist_ReturnsNotFound()
+    {
+        using TestWorkspace workspace = new TestWorkspace();
         WriteDetectionAllowlist(workspace, "cmd", "cmd.exe");
         DetectionProbe probe = CreateProbeWithAllowlist(workspace);
         DetectionConfiguration configuration = new DetectionConfiguration
@@ -316,8 +339,8 @@ public class DetectionProbeTests
 
         DetectionProbeResult result = await probe.ProbeAsync(configuration, PathValidationPolicy.AdHoc);
 
-        Assert.Equal(DetectionOutcome.Found, result.Outcome);
-        Assert.Equal(DetectionSource.Command, result.Source);
+        Assert.Equal(DetectionOutcome.NotFound, result.Outcome);
+        Assert.Equal("Command arguments are not allowed for command detection.", result.Detail);
     }
 
     private static DetectionProbe CreateProbeWithAllowlist(TestWorkspace workspace)
@@ -341,9 +364,16 @@ public class DetectionProbeTests
             quoted[index] = $"\"{executables[index]}\"";
         }
 
+        // The argument allowlist is written too: it is loaded fail-closed, so omitting it
+        // would deny every argument and no test could exercise a permitted detection.
         File.WriteAllText(
             allowlistPath,
-            $$"""{ "allowedExecutables": [ {{string.Join(", ", quoted)}} ] }""");
+            $$"""
+            {
+              "allowedExecutables": [ {{string.Join(", ", quoted)}} ],
+              "allowedArguments": [ "--version", "-version", "--list-runtimes" ]
+            }
+            """);
     }
 
     private static DetectionProbe CreateProbeWithRegistryPolicy(TestWorkspace workspace)

@@ -58,4 +58,35 @@ internal static class DetectionArgumentGuard
 
         return DangerousArgumentRegex.IsMatch(arguments);
     }
+
+    /// <summary>
+    /// Determines whether a Detection.Command argument string is on the configured
+    /// allowlist of permitted detection arguments.
+    /// </summary>
+    /// <remarks>
+    /// Rejecting metacharacters is necessary but not sufficient. The executable allowlist
+    /// permits interpreters that accept code as an argument, and
+    /// <c>pwsh -Command Start-Process calc</c> contains no metacharacter at all. Detection
+    /// only ever needs to ask a program for its version, so the argument side is an
+    /// allowlist as well, configured in <c>Config/detection-allowlist.json</c>.
+    /// An empty argument string is allowed: running the bare executable is how several
+    /// programs report their presence.
+    /// </remarks>
+    /// <param name="arguments">The argument portion parsed from a Detection.Command entry.</param>
+    /// <param name="allowedArguments">The configured allowlist.</param>
+    /// <returns><see langword="true"/> when the arguments may be executed.</returns>
+    public static bool IsAllowed(string? arguments, IReadOnlySet<string> allowedArguments)
+    {
+        if (string.IsNullOrWhiteSpace(arguments))
+        {
+            return true;
+        }
+
+        if (IsDangerous(arguments))
+        {
+            return false;
+        }
+
+        return allowedArguments.Contains(arguments.Trim());
+    }
 }
