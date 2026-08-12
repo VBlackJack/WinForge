@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     PSScriptAnalyzer validation for WinForge
 

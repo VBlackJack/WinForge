@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     WinForge - Application Database v3.7.2
 

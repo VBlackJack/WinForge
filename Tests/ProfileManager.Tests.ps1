@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Pester tests for ProfileManager module
 

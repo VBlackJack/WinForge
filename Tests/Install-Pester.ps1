@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Install Pester v5+ for WinForge tests
 

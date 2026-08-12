@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Universal System Audit Tool v2.4.0
 

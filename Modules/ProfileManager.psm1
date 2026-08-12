@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     WinForge - Profile Manager v3.7.2
 

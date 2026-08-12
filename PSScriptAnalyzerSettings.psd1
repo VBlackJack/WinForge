@@ -86,14 +86,7 @@
 
         # Write-Log is the project's own logging function, not the built-in cmdlet the
         # rule is guarding.
-        'PSAvoidOverwritingBuiltInCmdlets',
-
-        # KNOWN GAP, not a false positive: 8 files are UTF-8 without a BOM while
-        # containing non-ASCII console output. Windows PowerShell 5.1 reads those as ANSI,
-        # so their output is garbled there. Fixing it means switching .editorconfig to
-        # utf-8-bom for PowerShell files and rewriting those files; that is tracked
-        # separately rather than suppressed as a non-issue.
-        'PSUseBOMForUnicodeEncodedFile'
+        'PSAvoidOverwritingBuiltInCmdlets'
     )
 
     # === CODE FORMATTING ===
