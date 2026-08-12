@@ -160,8 +160,8 @@ Describe 'WinForgeExceptions Module' {
 
     Context 'New-WinForgeError' {
         It 'Should create an error with DoNotThrow' {
-            $error = New-WinForgeError -Message 'General error' -DoNotThrow
-            $error | Should -Not -BeNullOrEmpty
+            $thrownError = New-WinForgeError -Message 'General error' -DoNotThrow
+            $thrownError | Should -Not -BeNullOrEmpty
         }
 
         It 'Should throw by default' {
@@ -169,13 +169,13 @@ Describe 'WinForgeExceptions Module' {
         }
 
         It 'Should support different categories' {
-            $error = New-WinForgeError -Message 'Test' -Category 'General' -DoNotThrow
-            $error.Category | Should -Be 'General'
+            $thrownError = New-WinForgeError -Message 'Test' -Category 'General' -DoNotThrow
+            $thrownError.Category | Should -Be 'General'
         }
 
         It 'Should support ErrorCode' {
-            $error = New-WinForgeError -Message 'Test' -ErrorCode 'ERR001' -DoNotThrow
-            $error.Context['ErrorCode'] | Should -Be 'ERR001'
+            $thrownError = New-WinForgeError -Message 'Test' -ErrorCode 'ERR001' -DoNotThrow
+            $thrownError.Context['ErrorCode'] | Should -Be 'ERR001'
         }
     }
 

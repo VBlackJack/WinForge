@@ -289,10 +289,10 @@ class SecurityException : WinForgeException {
 class CommandInjectionException : SecurityException {
     [string]$SuspiciousInput
 
-    CommandInjectionException([string]$message, [string]$input) : base($message) {
+    CommandInjectionException([string]$message, [string]$inputValue) : base($message) {
         $this.Category = 'Security'
         $this.SecurityContext = 'CommandInjection'
-        $this.SuspiciousInput = $input
+        $this.SuspiciousInput = $inputValue
     }
 }
 
@@ -608,14 +608,6 @@ function New-WinForgeError {
         [Parameter()]
         [switch]$DoNotThrow
     )
-
-    # Build error context
-    $errorContext = @{
-        Category = $Category
-        ErrorCode = $ErrorCode
-        Timestamp = Get-Date -Format 'o'
-        Context = $Context
-    }
 
     # Create appropriate exception type based on category
     $exception = switch ($Category) {

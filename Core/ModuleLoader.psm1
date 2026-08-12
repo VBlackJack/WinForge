@@ -182,7 +182,7 @@ function Import-CoreDependency {
 
         # Check if already loaded this session
         if (-not $Force -and $script:LoadedModules.ContainsKey($modulePath)) {
-            return (Get-Command -Name $CommandName -ErrorAction SilentlyContinue) -ne $null
+            return $null -ne (Get-Command -Name $CommandName -ErrorAction SilentlyContinue)
         }
 
         # Import the module

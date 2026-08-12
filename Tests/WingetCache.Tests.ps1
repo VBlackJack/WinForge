@@ -120,7 +120,6 @@ Describe 'WingetCache Module' {
 
         It 'Should create cache file in expected location' {
             $cacheDir = Join-Path $env:LOCALAPPDATA 'WinForge'
-            $cachePath = Join-Path $cacheDir 'WingetCache.json'
 
             # Initialize and save
             Initialize-WingetCache

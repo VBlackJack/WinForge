@@ -233,11 +233,11 @@ function script:Test-TrustedDomain {
     [OutputType([bool])]
     param(
         [Parameter(Mandatory)]
-        [string]$Host
+        [string]$HostName
     )
 
     $trustedDomains = Get-TrustedDomainsHashSet
-    $hostLower = $Host.ToLowerInvariant()
+    $hostLower = $HostName.ToLowerInvariant()
 
     # Exact match
     if ($trustedDomains.Contains($hostLower)) {
@@ -442,18 +442,18 @@ function Test-InternalAddress {
     [OutputType([bool])]
     param(
         [Parameter(Mandatory)]
-        [string]$Host
+        [string]$HostName
     )
 
     # Block localhost variations
     $localhostPatterns = @('localhost', 'localhost.localdomain', '127.0.0.1', '::1', '0.0.0.0')
-    if ($Host.ToLower() -in $localhostPatterns -or $Host.ToLower().EndsWith('.local')) {
+    if ($HostName.ToLower() -in $localhostPatterns -or $HostName.ToLower().EndsWith('.local')) {
         return $true
     }
 
     # Try to resolve the hostname to IP addresses
     try {
-        $addresses = [System.Net.Dns]::GetHostAddresses($Host)
+        $addresses = [System.Net.Dns]::GetHostAddresses($HostName)
     } catch {
         # If resolution fails, allow (will fail at download anyway)
         return $false
@@ -1546,8 +1546,8 @@ function Install-ZipPackage {
     if ($setupExe) {
         Write-Status -Message (Get-LogString -Key 'install.method.zip_executing_installer' -Parameters @{ FileName = $setupExe.Name }) -Level 'Info'
         try {
-            $args = if ($CustomArguments) { $CustomArguments } else { '/S' }
-            $process = Start-ProcessWithTimeout -FilePath $setupExe.FullName -ArgumentList $args -NoNewWindow -PassThru -TimeoutSeconds $script:DefaultInstallTimeoutSeconds
+            $installerArguments = if ($CustomArguments) { $CustomArguments } else { '/S' }
+            $process = Start-ProcessWithTimeout -FilePath $setupExe.FullName -ArgumentList $installerArguments -NoNewWindow -PassThru -TimeoutSeconds $script:DefaultInstallTimeoutSeconds
             return ($process.ExitCode -eq 0)
         } catch {
             Write-Status -Message (Get-LogString -Key 'install.method.zip_installer_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'

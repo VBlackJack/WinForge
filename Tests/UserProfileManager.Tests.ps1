@@ -133,13 +133,13 @@ Describe 'UserProfileManager Module' {
         }
 
         It 'Should return profile by name' {
-            $profile = Get-UserProfile -Name 'GetTest'
-            $profile | Should -Not -BeNullOrEmpty
+            $deploymentProfile = Get-UserProfile -Name 'GetTest'
+            $deploymentProfile | Should -Not -BeNullOrEmpty
         }
 
         It 'Should return null for non-existent profile' {
-            $profile = Get-UserProfile -Name 'NonExistentProfile'
-            $profile | Should -BeNullOrEmpty
+            $deploymentProfile = Get-UserProfile -Name 'NonExistentProfile'
+            $deploymentProfile | Should -BeNullOrEmpty
         }
     }
 
@@ -248,28 +248,28 @@ Describe 'UserProfileManager - Isolated Tests' {
 
         It 'Should store the correct applications in the profile' {
             Save-UserProfile -Name 'AppCheckTest' -Applications @('VSCode', 'Git', 'Docker') -Overwrite
-            $profile = Get-UserProfile -Name 'AppCheckTest'
-            $profile.Applications | Should -Contain 'VSCode'
-            $profile.Applications | Should -Contain 'Git'
-            $profile.Applications | Should -Contain 'Docker'
-            @($profile.Applications).Count | Should -Be 3
+            $deploymentProfile = Get-UserProfile -Name 'AppCheckTest'
+            $deploymentProfile.Applications | Should -Contain 'VSCode'
+            $deploymentProfile.Applications | Should -Contain 'Git'
+            $deploymentProfile.Applications | Should -Contain 'Docker'
+            @($deploymentProfile.Applications).Count | Should -Be 3
         }
 
         It 'Should store description, author, and tags correctly' {
             Save-UserProfile -Name 'MetaTest' -Applications @('App1') `
                 -Description 'A test profile' -Author 'TestAuthor' `
                 -Tags @('unit', 'test') -Overwrite
-            $profile = Get-UserProfile -Name 'MetaTest'
-            $profile.Description | Should -Be 'A test profile'
-            $profile.Author | Should -Be 'TestAuthor'
-            $profile.Tags | Should -Contain 'unit'
-            $profile.Tags | Should -Contain 'test'
+            $deploymentProfile = Get-UserProfile -Name 'MetaTest'
+            $deploymentProfile.Description | Should -Be 'A test profile'
+            $deploymentProfile.Author | Should -Be 'TestAuthor'
+            $deploymentProfile.Tags | Should -Contain 'unit'
+            $deploymentProfile.Tags | Should -Contain 'test'
         }
 
         It 'Should set schema version in saved profile' {
             Save-UserProfile -Name 'SchemaTest' -Applications @('App1') -Overwrite
-            $profile = Get-UserProfile -Name 'SchemaTest'
-            $profile.'$schema' | Should -Be 'WinForge-UserProfile-v1.0'
+            $deploymentProfile = Get-UserProfile -Name 'SchemaTest'
+            $deploymentProfile.'$schema' | Should -Be 'WinForge-UserProfile-v1.0'
         }
 
         It 'Should throw when overwriting an existing profile without -Overwrite' {
@@ -302,8 +302,8 @@ Describe 'UserProfileManager - Isolated Tests' {
         It 'Should store Settings hashtable correctly' {
             $settings = @{ Theme = 'Dark'; AutoUpdate = $true }
             Save-UserProfile -Name 'SettingsTest' -Applications @('App1') -Settings $settings -Overwrite
-            $profile = Get-UserProfile -Name 'SettingsTest'
-            $profile.Settings.Theme | Should -Be 'Dark'
+            $deploymentProfile = Get-UserProfile -Name 'SettingsTest'
+            $deploymentProfile.Settings.Theme | Should -Be 'Dark'
         }
 
         It 'Should reject names with spaces' {
@@ -332,19 +332,19 @@ Describe 'UserProfileManager - Isolated Tests' {
         }
 
         It 'Should return profile with correct Name property' {
-            $profile = Get-UserProfile -Name 'DetailGetTest'
-            $profile.Name | Should -Be 'DetailGetTest'
+            $deploymentProfile = Get-UserProfile -Name 'DetailGetTest'
+            $deploymentProfile.Name | Should -Be 'DetailGetTest'
         }
 
         It 'Should return profile with Applications array' {
-            $profile = Get-UserProfile -Name 'DetailGetTest'
-            $profile.Applications | Should -Not -BeNullOrEmpty
-            @($profile.Applications).Count | Should -Be 2
+            $deploymentProfile = Get-UserProfile -Name 'DetailGetTest'
+            $deploymentProfile.Applications | Should -Not -BeNullOrEmpty
+            @($deploymentProfile.Applications).Count | Should -Be 2
         }
 
         It 'Should return profile with CreatedAt timestamp' {
-            $profile = Get-UserProfile -Name 'DetailGetTest'
-            $profile.CreatedAt | Should -Not -BeNullOrEmpty
+            $deploymentProfile = Get-UserProfile -Name 'DetailGetTest'
+            $deploymentProfile.CreatedAt | Should -Not -BeNullOrEmpty
         }
 
         It 'Should return null and warn for corrupted JSON file' {
@@ -586,23 +586,23 @@ Describe 'UserProfileManager - Isolated Tests' {
 
         It 'Should store imported profile in profiles directory' {
             Import-UserProfile -Path $script:ValidImportFile -Overwrite
-            $profile = Get-UserProfile -Name 'ImportedProfile'
-            $profile | Should -Not -BeNullOrEmpty
-            $profile.Name | Should -Be 'ImportedProfile'
+            $deploymentProfile = Get-UserProfile -Name 'ImportedProfile'
+            $deploymentProfile | Should -Not -BeNullOrEmpty
+            $deploymentProfile.Name | Should -Be 'ImportedProfile'
         }
 
         It 'Should preserve applications from the imported file' {
             Import-UserProfile -Path $script:ValidImportFile -Overwrite
-            $profile = Get-UserProfile -Name 'ImportedProfile'
-            @($profile.Applications).Count | Should -Be 3
-            $profile.Applications | Should -Contain 'Chrome'
+            $deploymentProfile = Get-UserProfile -Name 'ImportedProfile'
+            @($deploymentProfile.Applications).Count | Should -Be 3
+            $deploymentProfile.Applications | Should -Contain 'Chrome'
         }
 
         It 'Should allow renaming profile on import with -NewName' {
-            $result = Import-UserProfile -Path $script:ValidImportFile -NewName 'RenamedImport' -Overwrite
-            $profile = Get-UserProfile -Name 'RenamedImport'
-            $profile | Should -Not -BeNullOrEmpty
-            $profile.Name | Should -Be 'RenamedImport'
+            $null = Import-UserProfile -Path $script:ValidImportFile -NewName 'RenamedImport' -Overwrite
+            $deploymentProfile = Get-UserProfile -Name 'RenamedImport'
+            $deploymentProfile | Should -Not -BeNullOrEmpty
+            $deploymentProfile.Name | Should -Be 'RenamedImport'
         }
 
         It 'Should throw when importing minimal profile missing optional properties under strict mode' {
@@ -624,9 +624,9 @@ Describe 'UserProfileManager - Isolated Tests' {
             }
             $fullData | ConvertTo-Json -Depth 10 | Set-Content $script:FullImportFile -Encoding UTF8
             Import-UserProfile -Path $script:FullImportFile -Overwrite
-            $profile = Get-UserProfile -Name 'FullOptional'
-            $profile | Should -Not -BeNullOrEmpty
-            $profile.Tags | Should -Contain 'opt'
+            $deploymentProfile = Get-UserProfile -Name 'FullOptional'
+            $deploymentProfile | Should -Not -BeNullOrEmpty
+            $deploymentProfile.Tags | Should -Contain 'opt'
         }
 
         It 'Should throw when importing file with missing required fields' {
@@ -644,14 +644,14 @@ Describe 'UserProfileManager - Isolated Tests' {
 
         It 'Should set ImportedFrom metadata in the imported profile' {
             Import-UserProfile -Path $script:ValidImportFile -Overwrite
-            $profile = Get-UserProfile -Name 'ImportedProfile'
-            $profile.ImportedFrom | Should -Be $script:ValidImportFile
+            $deploymentProfile = Get-UserProfile -Name 'ImportedProfile'
+            $deploymentProfile.ImportedFrom | Should -Be $script:ValidImportFile
         }
 
         It 'Should set ImportedAt timestamp in the imported profile' {
             Import-UserProfile -Path $script:ValidImportFile -Overwrite
-            $profile = Get-UserProfile -Name 'ImportedProfile'
-            $profile.ImportedAt | Should -Not -BeNullOrEmpty
+            $deploymentProfile = Get-UserProfile -Name 'ImportedProfile'
+            $deploymentProfile.ImportedAt | Should -Not -BeNullOrEmpty
         }
 
         It 'Should reject NewName with invalid characters' {

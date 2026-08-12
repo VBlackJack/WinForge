@@ -33,20 +33,20 @@ Write-Host "Testing all profiles in TestMode + Parallel mode`n" -ForegroundColor
 $profiles = @('Base', 'Office', 'Gaming', 'Personnel')
 $results = @()
 
-foreach ($profile in $profiles) {
+foreach ($deploymentProfile in $profiles) {
     Write-Host "`n========================================" -ForegroundColor Cyan
-    Write-Host "Testing Profile: $profile" -ForegroundColor Yellow
+    Write-Host "Testing Profile: $deploymentProfile" -ForegroundColor Yellow
     Write-Host "========================================`n" -ForegroundColor Cyan
 
     try {
-        $output = & "$PSScriptRoot\Deploy-Win11Environment.ps1" -ProfileName $profile -TestMode -Parallel -ErrorAction Stop 2>&1 | Out-String
+        $output = & "$PSScriptRoot\Deploy-Win11Environment.ps1" -ProfileName $deploymentProfile -TestMode -Parallel -ErrorAction Stop 2>&1 | Out-String
 
         # Extract key metrics
         $totalApps = if ($output -match 'Total applications to process:\s+(\d+)') { $Matches[1] } else { 'N/A' }
         $hasErrors = $output -match '(Error|Exception|FAILED.*:)'
 
         $result = [PSCustomObject]@{
-            Profile = $profile
+            Profile = $deploymentProfile
             TotalApps = $totalApps
             HasErrors = $hasErrors
             Status = if ($hasErrors) { 'FAILED' } else { 'PASSED' }
@@ -67,7 +67,7 @@ foreach ($profile in $profiles) {
     } catch {
         Write-Host "  [FAIL] EXCEPTION: $($_.Exception.Message)" -ForegroundColor Red
         $results += [PSCustomObject]@{
-            Profile = $profile
+            Profile = $deploymentProfile
             TotalApps = 'N/A'
             HasErrors = $true
             Status = 'EXCEPTION'

@@ -536,7 +536,7 @@ Describe 'TelemetryCollector Module' {
 
         It 'Should handle orphaned sessions gracefully' {
             # Start session but never end it
-            $orphanedSession = Register-DeploymentStart -ProfileName 'Orphaned'
+            $null = Register-DeploymentStart -ProfileName 'Orphaned'
 
             $summary = Get-TelemetrySummary
 
