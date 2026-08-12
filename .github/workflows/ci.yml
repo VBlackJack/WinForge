@@ -475,9 +475,32 @@ jobs:
           }
           echo "VERSION=$version" >> $env:GITHUB_OUTPUT
 
+      - name: Verify Release Checksum
+        shell: pwsh
+        run: |
+          $zip = "Dist/WinForge_v${{ steps.version.outputs.VERSION }}.zip"
+          $checksumFile = "$zip.sha256"
+
+          if (-not (Test-Path $checksumFile)) {
+            Write-Host "::error::Checksum file not produced by Build-Release.ps1: $checksumFile"
+            exit 1
+          }
+
+          $expected = ((Get-Content $checksumFile -Raw).Trim() -split '\s+')[0]
+          $actual = (Get-FileHash -Path $zip -Algorithm SHA256).Hash
+
+          if ($expected -ne $actual) {
+            Write-Host "::error::Checksum mismatch. Expected $expected, got $actual"
+            exit 1
+          }
+
+          Write-Host "Release archive SHA256 verified: $actual"
+
       - name: Upload Release Artifact
         uses: actions/upload-artifact@v7
         with:
           name: WinForge_v${{ steps.version.outputs.VERSION }}
-          path: Dist/WinForge_v${{ steps.version.outputs.VERSION }}.zip
+          path: |
+            Dist/WinForge_v${{ steps.version.outputs.VERSION }}.zip
+            Dist/WinForge_v${{ steps.version.outputs.VERSION }}.zip.sha256
           retention-days: 30
