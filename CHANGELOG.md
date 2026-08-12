@@ -30,9 +30,11 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 - Nine controls that cannot derive an automation name from their content now declare a localized accessible name.
 - `LoadSettingsAsync` no longer races: the cache check could not be held across the file read, so two concurrent first-callers each loaded the file and walked away with a different `AppSettings` instance, making a mutation through one invisible to the other.
 - `Test-DirectDownloadChecksumGate` hashes the downloaded file once instead of twice, which is measurable on installer-sized payloads.
+- PowerShell files containing non-ASCII characters now carry a UTF-8 BOM. Windows PowerShell 5.1 reads a BOM-less file as ANSI, so those characters rendered as mojibake there — and 5.1 is a real execution path: every module manifest declares `PowerShellVersion = '5.1'`, the GUI falls back to `powershell.exe`, and the analyzer targets `desktop-5.1` compatibility. `.editorconfig` now specifies `utf-8-bom` for PowerShell files and `PSUseBOMForUnicodeEncodedFile` is enforced so this cannot regress.
 
 ### Tests
-- Added regression coverage for the plugin type allowlist, effective constrained-language enforcement, plugin content fingerprinting, GUI/PowerShell detection-guard parity, bounded request-body reads, per-key rate-limit wiring, settings normalization, configuration schema validation, JSON null handling, and accessible names across all XAML.
+- Added regression coverage for the plugin type allowlist, effective constrained-language enforcement, plugin content fingerprinting, GUI/PowerShell detection-guard parity, bounded request-body reads, per-key rate-limit wiring, settings normalization, configuration schema validation, JSON null handling, accessible names across all XAML, endpoint-handler type validation including every built-in handler, GUI timeouts tracking their configured source, and profile-migration resumption after an interrupted run.
+- The .NET coverage floor is raised from 35% to 38%, just below the measured 40.46%, so a regression fails the build while normal fluctuation does not.
 
 ## [2026062701] - 2026-06-27
 
