@@ -4,19 +4,11 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 
 ## [Unreleased]
 
+## [2026081201] - 2026-08-12
+
 ### Security
 - Command detection is now gated by an argument allowlist in addition to the executable allowlist, on all three paths (GUI probe, post-update verification, PowerShell detection modules). The executable list is not a boundary on its own because it permits interpreters (`python`, `node`, `pwsh`, `ruby`, `perl`, `php`) that accept code as an argument, and screening for shell metacharacters does not stop them: `pwsh -Command Start-Process calc` contains none and was executed. Detection only ever needs to ask a program for its version, and every entry in the shipped catalog uses `--version`, `-version` or `--list-runtimes`, so the permitted arguments are configured in `Config/detection-allowlist.json` and loaded fail-closed.
 - The post-update verification path in the application-management service applied no argument guard at all — a third Command-detection execution site that the earlier audit missed.
-
-### Changed
-- `ApplicationManagementServiceImpl` is decomposed from 1635 to 1166 lines. Package matching, deployment log formatting, update-source routing and external-process execution move to `PackageMatcher`, `DeploymentLog`, `UpdateSourcePolicy` and `VendorCommandRunner`. The `protected virtual` seams that test doubles override are preserved and now delegate to the runner.
-- Removed a dead copy of the CLIXML/binary output filter from the application-management service; the live implementation is in `PowerShellExecutionService`.
-
-### Fixed
-- `Test-DetectionArgumentAllowed` resolved its allowlist through the caller's scope, so in a parallel detection runspace the lookup failed closed and reported every application as not installed. The guard module now imports the allowlist module itself.
-
-
-### Security
 - Plugin AST validation now uses a type allowlist instead of a denylist. Plugin code may only reference value types and PowerShell container types, and static member access is rejected unless the owning type is allowlisted. The previous denylist admitted `[System.Diagnostics.Process]::Start`, `[System.IO.File]::WriteAllText`/`Delete`, `[Microsoft.Win32.Registry]::SetValue`, `[System.Activator]::CreateInstance` and `[System.AppDomain]` reflection.
 - Plugin handlers and plugin-load probes are now compiled inside a runspace whose `InitialSessionState` declares ConstrainedLanguage. Setting `$ExecutionContext.SessionState.LanguageMode` after `[scriptblock]::Create` had no effect, because a scriptblock carries the language mode it was compiled under, so handlers ran in FullLanguage.
 - `Import-Plugin` re-fingerprints the entry point immediately before `Import-Module` and refuses the import if the file changed after sandbox validation, closing a time-of-check/time-of-use window on an import that runs in the main session at the host's privilege level.
@@ -27,6 +19,8 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 - Per-API-key rate limiting is now enforced in the request loop. The limiter was implemented, exported and unit-tested but never called, so only IP-based limiting ran — and on a localhost-only listener every caller shares one bucket.
 
 ### Changed
+- `ApplicationManagementServiceImpl` is decomposed from 1635 to 1166 lines. Package matching, deployment log formatting, update-source routing and external-process execution move to `PackageMatcher`, `DeploymentLog`, `UpdateSourcePolicy` and `VendorCommandRunner`. The `protected virtual` seams that test doubles override are preserved and now delegate to the runner.
+- Removed a dead copy of the CLIXML/binary output filter from the application-management service; the live implementation is in `PowerShellExecutionService`.
 - `Build-Release.ps1` publishes a `.zip.sha256` alongside the release archive, CI verifies the digest before publishing, and the README documents the verification step.
 - PSScriptAnalyzer now runs the full default rule set. The configuration previously combined an `IncludeRules` allowlist with an `ExcludeRules` list that cancelled 21 of the rules it had just enabled, and configured six rules that were themselves excluded, so the gate could not fail. Every remaining exclusion carries a specific justification.
 - Application settings are validated when loaded: per-property constraints are enforced and invalid values are reset to their defaults and logged. The `Range`, `StringLength` and `RegularExpression` annotations on `AppSettings` were previously declarative only. The documented cross-field performance hint does not trigger a reset.
@@ -36,6 +30,7 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 - Removed the unused `PowerShellProcessWrapper` (271 lines). It had no production call site, its stated rationale (the PowerShell SDK not working in single-file deployments) no longer applies since `Build-Release.ps1` sets `PublishSingleFile=false`, and its `Invoke()` read stdout to completion before stderr and before `WaitForExit`, which deadlocks on a child that fills the stderr pipe — past the reach of the timeout below it. Its UTF-8 decoding coverage moved to the execution path that actually runs.
 
 ### Fixed
+- `Test-DetectionArgumentAllowed` resolved its allowlist through the caller's scope, so in a parallel detection runspace the lookup failed closed and reported every application as not installed. The guard module now imports the allowlist module itself.
 - `Test-ObjectAgainstSchema` rejected any JSON `null`: `$Object` was declared mandatory without `[AllowNull()]`, and a mandatory parameter refuses an explicit `$null` at binding time. Any configuration file containing a null value failed validation with a misleading binding error, and the function's own null-handling branch was unreachable.
 - Locale tests never restored the current locale. `$originalLocale` was assigned in `BeforeEach`/`BeforeAll` and read in `AfterEach`/`AfterAll`, which is out of scope under Pester v5, so the tests leaked locale state.
 - Removed 57 assignments to PowerShell automatic variables (`$profile`, `$Error`, `$host`, `$input`, `$args`) and 18 dead assignments across modules and tests, plus a reversed `$null` comparison and two unapproved cmdlet verbs.
