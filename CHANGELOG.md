@@ -34,7 +34,7 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 
 ### Tests
 - Added regression coverage for the plugin type allowlist, effective constrained-language enforcement, plugin content fingerprinting, GUI/PowerShell detection-guard parity, bounded request-body reads, per-key rate-limit wiring, settings normalization, configuration schema validation, JSON null handling, accessible names across all XAML, endpoint-handler type validation including every built-in handler, GUI timeouts tracking their configured source, and profile-migration resumption after an interrupted run.
-- The .NET coverage floor is raised from 35% to 38%, just below the measured 40.46%, so a regression fails the build while normal fluctuation does not.
+- Coverage floors are ratcheted to just below measured coverage so a regression fails the build while normal fluctuation does not: .NET from 35% to 38% (measured 40.46%) and Pester from 40% to 48% (measured 51.76%).
 
 ## [2026062701] - 2026-06-27
 

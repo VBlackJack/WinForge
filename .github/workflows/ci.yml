@@ -156,7 +156,7 @@ jobs:
           $config.CodeCoverage.Path = @('Core/*.psm1', 'Modules/*.psm1')
           $config.CodeCoverage.OutputPath = 'Coverage-Pester.xml'
           $config.CodeCoverage.OutputFormat = 'JaCoCo'
-          $config.CodeCoverage.CoveragePercentTarget = 40
+          $config.CodeCoverage.CoveragePercentTarget = 48
 
           Invoke-Pester -Configuration $config
 
@@ -173,7 +173,9 @@ jobs:
               $missed = [int]$counters.missed
               $total = $covered + $missed
               $percentage = if ($total -gt 0) { [math]::Round(($covered / $total) * 100, 2) } else { 0 }
-              $minCoverage = 40
+              # Ratchet: the floor tracks just below the measured coverage (51.76%).
+              # Raise it when real coverage moves up; never lower it to make a build pass.
+              $minCoverage = 48
               Write-Host "=== PowerShell Code Coverage ===" -ForegroundColor Cyan
               Write-Host "Lines Covered: $covered / $total ($percentage%) (minimum: $minCoverage%)" -ForegroundColor $(if ($percentage -ge $minCoverage) { 'Green' } elseif ($percentage -ge 70) { 'Yellow' } else { 'Red' })
 
