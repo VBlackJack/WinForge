@@ -610,8 +610,10 @@ function Test-ApplicationInstalled {
                         Write-Status -Message (Get-LogString -Key 'detect.security.command_not_allowed' -Parameters @{ Executable = $executable }) -Level 'Verbose'
                         $detected = $false
                     }
-                    # Security: Sanitize arguments - block dangerous patterns including newlines (command injection)
-                    elseif (Test-DetectionArgumentDangerous -Arguments $arguments) {
+                    # Security: arguments must be on the shared allowlist. Blocking shell
+                    # metacharacters alone does not stop an allowlisted interpreter, because
+                    # 'pwsh -Command Start-Process calc' contains none.
+                    elseif (-not (Test-DetectionArgumentAllowed -Arguments $arguments)) {
                         Write-Status -Message (Get-LogString -Key 'detect.security.dangerous_arguments' -Parameters @{ Executable = $executable }) -Level 'Warning'
                         $detected = $false
                     }
@@ -981,11 +983,11 @@ function Test-ApplicationInstalledFast {
                     $exeBaseName = [System.IO.Path]::GetFileName($executable).ToLower()
                     if ($exeBaseName -notin (Get-DetectionAllowlist)) {
                         $detected = $false
-                    } elseif (Test-DetectionArgumentDangerous -Arguments $arguments) {
-                        # Block shell-injection patterns before any path (cache or live
-                        # exec), so a dangerous detection config is declined outright -
-                        # parity with the sequential gold path (I4). The shared guard also
-                        # rejects newlines and control chars the former inline regex missed.
+                    } elseif (-not (Test-DetectionArgumentAllowed -Arguments $arguments)) {
+                        # Reject before any path (cache or live exec), so a dangerous
+                        # detection config is declined outright - parity with the sequential
+                        # gold path. Arguments are allowlisted rather than only screened for
+                        # metacharacters, because an allowlisted interpreter needs none.
                         Write-Status -Message (Get-LogString -Key 'detect.security.dangerous_arguments' -Parameters @{ Executable = $executable }) -Level 'Warning'
                         $detected = $false
                     } else {

@@ -1,11 +1,19 @@
 {
   "_meta": {
     "$schema": "WinForge-DetectionAllowlist-v1.0",
-    "description": "Allowlist of executable base names permitted for the Command detection method. Catalog entries using Detection.Command may only launch executables listed here. This is a security control shared by the GUI detection probe and the PowerShell detection modules: it prevents arbitrary command execution when an untrusted applications catalog is imported.",
+    "description": "Allowlist for the Command detection method, enforced by every path that may launch an executable named by a (potentially untrusted) applications catalog: the GUI detection probe, the post-update verification in the application-management service, and the PowerShell detection modules. allowedExecutables restricts WHICH programs may run; allowedArguments restricts WHAT they may be asked to do. Both are required: the executable list alone is not a boundary because it permits interpreters (python, node, pwsh, ruby, perl, php) that accept code as an argument, so 'pwsh -Command Start-Process calc' would otherwise run even though it contains no shell metacharacters. Detection only ever needs to ask a program for its version.",
     "version": "1.0.0",
     "author": "Julien Bombled",
     "lastUpdated": "2026-06-19"
   },
+  "allowedArguments": [
+    "--version",
+    "-version",
+    "-v",
+    "-V",
+    "version",
+    "--list-runtimes"
+  ],
   "allowedExecutables": [
     "java", "java.exe",
     "javac", "javac.exe",

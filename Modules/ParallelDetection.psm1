@@ -272,9 +272,10 @@ function Test-CommandDetection {
             return $false
         }
 
-        # Security: block dangerous argument patterns (command injection), via the
-        # same shared guard the sequential gold path uses.
-        if (Test-DetectionArgumentDangerous -Arguments $cmdArgs) {
+        # Security: arguments must be on the shared allowlist, via the same guard the
+        # sequential gold path uses. Screening metacharacters alone does not stop an
+        # allowlisted interpreter, which needs none to execute arbitrary code.
+        if (-not (Test-DetectionArgumentAllowed -Arguments $cmdArgs)) {
             return $false
         }
 
