@@ -15,6 +15,7 @@
  */
 
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Xml.Linq;
 using WinForge.GUI.Resources;
@@ -771,6 +772,52 @@ public class AccessibilityHardeningTests
         Assert.Equal(
             "{StaticResource HighVisibilityFocusVisual}",
             focusSetter.Attribute("Value")?.Value);
+    }
+
+    /// <summary>
+    /// Every control that cannot derive an automation name from its own content must
+    /// declare one, otherwise a screen reader announces it only by control type.
+    /// </summary>
+    /// <remarks>
+    /// The negative lookahead excludes XAML property-element syntax
+    /// (<c>&lt;DataGrid.Columns&gt;</c>, <c>&lt;ui:TextBox.InputBindings&gt;</c>), which
+    /// are not controls and cannot carry an automation name.
+    /// </remarks>
+    [Fact]
+    public void ContentlessControls_AllDeclareAnAccessibleName()
+    {
+        const string ControlNames =
+            "TextBox|PasswordBox|ComboBox|Slider|NumberBox|AutoSuggestBox|ListBox|DataGrid|ToggleSwitch";
+
+        Regex controlPattern = new(
+            $@"<(ui:)?({ControlNames})(?![.\w]).*?(/>|>)",
+            RegexOptions.Singleline);
+
+        string viewsRoot = Path.GetDirectoryName(
+            FindRepoFile("GUI", "WinForge.GUI", "App.xaml"))!;
+
+        List<string> offenders = [];
+
+        foreach (string file in Directory.EnumerateFiles(viewsRoot, "*.xaml", SearchOption.AllDirectories))
+        {
+            string xaml = File.ReadAllText(file);
+
+            foreach (Match match in controlPattern.Matches(xaml))
+            {
+                if (match.Value.Contains("AutomationProperties.Name", StringComparison.Ordinal) ||
+                    match.Value.Contains("AutomationProperties.LabeledBy", StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                int line = xaml.Take(match.Index).Count(c => c == '\n') + 1;
+                offenders.Add($"{Path.GetFileName(file)}:{line}");
+            }
+        }
+
+        Assert.True(
+            offenders.Count == 0,
+            $"Controls without an accessible name: {string.Join(", ", offenders)}");
     }
 
     private static string FindRepoFile(params string[] relativeParts)

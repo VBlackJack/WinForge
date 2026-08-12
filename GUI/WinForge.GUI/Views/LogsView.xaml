@@ -176,6 +176,7 @@
 
                 <!-- Log Files DataGrid -->
                 <DataGrid Grid.Row="1"
+                          AutomationProperties.Name="{loc:Loc A11y_Logs_FileGrid}"
                           ItemsSource="{Binding FilteredLogFiles}"
                           SelectedItem="{Binding SelectedLogFile}"
                           AutoGenerateColumns="False"

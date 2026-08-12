@@ -627,6 +627,7 @@
 
                                 <!-- Deployments DataGrid -->
                                 <DataGrid ItemsSource="{Binding ScheduledDeployments}"
+                                  AutomationProperties.Name="{loc:Loc A11y_Settings_ScheduledDeployments}"
                                           SelectedItem="{Binding SelectedScheduledDeployment}"
                                           AutoGenerateColumns="False"
                                           CanUserAddRows="False"

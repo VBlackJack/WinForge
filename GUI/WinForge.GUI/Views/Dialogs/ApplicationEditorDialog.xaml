@@ -205,6 +205,7 @@
 
                                             <DataGrid Grid.Row="2"
                                                       ItemsSource="{Binding WingetSearchResults}"
+                                                      AutomationProperties.Name="{loc:Loc A11y_Editor_WingetResults}"
                                                       SelectedItem="{Binding SelectedWingetSearchResult}"
                                                       AutoGenerateColumns="False"
                                                       CanUserAddRows="False"
@@ -278,6 +279,7 @@
 
                                             <DataGrid Grid.Row="2"
                                                       ItemsSource="{Binding ChocolateySearchResults}"
+                                                      AutomationProperties.Name="{loc:Loc A11y_Editor_ChocolateyResults}"
                                                       SelectedItem="{Binding SelectedChocolateySearchResult}"
                                                       AutoGenerateColumns="False"
                                                       CanUserAddRows="False"
@@ -351,6 +353,7 @@
 
                                             <DataGrid Grid.Row="2"
                                                       ItemsSource="{Binding StoreSearchResults}"
+                                                      AutomationProperties.Name="{loc:Loc A11y_Editor_StoreResults}"
                                                       SelectedItem="{Binding SelectedStoreSearchResult}"
                                                       AutoGenerateColumns="False"
                                                       CanUserAddRows="False"
