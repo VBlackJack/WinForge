@@ -140,9 +140,48 @@ $script:AllowedPluginCommands = @(
     'Write-Warning'
 )
 
+# === SECURITY: PLUGIN TYPE ALLOWLIST ===
+# Plugin code may only reference these .NET types. This is an allowlist because a
+# denylist cannot cover the reachable surface: every unlisted type is a potential
+# execution primitive ([Diagnostics.Process]::Start, [IO.File]::WriteAllText,
+# [Win32.Registry]::SetValue, [Activator]::CreateInstance, ...). Only value types
+# and PowerShell container types used for casts and parameter constraints belong here.
+$script:AllowedPluginTypes = @(
+    'bool', 'boolean', 'system.boolean',
+    'byte', 'system.byte',
+    'char', 'system.char',
+    'datetime', 'system.datetime',
+    'decimal', 'system.decimal',
+    'double', 'system.double',
+    'float', 'single', 'system.single',
+    'guid', 'system.guid',
+    'hashtable', 'system.collections.hashtable',
+    'int', 'int32', 'system.int32',
+    'int16', 'system.int16',
+    'int64', 'long', 'system.int64',
+    'object', 'system.object',
+    'ordered',
+    'psobject', 'system.management.automation.psobject',
+    'pscustomobject',
+    'string', 'system.string',
+    'timespan', 'system.timespan',
+    'uint16', 'system.uint16',
+    'uint32', 'system.uint32',
+    'uint64', 'system.uint64',
+    'version', 'system.version',
+    'void', 'system.void',
+    'array', 'system.array',
+    'switch', 'system.management.automation.switchparameter'
+)
+
 $script:DangerousCommandSet = @{}
 foreach ($dangerousCommand in $script:DangerousCommands) {
     $script:DangerousCommandSet[$dangerousCommand.ToLowerInvariant()] = $true
+}
+
+$script:AllowedPluginTypeSet = @{}
+foreach ($allowedType in $script:AllowedPluginTypes) {
+    $script:AllowedPluginTypeSet[$allowedType.ToLowerInvariant()] = $true
 }
 
 $script:AllowedPluginCommandSet = @{}
@@ -170,6 +209,77 @@ function ConvertTo-PluginCommandName {
     }
 
     return $normalized
+}
+
+function Get-PluginContentHash {
+    <#
+    .SYNOPSIS
+        Returns the SHA256 fingerprint of plugin source that has been validated.
+    .DESCRIPTION
+        Lets a caller prove that the file it is about to import is byte-for-byte the
+        content the sandbox validated, closing the window between validation and
+        Import-Module. Hashing the string (rather than the file) keeps the fingerprint
+        tied to what the AST validator actually parsed.
+    .PARAMETER Content
+        The plugin source text that was validated.
+    .OUTPUTS
+        [string] Upper-case hexadecimal SHA256 digest.
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [AllowEmptyString()]
+        [string]$Content
+    )
+
+    $sha256 = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        $bytes = [System.Text.Encoding]::UTF8.GetBytes($Content)
+        return [BitConverter]::ToString($sha256.ComputeHash($bytes)) -replace '-', ''
+    } finally {
+        $sha256.Dispose()
+    }
+}
+
+function Test-PluginTypeNameAllowed {
+    <#
+    .SYNOPSIS
+        Returns whether a type name referenced by plugin code is on the allowlist.
+    .DESCRIPTION
+        Normalizes a type name before the allowlist lookup so that array suffixes
+        ('string[]'), nullable suffixes ('int?') and namespace-qualified spellings
+        ('System.String') all resolve to the same entry. Any type that is not listed
+        is rejected: the allowlist is the security boundary for the main-session
+        import performed by Import-Plugin, which runs in FullLanguage.
+    .PARAMETER TypeName
+        The type name as written in the plugin source.
+    .OUTPUTS
+        [bool] $true when the type is allowed.
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [AllowNull()]
+        [string]$TypeName
+    )
+
+    if ([string]::IsNullOrWhiteSpace($TypeName)) {
+        return $false
+    }
+
+    $normalized = $TypeName.Trim().TrimEnd('?')
+    # Strip every array rank so 'string[][]' and 'string[,]' collapse to 'string'.
+    while ($normalized -match '\[[\s,]*\]$') {
+        $normalized = ($normalized -replace '\[[\s,]*\]$', '').Trim()
+    }
+
+    # Generic type arguments are not part of the allowlist surface.
+    if ($normalized.Contains('[')) {
+        return $false
+    }
+
+    return $script:AllowedPluginTypeSet.ContainsKey($normalized.ToLowerInvariant())
 }
 
 function Test-PluginCommandAstSafe {
@@ -298,26 +408,31 @@ function Test-ParsedPluginAstSafe {
 
     foreach ($typeAst in $typeAsts) {
         $typeName = $typeAst.TypeName.FullName
-        if ($typeName -match 'System\.Reflection|System\.Runtime\.InteropServices|System\.Net\.WebClient') {
+        if (-not (Test-PluginTypeNameAllowed -TypeName $typeName)) {
             $result.IsValid = $false
             $result.Errors += (Get-LogString 'plugins.sandbox.validation.dangerous_type' @{ TypeName = $typeName })
         }
     }
 
-    $memberAsts = $Ast.FindAll({
+    # Static member access is a direct execution primitive, so it is rejected unless the
+    # owning type is on the allowlist. Instance member access on values the plugin
+    # already holds stays permitted; the constrained runspace bounds it at run time.
+    $staticMemberAsts = $Ast.FindAll({
         param($node)
-        $node -is [System.Management.Automation.Language.InvokeMemberExpressionAst] -or
-        $node -is [System.Management.Automation.Language.MemberExpressionAst]
+        ($node -is [System.Management.Automation.Language.InvokeMemberExpressionAst] -or
+         $node -is [System.Management.Automation.Language.MemberExpressionAst]) -and
+        $node.Static
     }, $true)
 
-    foreach ($memberAst in $memberAsts) {
-        $memberName = $memberAst.Member.Value
-        if ($memberName -in @('Create', 'DownloadString', 'DownloadFile', 'Load', 'LoadFile', 'Invoke')) {
-            $expressionText = $memberAst.Extent.Text
-            if ($expressionText -match 'scriptblock|webclient|assembly|reflection') {
-                $result.IsValid = $false
-                $result.Errors += (Get-LogString 'plugins.sandbox.validation.dangerous_member' @{ Expression = $expressionText })
-            }
+    foreach ($memberAst in $staticMemberAsts) {
+        $ownerTypeName = $null
+        if ($memberAst.Expression -is [System.Management.Automation.Language.TypeExpressionAst]) {
+            $ownerTypeName = $memberAst.Expression.TypeName.FullName
+        }
+
+        if (-not (Test-PluginTypeNameAllowed -TypeName $ownerTypeName)) {
+            $result.IsValid = $false
+            $result.Errors += (Get-LogString 'plugins.sandbox.validation.dangerous_member' @{ Expression = $memberAst.Extent.Text })
         }
     }
 
@@ -474,7 +589,7 @@ function Invoke-PluginSandboxed {
         # validator there to prevent TOCTOU drift between parent and job scope.
         $sandboxModulePath = $script:PluginSandboxModulePath
         $job = Start-Job -ScriptBlock {
-            param($HandlerText, $ContextData, $SandboxModulePath)
+            param($HandlerText, $ContextData, $SandboxModulePath, $LocalizationPath, $CoreModulePath)
 
             # Security: Re-validate handler inside job scope before execution (TOCTOU prevention)
             Import-Module -Name $SandboxModulePath -Force -ErrorAction Stop
@@ -483,15 +598,45 @@ function Invoke-PluginSandboxed {
                 throw "Security: Handler blocked in job context: $($validation.Errors -join '; ')"
             }
 
-            # Create handler before switching to constrained language
-            $handler = [scriptblock]::Create($HandlerText)
+            # Security: the handler is compiled *inside* a runspace whose InitialSessionState
+            # declares ConstrainedLanguage. A scriptblock carries the language mode it was
+            # compiled under, so creating it first and flipping
+            # $ExecutionContext.SessionState.LanguageMode afterwards leaves it in FullLanguage
+            # and enforces nothing. Only the modules the plugin allowlist exposes are imported.
+            $iss = [System.Management.Automation.Runspaces.InitialSessionState]::CreateDefault()
+            foreach ($modulePath in @($LocalizationPath, $CoreModulePath)) {
+                if ($modulePath -and (Test-Path -LiteralPath $modulePath)) {
+                    $iss.ImportPSModule($modulePath)
+                }
+            }
+            $iss.LanguageMode = 'ConstrainedLanguage'
 
-            # Security: Enforce Constrained Language Mode to prevent dangerous type usage
-            $ExecutionContext.SessionState.LanguageMode = 'ConstrainedLanguage'
+            $runspace = [runspacefactory]::CreateRunspace($iss)
+            $runspace.Open()
+            try {
+                $shell = [powershell]::Create()
+                $shell.Runspace = $runspace
+                try {
+                    $null = $shell.AddScript($HandlerText).AddArgument($ContextData)
+                    $output = $shell.Invoke()
 
-            # Execute handler with context
-            & $handler $ContextData
-        } -ArgumentList $handlerText, $Context, $sandboxModulePath
+                    if ($shell.Streams.Error.Count -gt 0) {
+                        throw ($shell.Streams.Error | ForEach-Object { $_.ToString() }) -join '; '
+                    }
+
+                    # Unwrap the single-value case so callers keep receiving the handler's
+                    # own return value rather than a one-element collection.
+                    if ($output.Count -eq 0) { return $null }
+                    if ($output.Count -eq 1) { return $output[0] }
+                    return $output
+                } finally {
+                    $shell.Dispose()
+                }
+            } finally {
+                $runspace.Close()
+                $runspace.Dispose()
+            }
+        } -ArgumentList $handlerText, $Context, $sandboxModulePath, $script:LocalizationPath, $script:CoreModulePath
 
         # Wait for job with timeout
         $completed = $job | Wait-Job -Timeout $TimeoutSeconds
@@ -702,6 +847,7 @@ function Invoke-PluginLoadSandboxed {
         Error = $null
         TimedOut = $false
         LoadTimeMs = 0
+        ContentSha256 = $null
     }
 
     $startTime = Get-Date
@@ -709,6 +855,11 @@ function Invoke-PluginLoadSandboxed {
     try {
         # Security: Read and validate the full module file content via AST before loading
         $moduleContent = Get-Content -Path $PluginPath -Raw -ErrorAction Stop
+
+        # Security: fingerprint exactly what was validated so the caller can prove the file
+        # has not been swapped between this check and its own Import-Module (TOCTOU).
+        $result.ContentSha256 = Get-PluginContentHash -Content $moduleContent
+
         $preValidation = Test-ScriptblockSafe -ScriptText $moduleContent
         if (-not $preValidation.IsValid) {
             $result.Error = (Get-LogString 'plugins.sandbox.security.module_blocked' @{ Errors = ($preValidation.Errors -join '; ') })
@@ -729,22 +880,44 @@ function Invoke-PluginLoadSandboxed {
                 throw "Security: Module blocked in job context: $($validation.Errors -join '; ')"
             }
 
-            # Security: Enforce Constrained Language Mode for module execution.
-            $ExecutionContext.SessionState.LanguageMode = 'ConstrainedLanguage'
+            # Security: import the candidate module inside a runspace whose
+            # InitialSessionState declares ConstrainedLanguage. Setting
+            # $ExecutionContext.SessionState.LanguageMode here would not apply to code
+            # compiled by Import-Module, so the load probe would run unconstrained.
+            $iss = [System.Management.Automation.Runspaces.InitialSessionState]::CreateDefault()
+            $iss.LanguageMode = 'ConstrainedLanguage'
 
-            # Try to import the module
-            Import-Module $Path -Force -ErrorAction Stop
+            $runspace = [runspacefactory]::CreateRunspace($iss)
+            $runspace.Open()
+            try {
+                $shell = [powershell]::Create()
+                $shell.Runspace = $runspace
+                try {
+                    $null = $shell.AddScript(@'
+param($ModulePath, $ModuleName)
+Import-Module $ModulePath -Force -ErrorAction Stop
+$module = Get-Module -Name $ModuleName
+if ($module) { return $module.ExportedCommands.Count }
+return 0
+'@).AddArgument($Path).AddArgument($ModuleName)
 
-            # Return exported commands count as validation
-            $module = Get-Module -Name $ModuleName
-            if ($module) {
-                return @{
-                    Valid = $true
-                    ExportedCommands = $module.ExportedCommands.Count
+                    $exported = $shell.Invoke()
+
+                    if ($shell.Streams.Error.Count -gt 0) {
+                        throw ($shell.Streams.Error | ForEach-Object { $_.ToString() }) -join '; '
+                    }
+
+                    return @{
+                        Valid = $true
+                        ExportedCommands = if ($exported.Count -gt 0) { $exported[0] } else { 0 }
+                    }
+                } finally {
+                    $shell.Dispose()
                 }
+            } finally {
+                $runspace.Close()
+                $runspace.Dispose()
             }
-
-            return @{ Valid = $true; ExportedCommands = 0 }
         } -ArgumentList $PluginPath, $moduleContent, $moduleName, $sandboxModulePath
 
         $completed = $job | Wait-Job -Timeout $loadTimeout
@@ -780,5 +953,7 @@ Export-ModuleMember -Function @(
     'Invoke-PluginLoadSandboxed',
     'Test-PluginSandboxAvailable',
     'Get-SandboxStatus',
-    'Test-ScriptblockSafe'
+    'Test-ScriptblockSafe',
+    'Test-PluginTypeNameAllowed',
+    'Get-PluginContentHash'
 )
