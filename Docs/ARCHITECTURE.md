@@ -90,6 +90,27 @@ at the host's privilege level:
 `trustedPublishers` is non-empty in `Config/plugins-settings.json`, entry points must also
 carry a valid Authenticode signature from one of those publishers.
 
+## Command detection
+
+A catalog entry may declare `Detection.Command`, which launches a program to decide whether
+an application is installed. Catalogs can be imported, so that input is untrusted and the
+same two allowlists gate every execution path — the GUI detection probe, the post-update
+verification in the application-management service, and the PowerShell detection modules:
+
+- **`allowedExecutables`** restricts which programs may run.
+- **`allowedArguments`** restricts what they may be asked to do.
+
+Both live in `Config/detection-allowlist.json` and load fail-closed: a missing, unreadable
+or malformed file denies every Command detection rather than permitting arbitrary ones.
+That trade-off makes installed applications look "not installed", so the failure is logged
+loudly.
+
+The second list is not redundant. The executable list has to permit interpreters
+(`python`, `node`, `pwsh`, `ruby`, `perl`, `php`) because they are what several entries
+probe, and an interpreter takes code as an argument. Filtering shell metacharacters does
+not help there — `pwsh -Command Start-Process calc` contains none. Detection only ever
+needs to ask a program for its version, so the arguments are allowlisted as well.
+
 ## Configuration validation
 
 `Schemas/` describes the configuration surface. `Test-AllConfigurationFiles`
