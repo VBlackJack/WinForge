@@ -34,6 +34,18 @@ public class AppSettingsService : IAppSettingsService
     private readonly object _cacheLock = new();
     private readonly ILoggingService _logger;
     private readonly IValidationService _validation;
+
+    /// <summary>
+    /// Serializes the asynchronous load path.
+    /// </summary>
+    /// <remarks>
+    /// The cache check cannot stay held across the file read (a lock cannot span an
+    /// await), so without this gate two concurrent first-callers both miss the cache,
+    /// both read and deserialize the file, and each walks away with a *different*
+    /// AppSettings instance — a mutation made through one is invisible to the other.
+    /// </remarks>
+    private readonly SemaphoreSlim _asyncLoadGate = new(1, 1);
+
     private AppSettings? _cachedSettings;
 
     static AppSettingsService()
@@ -220,7 +232,7 @@ public class AppSettingsService : IAppSettingsService
     /// <inheritdoc/>
     public async Task<AppSettings> LoadSettingsAsync(CancellationToken cancellationToken = default)
     {
-        // Check cache first (thread-safe read)
+        // Fast path: cache already populated.
         lock (_cacheLock)
         {
             if (_cachedSettings != null)
@@ -229,8 +241,19 @@ public class AppSettingsService : IAppSettingsService
             }
         }
 
+        await _asyncLoadGate.WaitAsync(cancellationToken);
+
         try
         {
+            // Re-check: another caller may have populated the cache while we waited.
+            lock (_cacheLock)
+            {
+                if (_cachedSettings != null)
+                {
+                    return _cachedSettings;
+                }
+            }
+
             if (File.Exists(_settingsFilePath))
             {
                 string json = await File.ReadAllTextAsync(_settingsFilePath, cancellationToken);
@@ -266,14 +289,18 @@ public class AppSettingsService : IAppSettingsService
             // If file is corrupted, return defaults
             _logger.LogError("Failed to load settings async (using defaults)", ex);
         }
+        finally
+        {
+            _asyncLoadGate.Release();
+        }
 
         // Return and cache default settings
         AppSettings defaultSettings = new AppSettings();
         lock (_cacheLock)
         {
-            _cachedSettings = defaultSettings;
+            _cachedSettings ??= defaultSettings;
+            return _cachedSettings;
         }
-        return defaultSettings;
     }
 
     /// <inheritdoc/>
