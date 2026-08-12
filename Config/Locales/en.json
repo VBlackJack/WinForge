@@ -843,6 +843,10 @@
     }
   },
   "validation": {
+    "config": {
+      "directory_missing": "Configuration directory not found: {Path}",
+      "no_schema": "No schema declared for configuration file: {Name}"
+    },
     "url": {
       "invalid": "Invalid URL format: {Url}",
       "blocked_domain": "Domain not in whitelist: {Domain}",
@@ -1187,6 +1191,7 @@
     "removed_files_count": "Removed {Count} unnecessary files",
     "step_creating_zip": "Creating ZIP archive...",
     "created_zip": "Created: {Name} ({Size} MB)",
+    "created_checksum": "Created: {Name}",
     "complete_title": "Build Complete!",
     "stats_title": "Package Statistics:",
     "stats_files": "Files: {Count}",
@@ -1195,6 +1200,7 @@
     "output_title": "Output Locations:",
     "output_folder": "Folder: {Path}",
     "output_zip": "ZIP: {Path}",
+    "output_checksum": "SHA256: {Path}",
     "contents_title": "Main Contents:",
     "test_hint": "To test the release:"
   },
@@ -1601,7 +1607,8 @@
     "security": {
       "symlink_validation": "Plugin entry point is a symlink, validating resolved target",
       "path_traversal": "Plugin entry point escapes plugin directory (possible path traversal): {EntryPoint}",
-      "entry_point_not_found": "Plugin entry point not found: {Path}"
+      "entry_point_not_found": "Plugin entry point not found: {Path}",
+      "publisher_trusted": "Plugin '{Name}' is signed by trusted publisher: {Publisher}"
     },
     "sandbox": {
       "executing": "Executing plugin '{Name}' in sandbox (timeout: {Timeout}s)",

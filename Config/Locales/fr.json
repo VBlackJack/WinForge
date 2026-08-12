@@ -843,6 +843,10 @@
     }
   },
   "validation": {
+    "config": {
+      "directory_missing": "Répertoire de configuration introuvable : {Path}",
+      "no_schema": "Aucun schéma déclaré pour le fichier de configuration : {Name}"
+    },
     "url": {
       "invalid": "Format d'URL invalide : {Url}",
       "blocked_domain": "Domaine non autorisé : {Domain}",
@@ -1187,6 +1191,7 @@
     "removed_files_count": "Supprimé {Count} fichiers inutiles",
     "step_creating_zip": "Création de l'archive ZIP...",
     "created_zip": "Créé : {Name} ({Size} Mo)",
+    "created_checksum": "Créé : {Name}",
     "complete_title": "Compilation terminée !",
     "stats_title": "Statistiques du package :",
     "stats_files": "Fichiers : {Count}",
@@ -1195,6 +1200,7 @@
     "output_title": "Emplacements de sortie :",
     "output_folder": "Dossier : {Path}",
     "output_zip": "ZIP : {Path}",
+    "output_checksum": "SHA256 : {Path}",
     "contents_title": "Contenu principal :",
     "test_hint": "Pour tester la release :"
   },
@@ -1601,7 +1607,8 @@
     "security": {
       "symlink_validation": "Le point d'entrée du plugin est un lien symbolique, validation de la cible résolue",
       "path_traversal": "Le point d'entrée du plugin sort du répertoire du plugin (traversée de chemin possible) : {EntryPoint}",
-      "entry_point_not_found": "Point d'entrée du plugin non trouvé : {Path}"
+      "entry_point_not_found": "Point d'entrée du plugin non trouvé : {Path}",
+      "publisher_trusted": "Le plugin '{Name}' est signé par un éditeur de confiance : {Publisher}"
     },
     "sandbox": {
       "executing": "Exécution du plugin '{Name}' en sandbox (timeout : {Timeout}s)",

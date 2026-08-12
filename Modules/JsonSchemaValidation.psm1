@@ -207,8 +207,8 @@ function Test-JsonAgainstSchema {
         # Perform validation
         $validationErrors = Test-ObjectAgainstSchema -Object $json -Schema $schema -Path '$'
 
-        foreach ($error in $validationErrors) {
-            $result.AddError($error)
+        foreach ($validationError in $validationErrors) {
+            $result.AddError($validationError)
         }
     }
     catch {
@@ -249,7 +249,13 @@ function Test-ObjectAgainstSchema {
     #>
     [CmdletBinding()]
     param(
+        # AllowNull is required, not cosmetic: a JSON null deserializes to $null, and a
+        # Mandatory parameter refuses an explicit $null at binding time. Without it the
+        # recursion below aborts the whole file with "Cannot bind argument to parameter
+        # 'Object' because it is null", which both hides the real result and makes the
+        # null-handling branch in this function unreachable.
         [Parameter(Mandatory)]
+        [AllowNull()]
         $Object,
 
         [Parameter(Mandatory)]
@@ -564,9 +570,68 @@ function Test-AllProfiles {
 
     $profiles = Get-ChildItem -Path $ProfilesDirectory -Filter '*.json' -ErrorAction SilentlyContinue
 
-    foreach ($profile in $profiles) {
-        Write-Status -Message "Validating profile: $($profile.Name)" -Level 'Verbose'
-        $results += Test-DeploymentProfile -ProfilePath $profile.FullName
+    foreach ($deploymentProfile in $profiles) {
+        Write-Status -Message "Validating profile: $($deploymentProfile.Name)" -Level 'Verbose'
+        $results += Test-DeploymentProfile -ProfilePath $deploymentProfile.FullName
+    }
+
+    return $results
+}
+
+function Test-AllConfigurationFiles {
+    <#
+    .SYNOPSIS
+        Validates every Config/*.json file that has a matching schema.
+
+    .DESCRIPTION
+        The Schemas directory described the whole configuration surface, but only the
+        profile and applications-database schemas had a consumer, so the remaining schemas
+        never ran. Every runtime loader reads its configuration field by field with
+        fallbacks, which means a misspelled or mistyped key is silently ignored rather than
+        reported: the setting simply does not take effect. Validating the files against
+        their own schemas turns that silent drift into a build failure.
+
+        Files are paired with schemas by convention (Config/<name>.json ->
+        Schemas/<name>.schema.json), with an explicit map for the names that differ.
+        Configuration files with no schema are reported as skipped, not as failures.
+
+    .OUTPUTS
+        [JsonValidationResult[]] One result per configuration file that has a schema.
+
+    .EXAMPLE
+        Test-AllConfigurationFiles
+    #>
+    [CmdletBinding()]
+    [OutputType([JsonValidationResult[]])]
+    param()
+
+    # Config file names whose schema is not a straight <name>.schema.json match.
+    $schemaNameOverrides = @{
+        'SystemSettings.json' = 'system-settings.schema.json'
+    }
+
+    $configDirectory = Join-Path $script:RepositoryRoot 'Config'
+    $results = @()
+
+    if (-not (Test-Path $configDirectory)) {
+        Write-Status -Message (Get-LogString 'validation.config.directory_missing' @{ Path = $configDirectory }) -Level 'Warning'
+        return $results
+    }
+
+    foreach ($configFile in Get-ChildItem -Path $configDirectory -Filter '*.json' -File | Sort-Object Name) {
+        $schemaFileName = if ($schemaNameOverrides.ContainsKey($configFile.Name)) {
+            $schemaNameOverrides[$configFile.Name]
+        } else {
+            '{0}.schema.json' -f [System.IO.Path]::GetFileNameWithoutExtension($configFile.Name)
+        }
+
+        $schemaPath = Join-Path $script:SchemasDirectory $schemaFileName
+        if (-not (Test-Path $schemaPath)) {
+            Write-Status -Message (Get-LogString 'validation.config.no_schema' @{ Name = $configFile.Name }) -Level 'Verbose'
+            continue
+        }
+
+        $results += Test-JsonAgainstSchema -JsonPath $configFile.FullName -SchemaPath $schemaPath
     }
 
     return $results
@@ -624,8 +689,8 @@ function Invoke-JsonSchemaValidation {
         else {
             $summary.InvalidFiles++
             Write-Status -Message "  [FAIL] $($result.FilePath | Split-Path -Leaf)" -Level 'Error'
-            foreach ($error in $result.Errors) {
-                Write-Status -Message "    - $error" -Level 'Error'
+            foreach ($validationError in $result.Errors) {
+                Write-Status -Message "    - $validationError" -Level 'Error'
             }
         }
 
@@ -647,12 +712,34 @@ function Invoke-JsonSchemaValidation {
     else {
         $summary.InvalidFiles++
         Write-Status -Message '  [FAIL] applications.json' -Level 'Error'
-        foreach ($error in $dbResult.Errors) {
-            Write-Status -Message "    - $error" -Level 'Error'
+        foreach ($validationError in $dbResult.Errors) {
+            Write-Status -Message "    - $validationError" -Level 'Error'
         }
     }
 
     $summary.Results += $dbResult
+
+    # Validate configuration files against their schemas
+    Write-Status -Message 'Validating configuration files...' -Level 'Info'
+    foreach ($configResult in Test-AllConfigurationFiles) {
+        $summary.TotalFiles++
+        $summary.TotalErrors += $configResult.Errors.Count
+        $summary.TotalWarnings += $configResult.Warnings.Count
+
+        if ($configResult.IsValid -and (-not $FailOnWarning -or $configResult.Warnings.Count -eq 0)) {
+            $summary.ValidFiles++
+            Write-Status -Message "  [OK] $($configResult.FilePath | Split-Path -Leaf)" -Level 'Success'
+        }
+        else {
+            $summary.InvalidFiles++
+            Write-Status -Message "  [FAIL] $($configResult.FilePath | Split-Path -Leaf)" -Level 'Error'
+            foreach ($configError in $configResult.Errors) {
+                Write-Status -Message "    - $configError" -Level 'Error'
+            }
+        }
+
+        $summary.Results += $configResult
+    }
 
     # Summary
     Write-Status -Message '=== Validation Summary ===' -Level 'Info'
@@ -673,5 +760,6 @@ Export-ModuleMember -Function @(
     'Test-DeploymentProfile',
     'Test-ApplicationsDatabase',
     'Test-AllProfiles',
+    'Test-AllConfigurationFiles',
     'Invoke-JsonSchemaValidation'
 )
