@@ -5,6 +5,18 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 ## [Unreleased]
 
 ### Security
+- Command detection is now gated by an argument allowlist in addition to the executable allowlist, on all three paths (GUI probe, post-update verification, PowerShell detection modules). The executable list is not a boundary on its own because it permits interpreters (`python`, `node`, `pwsh`, `ruby`, `perl`, `php`) that accept code as an argument, and screening for shell metacharacters does not stop them: `pwsh -Command Start-Process calc` contains none and was executed. Detection only ever needs to ask a program for its version, and every entry in the shipped catalog uses `--version`, `-version` or `--list-runtimes`, so the permitted arguments are configured in `Config/detection-allowlist.json` and loaded fail-closed.
+- The post-update verification path in the application-management service applied no argument guard at all — a third Command-detection execution site that the earlier audit missed.
+
+### Changed
+- `ApplicationManagementServiceImpl` is decomposed from 1635 to 1166 lines. Package matching, deployment log formatting, update-source routing and external-process execution move to `PackageMatcher`, `DeploymentLog`, `UpdateSourcePolicy` and `VendorCommandRunner`. The `protected virtual` seams that test doubles override are preserved and now delegate to the runner.
+- Removed a dead copy of the CLIXML/binary output filter from the application-management service; the live implementation is in `PowerShellExecutionService`.
+
+### Fixed
+- `Test-DetectionArgumentAllowed` resolved its allowlist through the caller's scope, so in a parallel detection runspace the lookup failed closed and reported every application as not installed. The guard module now imports the allowlist module itself.
+
+
+### Security
 - Plugin AST validation now uses a type allowlist instead of a denylist. Plugin code may only reference value types and PowerShell container types, and static member access is rejected unless the owning type is allowlisted. The previous denylist admitted `[System.Diagnostics.Process]::Start`, `[System.IO.File]::WriteAllText`/`Delete`, `[Microsoft.Win32.Registry]::SetValue`, `[System.Activator]::CreateInstance` and `[System.AppDomain]` reflection.
 - Plugin handlers and plugin-load probes are now compiled inside a runspace whose `InitialSessionState` declares ConstrainedLanguage. Setting `$ExecutionContext.SessionState.LanguageMode` after `[scriptblock]::Create` had no effect, because a scriptblock carries the language mode it was compiled under, so handlers ran in FullLanguage.
 - `Import-Plugin` re-fingerprints the entry point immediately before `Import-Module` and refuses the import if the file changed after sandbox validation, closing a time-of-check/time-of-use window on an import that runs in the main session at the host's privilege level.

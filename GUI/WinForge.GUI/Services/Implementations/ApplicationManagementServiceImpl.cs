@@ -15,7 +15,6 @@
  */
 
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Text.Json;
@@ -31,8 +30,6 @@ namespace WinForge.GUI.Services.Implementations;
 /// </summary>
 public class ApplicationManagementServiceImpl : IApplicationManagementService
 {
-    private const string SourceWinget = "Winget";
-    private const string SourceChocolatey = "Chocolatey";
     private const string PreferredUpdateSourcePropertyName = "PreferredUpdateSource";
     private const string DetectionPropertyName = "Detection";
     private const string DetectionMethodPropertyName = "Method";
@@ -41,7 +38,6 @@ public class ApplicationManagementServiceImpl : IApplicationManagementService
     private const string DetectionMethodCommand = "Command";
     private const string PrerequisiteTag = "prerequisite";
     private static readonly TimeSpan DetectionRegexTimeout = TimeSpan.FromMilliseconds(500);
-    private static readonly CultureInfo LogCulture = CultureInfo.GetCultureInfo("en");
 
     private readonly IRepositoryPathService _pathService;
     private readonly IPowerShellExecutionService _executionService;
@@ -55,7 +51,7 @@ public class ApplicationManagementServiceImpl : IApplicationManagementService
     /// the detection probe so the post-update verification path cannot launch an
     /// executable that catalog-driven detection would otherwise reject (fail-closed).
     /// </summary>
-    private HashSet<string>? _allowedDetectionExecutables;
+    private readonly VendorCommandRunner _commandRunner;
 
     /// <summary>
     /// Initializes a new instance of the ApplicationManagementServiceImpl.
@@ -74,6 +70,7 @@ public class ApplicationManagementServiceImpl : IApplicationManagementService
         _detectionService = detectionService ?? throw new ArgumentNullException(nameof(detectionService));
         _launcher = launcher ?? throw new ArgumentNullException(nameof(launcher));
         _logger = (loggerFactory ?? new LoggerFactory()).CreateLogger<ApplicationManagementServiceImpl>();
+        _commandRunner = new VendorCommandRunner(_executionService, _pathService, _logger);
     }
 
     /// <inheritdoc/>
@@ -279,7 +276,7 @@ try {{
             foreach (ApplicationModel app in apps)
             {
                 string appId = app.AppId;
-                InstalledPackageInfo? packageInfo = FindDetectedPackage(app, detectionResult);
+                InstalledPackageInfo? packageInfo = PackageMatcher.FindDetectedPackage(app, detectionResult);
 
                 if (packageInfo != null)
                 {
@@ -301,151 +298,6 @@ try {{
             return null;
         }
     }
-
-    private static InstalledPackageInfo? FindDetectedPackage(
-        ApplicationModel app,
-        BatchDetectionResult detectionResult)
-    {
-        if (!string.IsNullOrEmpty(app.AppId))
-        {
-            InstalledPackageInfo? packageInfo = detectionResult.GetPackage(app.AppId);
-            if (packageInfo != null)
-            {
-                return packageInfo;
-            }
-        }
-
-        if (!string.IsNullOrEmpty(app.Name))
-        {
-            string normalizedName = NormalizePackageLookupKey(app.Name);
-            InstalledPackageInfo? packageInfo = detectionResult.GetPackage(normalizedName);
-            if (packageInfo != null)
-            {
-                return packageInfo;
-            }
-        }
-
-        foreach (InstalledPackageInfo? packageInfo in detectionResult.Packages.Values.DistinctBy(p => $"{p.Id}|{p.Name}"))
-        {
-            if (IsPackageMatch(app, packageInfo))
-            {
-                return packageInfo;
-            }
-        }
-
-        return null;
-    }
-
-    private static bool IsPackageMatch(ApplicationModel app, InstalledPackageInfo packageInfo)
-    {
-        if (string.IsNullOrWhiteSpace(app.Name))
-        {
-            return false;
-        }
-
-        foreach (string? candidate in new[] { packageInfo.Name, packageInfo.Id }.Where(static c => !string.IsNullOrWhiteSpace(c)))
-        {
-            string normalizedAppName = NormalizePackageLookupKey(app.Name);
-            string normalizedCandidate = NormalizePackageLookupKey(candidate);
-
-            if (normalizedAppName.Length >= 4 &&
-                normalizedCandidate.Length >= 4 &&
-                (normalizedCandidate.Contains(normalizedAppName, StringComparison.OrdinalIgnoreCase) ||
-                 normalizedAppName.Contains(normalizedCandidate, StringComparison.OrdinalIgnoreCase)))
-            {
-                return true;
-            }
-
-            if (HasMeaningfulTokenOverlap(app.Name, candidate))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static string NormalizePackageLookupKey(string value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return string.Empty;
-        }
-
-        StringBuilder builder = new StringBuilder(value.Length);
-        foreach (char ch in value)
-        {
-            if (char.IsLetterOrDigit(ch))
-            {
-                builder.Append(char.ToLowerInvariant(ch));
-            }
-        }
-
-        return builder.ToString();
-    }
-
-    private static bool HasMeaningfulTokenOverlap(string appName, string packageName)
-    {
-        HashSet<string> appTokens = GetMeaningfulTokens(appName);
-        if (appTokens.Count == 0)
-        {
-            return false;
-        }
-
-        HashSet<string> packageTokens = GetMeaningfulTokens(packageName);
-        return packageTokens.Any(appTokens.Contains);
-    }
-
-    private static HashSet<string> GetMeaningfulTokens(string value)
-    {
-        HashSet<string> tokens = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        StringBuilder builder = new StringBuilder();
-
-        foreach (char ch in value)
-        {
-            if (char.IsLetterOrDigit(ch))
-            {
-                builder.Append(char.ToLowerInvariant(ch));
-            }
-            else
-            {
-                AddToken(builder, tokens);
-            }
-        }
-
-        AddToken(builder, tokens);
-        return tokens;
-    }
-
-    private static void AddToken(StringBuilder builder, HashSet<string> tokens)
-    {
-        if (builder.Length == 0)
-        {
-            return;
-        }
-
-        string token = builder.ToString();
-        builder.Clear();
-
-        if (token.Length < 4 || CommonPackageMatchTokens.Contains(token))
-        {
-            return;
-        }
-
-        tokens.Add(token);
-    }
-
-    private static readonly HashSet<string> CommonPackageMatchTokens = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "app",
-        "apps",
-        "client",
-        "desktop",
-        "shell",
-        "studio",
-        "tool",
-        "tools"
-    };
 
     /// <summary>
     /// Gets batch application status using PowerShell detection.
@@ -801,13 +653,13 @@ try {{
                 }
 
                 bool rejectedInvalidPackageId = false;
-                if (RejectInvalidPackageId(wingetId, "Winget", logBuilder))
+                if (UpdateSourcePolicy.RejectInvalidPackageId(wingetId, "Winget", logBuilder))
                 {
                     wingetId = null;
                     rejectedInvalidPackageId = true;
                 }
 
-                if (RejectInvalidPackageId(chocoPackage, "Chocolatey", logBuilder))
+                if (UpdateSourcePolicy.RejectInvalidPackageId(chocoPackage, "Chocolatey", logBuilder))
                 {
                     chocoPackage = null;
                     rejectedInvalidPackageId = true;
@@ -1020,27 +872,27 @@ if (Get-Command -Name 'Clear-WingetUpdatesCache' -ErrorAction SilentlyContinue) 
                         chocoPackage = JsonHelper.GetJsonString(sources, "Chocolatey");
                     }
 
-                    preferredUpdateSource = NormalizeUpdateSource(
+                    preferredUpdateSource = UpdateSourcePolicy.Normalize(
                         JsonHelper.GetJsonString(appData, PreferredUpdateSourcePropertyName));
                 }
 
                 bool rejectedInvalidPackageId = false;
-                if (RejectInvalidPackageId(wingetId, SourceWinget, logBuilder))
+                if (UpdateSourcePolicy.RejectInvalidPackageId(wingetId, UpdateSourcePolicy.SourceWinget, logBuilder))
                 {
                     wingetId = null;
                     rejectedInvalidPackageId = true;
                 }
 
-                if (RejectInvalidPackageId(chocoPackage, SourceChocolatey, logBuilder))
+                if (UpdateSourcePolicy.RejectInvalidPackageId(chocoPackage, UpdateSourcePolicy.SourceChocolatey, logBuilder))
                 {
                     chocoPackage = null;
                     rejectedInvalidPackageId = true;
                 }
 
                 InstallResult? result = null;
-                if (string.Equals(preferredUpdateSource, SourceChocolatey, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(preferredUpdateSource, UpdateSourcePolicy.SourceChocolatey, StringComparison.OrdinalIgnoreCase))
                 {
-                    logBuilder.AppendLine($"Preferred update source: {SourceChocolatey}");
+                    logBuilder.AppendLine($"Preferred update source: {UpdateSourcePolicy.SourceChocolatey}");
                     result = await TryUpdateViaChocolateyAsync(
                         app,
                         chocoPackage,
@@ -1049,9 +901,9 @@ if (Get-Command -Name 'Clear-WingetUpdatesCache' -ErrorAction SilentlyContinue) 
                         progressCallback,
                         logBuilder);
                 }
-                else if (string.Equals(preferredUpdateSource, SourceWinget, StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(preferredUpdateSource, UpdateSourcePolicy.SourceWinget, StringComparison.OrdinalIgnoreCase))
                 {
-                    logBuilder.AppendLine($"Preferred update source: {SourceWinget}");
+                    logBuilder.AppendLine($"Preferred update source: {UpdateSourcePolicy.SourceWinget}");
                     result = await TryUpdateViaWingetAsync(app, wingetId, progressCallback, logBuilder);
                 }
                 else
@@ -1071,7 +923,7 @@ if (Get-Command -Name 'Clear-WingetUpdatesCache' -ErrorAction SilentlyContinue) 
                     return result;
                 }
 
-                string errorMsg = IsPreferredUpdateSourceUnavailable(preferredUpdateSource, wingetId, chocoPackage)
+                string errorMsg = UpdateSourcePolicy.IsPreferredSourceUnavailable(preferredUpdateSource, wingetId, chocoPackage)
                     ? $"Preferred update source {preferredUpdateSource} is not available for this application"
                     : string.IsNullOrEmpty(wingetId) && string.IsNullOrEmpty(chocoPackage)
                     ? (rejectedInvalidPackageId
@@ -1122,7 +974,7 @@ if (Get-Command -Name 'Clear-WingetUpdatesCache' -ErrorAction SilentlyContinue) 
             return InstallResult.Successful(
                 $"Successfully updated {app.Name}",
                 logBuilder.ToString(),
-                SourceWinget);
+                UpdateSourcePolicy.SourceWinget);
         }
 
         if (wingetResult.ExitCode == -1978335189)
@@ -1132,7 +984,7 @@ if (Get-Command -Name 'Clear-WingetUpdatesCache' -ErrorAction SilentlyContinue) 
             return InstallResult.Successful(
                 $"{app.Name} is already up to date",
                 logBuilder.ToString(),
-                SourceWinget,
+                UpdateSourcePolicy.SourceWinget,
                 alreadyInstalled: true);
         }
 
@@ -1178,7 +1030,7 @@ if (Get-Command -Name 'Clear-WingetUpdatesCache' -ErrorAction SilentlyContinue) 
             return InstallResult.Successful(
                 $"Successfully updated {app.Name}",
                 logBuilder.ToString(),
-                SourceChocolatey);
+                UpdateSourcePolicy.SourceChocolatey);
         }
 
         logBuilder.AppendLine($"Chocolatey update failed (exit code: {chocoResult.ExitCode})");
@@ -1243,85 +1095,24 @@ if (Get-Command -Name 'Clear-WingetUpdatesCache' -ErrorAction SilentlyContinue) 
         }
     }
 
-    private static string? NormalizeUpdateSource(string? source)
-    {
-        if (string.IsNullOrWhiteSpace(source))
-        {
-            return null;
-        }
-
-        if (string.Equals(source, SourceWinget, StringComparison.OrdinalIgnoreCase))
-        {
-            return SourceWinget;
-        }
-
-        if (string.Equals(source, SourceChocolatey, StringComparison.OrdinalIgnoreCase))
-        {
-            return SourceChocolatey;
-        }
-
-        return null;
-    }
-
-    private static bool IsPreferredUpdateSourceUnavailable(
-        string? preferredUpdateSource,
-        string? wingetId,
-        string? chocoPackage)
-    {
-        return string.Equals(preferredUpdateSource, SourceWinget, StringComparison.OrdinalIgnoreCase) &&
-                string.IsNullOrEmpty(wingetId) ||
-            string.Equals(preferredUpdateSource, SourceChocolatey, StringComparison.OrdinalIgnoreCase) &&
-                string.IsNullOrEmpty(chocoPackage);
-    }
-
-    private static bool RejectInvalidPackageId(string? packageId, string sourceName, StringBuilder logBuilder)
-    {
-        if (string.IsNullOrEmpty(packageId))
-        {
-            return false;
-        }
-
-        if (PackageIdValidator.IsValidPackageId(packageId))
-        {
-            return false;
-        }
-
-        logBuilder.AppendLine($"Rejected invalid {sourceName} package id (failed safe-charset validation)");
-        return true;
-    }
-
     private static string GetLogResource(string resourceName)
-        => Resources.Resources.ResourceManager.GetString(resourceName, LogCulture) ?? resourceName;
+        => DeploymentLog.GetResource(resourceName);
+
+    private static string LogFormat(string resourceName, params object?[] args)
+        => DeploymentLog.Format(resourceName, args);
 
     /// <summary>
-    /// Formats a deployment progress/result string using the English log resolver.
-    /// Deployment results and persisted logs are intentionally English-only (enforced by
-    /// LocalizationAuditTests) so they stay parseable regardless of UI culture; the literal
-    /// text lives in resources to avoid hardcoding rather than to localize this surface.
+    /// Kept as a protected member because derived test doubles call it when they stand in
+    /// for a vendor command.
     /// </summary>
-    private static string LogFormat(string resourceName, params object?[] args)
-        => string.Format(LogCulture, GetLogResource(resourceName), args);
-
     protected static void AppendVendorOutputSummary(StringBuilder logBuilder, string output, string error)
-    {
-        int outputLength = string.IsNullOrEmpty(output) ? 0 : output.Length;
-        int errorLength = string.IsNullOrEmpty(error) ? 0 : error.Length;
-        if (outputLength == 0 && errorLength == 0)
-        {
-            return;
-        }
-
-        // Winget and Chocolatey localize raw output according to the host OS.
-        // Main deployment logs must keep WinForge-owned English summaries only.
-        logBuilder.AppendLine(
-            $"Raw vendor output omitted from main log (stdout chars: {outputLength}, stderr chars: {errorLength})");
-    }
+        => DeploymentLog.AppendVendorOutputSummary(logBuilder, output, error);
 
     /// <summary>
     /// Gets the installed version of a package using winget list.
     /// </summary>
     private Task<string> GetInstalledVersionAsync(string wingetId)
-        => QueryWingetVersionAsync(
+        => _commandRunner.QueryWingetVersionAsync(
             wingetId,
             $"list --id \"{wingetId}\" --exact --disable-interactivity",
             VersionServiceImpl.ParseVersionFromWingetList,
@@ -1331,154 +1122,22 @@ if (Get-Command -Name 'Clear-WingetUpdatesCache' -ErrorAction SilentlyContinue) 
     /// Gets the available version from repository using winget show.
     /// </summary>
     private Task<string> GetRepositoryVersionAsync(string wingetId)
-        => QueryWingetVersionAsync(
+        => _commandRunner.QueryWingetVersionAsync(
             wingetId,
             $"show --id \"{wingetId}\" --exact --disable-interactivity",
             VersionServiceImpl.ParseVersionFromWingetShow,
             "repository version");
 
     /// <summary>
-    /// Runs a winget version query, cleans and parses the output, and returns an empty
-    /// string on failure or timeout. Shared by the installed- and repository-version
-    /// probes so the process plumbing exists in exactly one place.
-    /// </summary>
-    private async Task<string> QueryWingetVersionAsync(
-        string wingetId,
-        string arguments,
-        Func<string, string> parseVersion,
-        string operationLabel)
-    {
-        try
-        {
-            ProcessStartInfo startInfo = new ProcessStartInfo
-            {
-                FileName = "winget",
-                Arguments = arguments,
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                StandardOutputEncoding = Encoding.UTF8,
-                StandardErrorEncoding = Encoding.UTF8,
-                CreateNoWindow = true
-            };
-
-            using Process process = new Process { StartInfo = startInfo };
-            process.Start();
-
-            string output = await process.StandardOutput.ReadToEndAsync();
-            using CancellationTokenSource timeoutCts = new CancellationTokenSource(_executionService.DefaultQueryTimeoutMs);
-            try
-            {
-                await process.WaitForExitAsync(timeoutCts.Token);
-            }
-            catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
-            {
-                try { process.Kill(entireProcessTree: true); } catch { }
-                return string.Empty;
-            }
-
-            return parseVersion(CleanWingetOutput(output));
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning($"Failed to query {operationLabel} for '{wingetId}': {ex.Message}");
-            return string.Empty;
-        }
-    }
-
-    /// <summary>
-    /// Cleans winget output by removing progress spinner characters.
-    /// </summary>
-    private static string CleanWingetOutput(string output)
-    {
-        if (string.IsNullOrEmpty(output))
-            return output;
-
-        List<string> cleanLines = new List<string>();
-        string[] lines = output.Split('\n');
-
-        foreach (string line in lines)
-        {
-            string[] segments = line.Split('\r');
-            string? lastSegment = segments
-                .Select(s => s.Trim())
-                .LastOrDefault(s => !string.IsNullOrEmpty(s) &&
-                                    !s.All(c => c == '-' || c == '\\' || c == '|' || c == '/' || c == ' '));
-
-            if (!string.IsNullOrEmpty(lastSegment))
-            {
-                cleanLines.Add(lastSegment);
-            }
-        }
-
-        return string.Join("\n", cleanLines);
-    }
-
-    /// <summary>
     /// Executes an update command and returns the result.
     /// </summary>
-    protected virtual Task<(bool Success, int ExitCode, string Output)> ExecuteUpdateCommandAsync(
+    protected virtual async Task<(bool Success, int ExitCode, string Output)> ExecuteUpdateCommandAsync(
         string command,
         string arguments,
-        StringBuilder logBuilder)
-        => RunVendorCommandAsync(command, arguments, "Update command", logBuilder);
-
-    /// <summary>
-    /// Runs a vendor package-manager command (winget/chocolatey) with the configured
-    /// installation timeout, summarizes its output, and returns the exit status. Shared
-    /// by the update and uninstall paths so the process plumbing exists in one place.
-    /// The <paramref name="operationLabel"/> only customizes the timeout log wording.
-    /// </summary>
-    private async Task<(bool Success, int ExitCode, string Output)> RunVendorCommandAsync(
-        string command,
-        string arguments,
-        string operationLabel,
         StringBuilder logBuilder)
     {
-        try
-        {
-            ProcessStartInfo startInfo = new ProcessStartInfo
-            {
-                FileName = command,
-                Arguments = arguments,
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                StandardOutputEncoding = Encoding.UTF8,
-                StandardErrorEncoding = Encoding.UTF8,
-                CreateNoWindow = true
-            };
-
-            using Process process = new Process { StartInfo = startInfo };
-            process.Start();
-
-            Task<string> outputTask = process.StandardOutput.ReadToEndAsync();
-            Task<string> errorTask = process.StandardError.ReadToEndAsync();
-
-            using CancellationTokenSource timeoutCts = new CancellationTokenSource(_executionService.InstallationTimeoutMs);
-            try
-            {
-                await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync(timeoutCts.Token));
-            }
-            catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
-            {
-                try { process.Kill(entireProcessTree: true); } catch { }
-                logBuilder.AppendLine($"[ERROR] {operationLabel} timed out after {_executionService.InstallationTimeoutMs / 60000} minutes");
-                return (false, -1, $"{operationLabel} timed out");
-            }
-
-            string output = await outputTask;
-            string error = await errorTask;
-
-            AppendVendorOutputSummary(logBuilder, output, error);
-
-            return (process.ExitCode == 0, process.ExitCode, output);
-        }
-        catch (Exception ex)
-        {
-            logBuilder.AppendLine($"Command execution failed: {ex.Message}");
-            return (false, -1, ex.Message);
-        }
+        VendorCommandResult result = await _commandRunner.RunAsync(command, arguments, "Update command", logBuilder);
+        return (result.Success, result.ExitCode, result.Output);
     }
 
     /// <summary>
@@ -1488,148 +1147,19 @@ if (Get-Command -Name 'Clear-WingetUpdatesCache' -ErrorAction SilentlyContinue) 
         string commandLine,
         StringBuilder logBuilder)
     {
-        try
-        {
-            string[] commandParts = commandLine.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
-            if (commandParts.Length == 0)
-            {
-                logBuilder.AppendLine("Command detection failed: command line is empty");
-                return (false, -1, string.Empty);
-            }
-
-            // Security: only allowlisted executables may be launched for Command detection.
-            // Mirrors DetectionProbe.DetectCommandAsync and closes the arbitrary command
-            // execution path that an imported catalog could otherwise reach on the
-            // post-update verification path.
-            _allowedDetectionExecutables ??= DetectionExecutableAllowlist.Load(_pathService, _logger);
-            string executableName = Path.GetFileName(commandParts[0]);
-            if (!_allowedDetectionExecutables.Contains(executableName))
-            {
-                logBuilder.AppendLine(
-                    $"Command detection blocked: '{commandParts[0]}' is not in the detection allowlist");
-                return (false, -1, string.Empty);
-            }
-
-            ProcessStartInfo startInfo = new ProcessStartInfo
-            {
-                FileName = commandParts[0],
-                Arguments = commandParts.Length > 1 ? commandParts[1] : string.Empty,
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                CreateNoWindow = true
-            };
-
-            using Process process = new Process { StartInfo = startInfo };
-            process.Start();
-
-            Task<string> outputTask = process.StandardOutput.ReadToEndAsync();
-            Task<string> errorTask = process.StandardError.ReadToEndAsync();
-
-            using CancellationTokenSource detectionTimeoutCts = new CancellationTokenSource(_executionService.DefaultQueryTimeoutMs);
-            try
-            {
-                await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync(detectionTimeoutCts.Token));
-            }
-            catch (OperationCanceledException) when (detectionTimeoutCts.IsCancellationRequested)
-            {
-                try { process.Kill(entireProcessTree: true); } catch { }
-                logBuilder.AppendLine($"[ERROR] Command detection timed out after {_executionService.DefaultQueryTimeoutMs / 1000} seconds");
-                return (false, -1, "Command detection timed out");
-            }
-
-            string output = await outputTask;
-            string error = await errorTask;
-
-            logBuilder.AppendLine(output);
-            if (!string.IsNullOrEmpty(error))
-            {
-                logBuilder.AppendLine($"[stderr] {error}");
-            }
-
-            return (process.ExitCode == 0, process.ExitCode, output);
-        }
-        catch (Exception ex)
-        {
-            logBuilder.AppendLine($"Command detection failed: {ex.Message}");
-            return (false, -1, ex.Message);
-        }
+        VendorCommandResult result = await _commandRunner.RunDetectionAsync(commandLine, logBuilder);
+        return (result.Success, result.ExitCode, result.Output);
     }
 
     /// <summary>
     /// Executes an uninstall command and returns the result.
     /// </summary>
-    protected virtual Task<(bool Success, int ExitCode, string Output)> ExecuteUninstallCommandAsync(
+    protected virtual async Task<(bool Success, int ExitCode, string Output)> ExecuteUninstallCommandAsync(
         string command,
         string arguments,
         StringBuilder logBuilder)
-        => RunVendorCommandAsync(command, arguments, "Uninstall command", logBuilder);
-
-    /// <summary>
-    /// Extracts readable messages from PowerShell output.
-    /// Filters out binary content and CLIXML serialization artifacts.
-    /// </summary>
-    private static string ExtractReadableMessage(string line)
     {
-        // Filter out binary content (non-printable characters indicate binary data)
-        // Check for common binary signatures: MZ (DOS exe), PK (ZIP), etc.
-        if (line.Length > 0 && (line[0] == 'M' && line.Length > 1 && line[1] == 'Z'))
-        {
-            return string.Empty; // DOS executable header - skip binary content
-        }
-
-        // Check for high ratio of non-printable characters (indicates binary data)
-        int nonPrintable = 0;
-        int checkLength = Math.Min(line.Length, 100); // Check first 100 chars
-        for (int i = 0; i < checkLength; i++)
-        {
-            char c = line[i];
-            if (c < 32 && c != '\t' && c != '\n' && c != '\r')
-            {
-                nonPrintable++;
-            }
-        }
-        if (checkLength > 0 && nonPrintable > checkLength / 4) // More than 25% non-printable
-        {
-            return string.Empty; // Likely binary data
-        }
-
-        if (line.Contains("<Objs") || line.Contains("<ToString>"))
-        {
-            List<string> messages = new List<string>();
-
-            Regex toStringPattern = new System.Text.RegularExpressions.Regex(
-                @"<ToString>([^<]*)</ToString>",
-                System.Text.RegularExpressions.RegexOptions.Compiled);
-
-            MatchCollection matches = toStringPattern.Matches(line);
-            foreach (System.Text.RegularExpressions.Match match in matches)
-            {
-                string message = match.Groups[1].Value;
-                if (!string.IsNullOrWhiteSpace(message))
-                {
-                    message = message.Replace("_x000D__x000A_", "\n")
-                                     .Replace("_x000A_", "\n")
-                                     .Replace("&lt;", "<")
-                                     .Replace("&gt;", ">")
-                                     .Replace("&amp;", "&")
-                                     .Trim();
-
-                    if (!string.IsNullOrWhiteSpace(message) && !messages.Contains(message))
-                    {
-                        messages.Add(message);
-                    }
-                }
-            }
-
-            return string.Join("\n", messages);
-        }
-
-        if (line.StartsWith("<") && line.Contains(">"))
-        {
-            return string.Empty;
-        }
-
-        return line;
+        VendorCommandResult result = await _commandRunner.RunAsync(command, arguments, "Uninstall command", logBuilder);
+        return (result.Success, result.ExitCode, result.Output);
     }
 }
