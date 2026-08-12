@@ -99,6 +99,81 @@ public class ProfileMigrationServiceTests
         AssertSentinel(result.SentinelPath, sourceDefaults: true, sourceLegacy: true);
     }
 
+    /// <summary>
+    /// The sentinel is written only after migration returns, so a run that dies partway
+    /// leaves no sentinel and the next start must retry. This pins that the retry
+    /// completes the work instead of duplicating what already landed.
+    /// </summary>
+    [Fact]
+    public void EnsureProfilesMigrated_AfterAnInterruptedRun_ShouldResumeWithoutDuplicating()
+    {
+        using TestWorkspace workspace = new TestWorkspace();
+        string defaultsDirectory = CreateDefaultsDirectory(workspace);
+        WriteProfile(defaultsDirectory, "Base", "default base");
+
+        string legacyDirectory = Path.Combine(workspace.RepositoryRoot, WinForgePathNames.ProfilesDirectoryName);
+        WriteProfile(legacyDirectory, "Custom", "custom profile");
+        WriteProfile(legacyDirectory, "Other", "other profile");
+
+        // Simulate a run interrupted after copying one legacy profile: the file is
+        // present, the sentinel is not.
+        Directory.CreateDirectory(workspace.UserProfilesDirectory);
+        WriteProfile(workspace.UserProfilesDirectory, "Custom", "custom profile");
+
+        ProfileMigrationService service = CreateService(workspace);
+        ProfileMigrationResult result = service.EnsureProfilesMigrated();
+
+        Assert.True(result.MigrationPerformed);
+
+        // The already-migrated profile is recognised by content and not copied again.
+        Assert.False(File.Exists(Path.Combine(
+            workspace.UserProfilesDirectory,
+            $"Custom{WinForgePathNames.LegacyProfileConflictSuffix}{WinForgePathNames.JsonFileExtension}")));
+        Assert.Equal(
+            "custom profile",
+            File.ReadAllText(Path.Combine(workspace.UserProfilesDirectory, $"Custom{WinForgePathNames.JsonFileExtension}")));
+
+        // The profile the interrupted run had not reached is migrated now.
+        Assert.Equal(
+            "other profile",
+            File.ReadAllText(Path.Combine(workspace.UserProfilesDirectory, $"Other{WinForgePathNames.JsonFileExtension}")));
+
+        Assert.True(File.Exists(result.SentinelPath));
+    }
+
+    /// <summary>
+    /// If the sentinel cannot be written, migration must stay pending rather than be
+    /// silently recorded as done.
+    /// </summary>
+    [Fact]
+    public void EnsureProfilesMigrated_WhenTheSentinelCannotBeWritten_ShouldLeaveMigrationPending()
+    {
+        using TestWorkspace workspace = new TestWorkspace();
+        string defaultsDirectory = CreateDefaultsDirectory(workspace);
+        WriteProfile(defaultsDirectory, "Base", "default base");
+
+        // A directory at the sentinel path makes File.WriteAllText fail.
+        Directory.CreateDirectory(workspace.UserProfilesDirectory);
+        string sentinelPath = Path.Combine(
+            workspace.UserProfilesDirectory,
+            WinForgePathNames.ProfileMigrationSentinelFileName);
+        Directory.CreateDirectory(sentinelPath);
+
+        ProfileMigrationService service = CreateService(workspace);
+
+        // The exact type depends on the platform (a directory in the way surfaces as
+        // UnauthorizedAccessException on Windows); what matters is that it fails loudly.
+        Assert.ThrowsAny<SystemException>(() => service.EnsureProfilesMigrated());
+        Assert.False(File.Exists(sentinelPath));
+
+        // Once the blocker is gone the next run completes and records the sentinel.
+        Directory.Delete(sentinelPath);
+        ProfileMigrationResult result = service.EnsureProfilesMigrated();
+
+        Assert.True(result.MigrationPerformed);
+        Assert.True(File.Exists(result.SentinelPath));
+    }
+
     private static ProfileMigrationService CreateService(TestWorkspace workspace)
     {
         RepositoryPathService pathService = new RepositoryPathService(workspace.RepositoryRoot, [workspace.UserDataBasePath]);
