@@ -261,8 +261,11 @@ jobs:
               $summary = Get-Content 'coverage-report-gui/Summary.json' | ConvertFrom-Json
               $lineCoverage = $summary.summary.linecoverage
               $branchCoverage = $summary.summary.branchcoverage
-              $minCoverage = 35
-              $targetCoverage = 35
+              # Ratchet: the floor tracks just below the measured coverage (40.46%) so a
+              # regression fails the build while normal fluctuation does not. Raise it
+              # whenever real coverage moves up; never lower it to make a build pass.
+              $minCoverage = 38
+              $targetCoverage = 38
 
               Write-Host "=== .NET GUI Code Coverage ===" -ForegroundColor Cyan
               Write-Host "Line Coverage: $lineCoverage% (minimum: $minCoverage%, target: $targetCoverage%)" -ForegroundColor $(if ($lineCoverage -ge $targetCoverage) { 'Green' } elseif ($lineCoverage -ge $minCoverage) { 'Yellow' } else { 'Red' })
