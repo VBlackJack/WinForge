@@ -89,7 +89,7 @@ internal sealed class VendorCommandRunner
             using CancellationTokenSource timeoutCts = new CancellationTokenSource(_executionService.InstallationTimeoutMs);
             try
             {
-                await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync(timeoutCts.Token));
+                await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync(timeoutCts.Token)).WaitAsync(timeoutCts.Token);
             }
             catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
             {
@@ -167,7 +167,7 @@ internal sealed class VendorCommandRunner
             using CancellationTokenSource timeoutCts = new CancellationTokenSource(_executionService.DefaultQueryTimeoutMs);
             try
             {
-                await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync(timeoutCts.Token));
+                await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync(timeoutCts.Token)).WaitAsync(timeoutCts.Token);
             }
             catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
             {
@@ -214,12 +214,13 @@ internal sealed class VendorCommandRunner
             using Process process = new Process { StartInfo = CreateStartInfo("winget", arguments) };
             process.Start();
 
-            string output = await process.StandardOutput.ReadToEndAsync();
+            Task<string> outputTask = process.StandardOutput.ReadToEndAsync();
+            Task<string> errorTask = process.StandardError.ReadToEndAsync();
 
             using CancellationTokenSource timeoutCts = new CancellationTokenSource(_executionService.DefaultQueryTimeoutMs);
             try
             {
-                await process.WaitForExitAsync(timeoutCts.Token);
+                await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync(timeoutCts.Token)).WaitAsync(timeoutCts.Token);
             }
             catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
             {
@@ -227,7 +228,7 @@ internal sealed class VendorCommandRunner
                 return string.Empty;
             }
 
-            return parseVersion(CleanWingetOutput(output));
+            return parseVersion(CleanWingetOutput(await outputTask));
         }
         catch (Exception ex)
         {

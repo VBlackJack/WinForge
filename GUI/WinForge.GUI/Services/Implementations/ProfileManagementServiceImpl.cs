@@ -201,6 +201,8 @@ public class ProfileManagementServiceImpl : IProfileManagementService
                 ["Version"] = version
             };
 
+            profileObj["Inherits"] = Array.Empty<string>();
+
             // Add inheritance if parent is specified
             if (!string.IsNullOrEmpty(parentProfile) &&
                 parentProfile != Loc.Editor_NoParent)
@@ -218,17 +220,9 @@ public class ProfileManagementServiceImpl : IProfileManagementService
                 profileObj["Applications"] = Array.Empty<string>();
             }
 
-            // Serialize with indentation
-            JsonSerializerOptions options = new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                PropertyNamingPolicy = null // Keep PascalCase
-            };
-
-            string jsonContent = JsonSerializer.Serialize(profileObj, options);
-
-            // Write to file
-            File.WriteAllText(profilePath, jsonContent);
+            string? sourcePath = ResolveProfilePath(profileName);
+            ProfileJsonWriter.Write(profilePath, profileObj,
+                sourcePath == null ? null : File.ReadAllText(sourcePath));
         });
     }
 
