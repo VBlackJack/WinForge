@@ -43,7 +43,7 @@ internal static class UpdateSourcePolicy
     /// <param name="source">The value read from the catalog.</param>
     /// <returns>
     /// The canonical source name, or <see langword="null"/> when the catalog named
-    /// nothing recognizable — in which case the caller applies its normal source order.
+    /// nothing recognizable - in which case the caller applies its normal source order.
     /// </returns>
     public static string? Normalize(string? source)
     {

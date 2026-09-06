@@ -1,6 +1,8 @@
 # WinForge Documentation
 
-Current framework display version: `2026081201`.
+[Français](README.fr.md)
+
+Current framework display version: `2026090601`.
 
 ## User Documentation
 
@@ -10,6 +12,7 @@ Current framework display version: `2026081201`.
 
 ## Project Documentation
 
+- [`PUBLICATION_POLICY.md`](PUBLICATION_POLICY.md): documentation languages and release conventions.
 - [`ARCHITECTURE.md`](ARCHITECTURE.md): public architecture overview.
 - [`GUI_VM_VISUAL_CHECKLIST.md`](GUI_VM_VISUAL_CHECKLIST.md): manual GUI and accessibility smoke checklist.
 - [`../CONTRIBUTING.md`](../CONTRIBUTING.md): contribution guidelines.

@@ -1,5 +1,7 @@
 # Contributing to WinForge
 
+[Français](CONTRIBUTING.fr.md)
+
 Thank you for your interest in contributing to WinForge! This document provides guidelines and instructions for contributing.
 
 ## Table of Contents
@@ -35,13 +37,14 @@ git clone https://github.com/VBlackJack/WinForge.git
 cd WinForge
 
 # Install test dependencies
-Install-Module -Name Pester -MinimumVersion 5.0.0 -Force -Scope CurrentUser
+Install-Module -Name Pester -RequiredVersion 5.7.1 -Force -Scope CurrentUser
 Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
 
 # Run tests to verify setup
 Invoke-Pester -Path ./Tests -Output Detailed
 
-# Build GUI (optional)
+# Resolve the exact CI dependency, then build the GUI
+.\Tools\Resolve-ThemeForge.ps1
 dotnet build ./GUI/WinForge.slnx
 ```
 
@@ -216,7 +219,7 @@ BREAKING CHANGE: Error responses now use generic messages
 
    Always run the wrapper rather than `Invoke-ScriptAnalyzer` directly: it applies
    `PSScriptAnalyzerSettings.psd1`, which is what CI uses. The settings file deliberately
-   declares no `IncludeRules` — the full default rule set runs, and each exclusion carries
+   declares no `IncludeRules` - the full default rule set runs, and each exclusion carries
    its justification inline. Errors fail the build; the expected steady state is
    **0 errors and 7 warnings**, all documented at the top of the settings file. If you add
    a suppression, state why in the same place.
@@ -296,6 +299,16 @@ Describe 'ModuleName' {
 
 ## Documentation
 
+### Publication Conventions
+
+- Write README files, documentation, changelogs, and release notes in English by default.
+- Keep French translations in separate `.fr.md` files, with reciprocal language links.
+- Update both language versions together when changing translated content.
+- Use plain punctuation without em dashes.
+- Keep repository content focused on the product, without tool attribution or generation credits.
+- Write the GitHub repository description in English and review topics for relevance when the project scope changes.
+- Follow the [publication policy](Docs/PUBLICATION_POLICY.md) for release note filenames and checks.
+
 ### Adding i18n Keys
 
 1. Add key to `Config/Locales/en.json`:
@@ -340,7 +353,7 @@ Examples:
 
 - Open an issue for questions
 - Check existing issues and documentation
-- Review ARCHITECTURE.md for technical details
+- Review Docs/ARCHITECTURE.md for technical details
 
 ---
 

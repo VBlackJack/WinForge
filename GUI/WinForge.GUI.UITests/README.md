@@ -1,5 +1,7 @@
 # WinForge GUI UIA Tests
 
+[Français](README.fr.md)
+
 These tests launch the real WPF application, drive it through UI Automation, and write PNG screenshots.
 
 They are skipped by default because they require an interactive Windows desktop session.
@@ -17,7 +19,7 @@ Screenshots are written to `WINFORGE_UIA_ARTIFACTS` when set, otherwise to a tim
 
 ## Winsight smoke
 
-WinSight is the preferred opt-in agent smoke harness for exploratory desktop checks.
+WinSight is the preferred opt-in smoke harness for exploratory desktop checks.
 It runs as a sibling repository and is not required for normal CI.
 
 From the WinForge repository root:
@@ -35,4 +37,4 @@ $env:WINSIGHT_ROOT = '<path-to-winsight>'
 .\Tools\Invoke-WinsightSmoke.ps1
 ```
 
-Use this in addition to the xUnit UIA tests when a change needs richer agent-side inspection or screenshot capture.
+Use this in addition to the xUnit UIA tests when a change needs richer desktop inspection or screenshot capture.

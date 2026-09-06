@@ -163,19 +163,19 @@ Describe 'SystemConfig Module' {
         It 'Should handle empty configuration' {
             # Empty config should not throw
             { Set-ExplorerConfiguration -Config @{} } | Should -Not -Throw
-            Assert-MockCalled Stop-Process -ModuleName SystemConfig -Times 1 -Exactly
+            Should -Invoke Stop-Process -ModuleName SystemConfig -Times 1 -Exactly
         }
 
         It 'Should process ShowHiddenFiles setting' {
             $config = @{ ShowHiddenFiles = $false }
             { Set-ExplorerConfiguration -Config $config } | Should -Not -Throw
-            Assert-MockCalled Set-RegistrySettingFromConfig -ModuleName SystemConfig -Times 0 -ParameterFilter {
+            Should -Invoke Set-RegistrySettingFromConfig -ModuleName SystemConfig -Times 0 -ParameterFilter {
                 $Group -eq 'Explorer' -and $Setting -eq 'Hidden'
             }
 
             $config = @{ ShowHiddenFiles = $true }
             { Set-ExplorerConfiguration -Config $config } | Should -Not -Throw
-            Assert-MockCalled Set-RegistrySettingFromConfig -ModuleName SystemConfig -Times 1 -ParameterFilter {
+            Should -Invoke Set-RegistrySettingFromConfig -ModuleName SystemConfig -Times 1 -ParameterFilter {
                 $Group -eq 'Explorer' -and $Setting -eq 'Hidden' -and $Enable -eq $true
             }
         }
@@ -183,13 +183,13 @@ Describe 'SystemConfig Module' {
         It 'Should process ShowFileExtensions setting' {
             $config = @{ ShowFileExtensions = $false }
             { Set-ExplorerConfiguration -Config $config } | Should -Not -Throw
-            Assert-MockCalled Set-RegistrySettingFromConfig -ModuleName SystemConfig -Times 0 -ParameterFilter {
+            Should -Invoke Set-RegistrySettingFromConfig -ModuleName SystemConfig -Times 0 -ParameterFilter {
                 $Group -eq 'Explorer' -and $Setting -eq 'HideFileExt'
             }
 
             $config = @{ ShowFileExtensions = $true }
             { Set-ExplorerConfiguration -Config $config } | Should -Not -Throw
-            Assert-MockCalled Set-RegistrySettingFromConfig -ModuleName SystemConfig -Times 1 -ParameterFilter {
+            Should -Invoke Set-RegistrySettingFromConfig -ModuleName SystemConfig -Times 1 -ParameterFilter {
                 $Group -eq 'Explorer' -and $Setting -eq 'HideFileExt' -and $Enable -eq $true
             }
         }
@@ -236,7 +236,7 @@ Describe 'SystemConfig Module' {
             # Just test parsing, not actual application (requires admin)
             $config = @{ DnsServers = @('8.8.8.8', '8.8.4.4') }
             { Set-NetworkConfiguration -Config $config } | Should -Not -Throw
-            Assert-MockCalled Set-DnsClientServerAddress -ModuleName SystemConfig -Times 1 -Exactly -ParameterFilter {
+            Should -Invoke Set-DnsClientServerAddress -ModuleName SystemConfig -Times 1 -Exactly -ParameterFilter {
                 $InterfaceIndex -eq 12 -and @($ServerAddresses).Count -eq 2
             }
         }
@@ -244,7 +244,7 @@ Describe 'SystemConfig Module' {
         It 'Should handle DNS configuration with string format' {
             $config = @{ DnsServers = '8.8.8.8,8.8.4.4' }
             { Set-NetworkConfiguration -Config $config } | Should -Not -Throw
-            Assert-MockCalled Set-DnsClientServerAddress -ModuleName SystemConfig -Times 1 -Exactly -ParameterFilter {
+            Should -Invoke Set-DnsClientServerAddress -ModuleName SystemConfig -Times 1 -Exactly -ParameterFilter {
                 $InterfaceIndex -eq 12 -and @($ServerAddresses).Count -eq 2
             }
         }
@@ -252,7 +252,7 @@ Describe 'SystemConfig Module' {
         It 'Should handle invalid DNS gracefully' {
             $config = @{ DnsServers = @('invalid') }
             { Set-NetworkConfiguration -Config $config } | Should -Not -Throw
-            Assert-MockCalled Set-DnsClientServerAddress -ModuleName SystemConfig -Times 0 -Exactly
+            Should -Invoke Set-DnsClientServerAddress -ModuleName SystemConfig -Times 0 -Exactly
         }
     }
 

@@ -25,7 +25,7 @@ namespace WinForge.GUI.Services.Implementations;
 /// <remarks>
 /// This surface is intentionally English-only, enforced by LocalizationAuditTests: results
 /// and persisted logs must stay parseable regardless of the UI culture. The literal text
-/// still lives in resources, to avoid hardcoding rather than to localize it — which is why
+/// still lives in resources, to avoid hardcoding rather than to localize it - which is why
 /// every lookup goes through the English resolver here instead of the ambient culture.
 /// </remarks>
 internal static class DeploymentLog

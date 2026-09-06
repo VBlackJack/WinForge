@@ -115,11 +115,12 @@ public partial class VersionServiceImpl : IVersionService
             using Process process = new Process { StartInfo = startInfo };
             process.Start();
 
-            string output = await process.StandardOutput.ReadToEndAsync();
+            Task<string> outputTask = process.StandardOutput.ReadToEndAsync();
+            Task<string> errorTask = process.StandardError.ReadToEndAsync();
             using CancellationTokenSource timeoutCts = new CancellationTokenSource(_executionService.DefaultQueryTimeoutMs);
             try
             {
-                await process.WaitForExitAsync(timeoutCts.Token);
+                await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync(timeoutCts.Token)).WaitAsync(timeoutCts.Token);
             }
             catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
             {
@@ -135,7 +136,7 @@ public partial class VersionServiceImpl : IVersionService
             }
 
             // Clean output from progress indicators before parsing
-            string cleanOutput = CleanWingetOutput(output);
+            string cleanOutput = CleanWingetOutput(await outputTask);
 
             // Parse version from list output using column-based parsing
             return ParseVersionFromWingetList(cleanOutput);
@@ -171,11 +172,12 @@ public partial class VersionServiceImpl : IVersionService
             using Process process = new Process { StartInfo = startInfo };
             process.Start();
 
-            string output = await process.StandardOutput.ReadToEndAsync();
+            Task<string> outputTask = process.StandardOutput.ReadToEndAsync();
+            Task<string> errorTask = process.StandardError.ReadToEndAsync();
             using CancellationTokenSource timeoutCts = new CancellationTokenSource(_executionService.DefaultQueryTimeoutMs);
             try
             {
-                await process.WaitForExitAsync(timeoutCts.Token);
+                await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync(timeoutCts.Token)).WaitAsync(timeoutCts.Token);
             }
             catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
             {
@@ -191,7 +193,7 @@ public partial class VersionServiceImpl : IVersionService
             }
 
             // Clean output from progress indicators before parsing
-            string cleanOutput = CleanWingetOutput(output);
+            string cleanOutput = CleanWingetOutput(await outputTask);
 
             // Parse version from show output
             return ParseVersionFromWingetShow(cleanOutput);

@@ -730,13 +730,7 @@ public partial class AppsViewModel
                 profile["Applications"] = ownApps;
             }
 
-            JsonSerializerOptions jsonOptions = new JsonSerializerOptions
-            {
-                WriteIndented = true
-            };
-
-            string jsonContent = JsonSerializer.Serialize(profile, jsonOptions);
-            await File.WriteAllTextAsync(profilePath, jsonContent);
+            await Task.Run(() => ProfileJsonWriter.Write(profilePath, profile));
 
             // Update cache
             HashSet<string> appIds = selectedApps.Select(a => a.AppId).ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -821,10 +815,11 @@ public partial class AppsViewModel
         }
 
         return new ProfileEditSnapshot(
-            JsonHelper.GetJsonString(root, "Name") ?? profileName,
+            profileName,
             JsonHelper.GetJsonString(root, "Description") ?? string.Empty,
             JsonHelper.GetJsonString(root, "Version") ?? "1.0.0",
-            inheritedFrom);
+            inheritedFrom,
+            jsonContent);
     }
 
     private async Task<HashSet<string>> ResolveInheritedAppIdsAsync(IEnumerable<string> parentProfiles)
@@ -861,22 +856,7 @@ public partial class AppsViewModel
             profilesDir,
             $"{profile.Name}{WinForgePathNames.JsonFileExtension}");
 
-        Dictionary<string, object> profilePayload = new Dictionary<string, object>
-        {
-            ["Name"] = profile.Name,
-            ["Description"] = profile.Description,
-            ["Version"] = profile.Version,
-            ["Inherits"] = profile.InheritedFrom.ToArray(),
-            ["Applications"] = directAppIds.ToArray()
-        };
-
-        JsonSerializerOptions jsonOptions = new JsonSerializerOptions
-        {
-            WriteIndented = true
-        };
-
-        string jsonContent = JsonSerializer.Serialize(profilePayload, jsonOptions);
-        await File.WriteAllTextAsync(profilePath, jsonContent);
+        await Task.Run(() => ProfileJsonWriter.Write(profilePath, new Dictionary<string, object> { ["Applications"] = directAppIds.ToArray() }, profile.SourceJson));
     }
 
     private async Task RefreshProfileCachesAfterUpdateAsync(string profileName)
@@ -941,5 +921,6 @@ public partial class AppsViewModel
         string Name,
         string Description,
         string Version,
-        IReadOnlyList<string> InheritedFrom);
+        IReadOnlyList<string> InheritedFrom,
+        string SourceJson);
 }

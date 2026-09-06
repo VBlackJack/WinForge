@@ -411,11 +411,22 @@ public partial class PackageSearchService : IPackageSearchService
         };
 
         process.Start();
-        string output = process.StandardOutput.ReadToEnd();
-        string errorOutput = process.StandardError.ReadToEnd();
-        process.WaitForExit(5000);
+        Task<string> outputTask = process.StandardOutput.ReadToEndAsync();
+        Task<string> errorTask = process.StandardError.ReadToEndAsync();
+        using CancellationTokenSource timeoutCts = new CancellationTokenSource(TimeoutDefaults.PackageOperation);
+        try
+        {
+            Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync(timeoutCts.Token))
+                .WaitAsync(timeoutCts.Token).GetAwaiter().GetResult();
+        }
+        catch
+        {
+            try { process.Kill(entireProcessTree: true); }
+            catch (InvalidOperationException) { /* The process already exited. */ }
+            throw;
+        }
 
-        return (process.ExitCode, output, errorOutput);
+        return (process.ExitCode, outputTask.GetAwaiter().GetResult(), errorTask.GetAwaiter().GetResult());
     }
 
     private async Task<(int ExitCode, string Output, string ErrorOutput)> RunProcessAsync(
@@ -452,7 +463,7 @@ public partial class PackageSearchService : IPackageSearchService
 
         try
         {
-            await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync(timeoutCts.Token));
+            await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync(timeoutCts.Token)).WaitAsync(timeoutCts.Token);
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {

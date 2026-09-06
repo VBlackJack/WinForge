@@ -585,7 +585,12 @@ function Invoke-PluginSandboxed {
 
         # Security: Validate the actual handler body rather than a FunctionInfo
         # display name, then pass only text into the isolated job.
-        if ($Handler -is [scriptblock]) {
+        $moduleHandler = $Handler -is [System.Collections.IDictionary] -and $Handler.Contains('ModuleContent')
+        $functionName = ''
+        if ($moduleHandler) {
+            $handlerText = [string]$Handler.ModuleContent
+            $functionName = [string]$Handler.FunctionName
+        } elseif ($Handler -is [scriptblock]) {
             $handlerText = $Handler.ToString()
         } elseif ($Handler -is [System.Management.Automation.CommandInfo] -and $null -ne $Handler.ScriptBlock) {
             $handlerText = $Handler.ScriptBlock.ToString()
@@ -608,7 +613,7 @@ function Invoke-PluginSandboxed {
         # validator there to prevent TOCTOU drift between parent and job scope.
         $sandboxModulePath = $script:PluginSandboxModulePath
         $job = Start-Job -ScriptBlock {
-            param($HandlerText, $ContextData, $SandboxModulePath, $LocalizationPath, $CoreModulePath)
+            param($HandlerText, $ContextData, $SandboxModulePath, $LocalizationPath, $CoreModulePath, $ModuleHandler, $FunctionName)
 
             # Security: Re-validate handler inside job scope before execution (TOCTOU prevention)
             Import-Module -Name $SandboxModulePath -Force -ErrorAction Stop
@@ -636,7 +641,24 @@ function Invoke-PluginSandboxed {
                 $shell = [powershell]::Create()
                 $shell.Runspace = $runspace
                 try {
-                    $null = $shell.AddScript($HandlerText).AddArgument($ContextData)
+                    $snapshotPath = $null
+                    if ($ModuleHandler) {
+                        # Import only the validated snapshot, never the original mutable path.
+                        $snapshotPath = Join-Path ([System.IO.Path]::GetTempPath()) (([guid]::NewGuid().ToString('N')) + '.psm1')
+                        [System.IO.File]::WriteAllText($snapshotPath, $HandlerText, [System.Text.UTF8Encoding]::new($true))
+                        $null = $shell.AddCommand('Import-Module').AddParameter('Name', $snapshotPath).AddParameter('PassThru').AddParameter('ErrorAction', 'Stop')
+                        $modules = $shell.Invoke()
+                        if ($shell.HadErrors) {
+                            throw ($shell.Streams.Error | ForEach-Object { $_.ToString() }) -join '; '
+                        }
+                        $exports = @($modules[0].ExportedFunctions.Keys)
+                        if (-not $FunctionName) { return $exports }
+                        if ($FunctionName -notin $exports) { throw 'Plugin handler is not exported by the validated module.' }
+                        $shell.Commands.Clear()
+                        $null = $shell.AddCommand($FunctionName).AddArgument($ContextData)
+                    } else {
+                        $null = $shell.AddScript($HandlerText).AddArgument($ContextData)
+                    }
                     $output = $shell.Invoke()
 
                     if ($shell.Streams.Error.Count -gt 0) {
@@ -650,12 +672,13 @@ function Invoke-PluginSandboxed {
                     return $output
                 } finally {
                     $shell.Dispose()
+                    if ($snapshotPath) { Remove-Item -LiteralPath $snapshotPath -Force -ErrorAction SilentlyContinue }
                 }
             } finally {
                 $runspace.Close()
                 $runspace.Dispose()
             }
-        } -ArgumentList $handlerText, $Context, $sandboxModulePath, $script:LocalizationPath, $script:CoreModulePath
+        } -ArgumentList $handlerText, $Context, $sandboxModulePath, $script:LocalizationPath, $script:CoreModulePath, $moduleHandler, $functionName
 
         # Wait for job with timeout
         $completed = $job | Wait-Job -Timeout $TimeoutSeconds
@@ -887,74 +910,16 @@ function Invoke-PluginLoadSandboxed {
             return $result
         }
 
-        $sandboxModulePath = $script:PluginSandboxModulePath
-        $moduleName = [System.IO.Path]::GetFileNameWithoutExtension($PluginPath)
-        $job = Start-Job -ScriptBlock {
-            param($Path, $ModuleContent, $ModuleName, $SandboxModulePath)
-
-            # Security: Re-validate the module content AST inside job scope (TOCTOU prevention)
-            Import-Module -Name $SandboxModulePath -Force -ErrorAction Stop
-            $validation = Test-ScriptblockSafe -ScriptText $ModuleContent
-            if (-not $validation.IsValid) {
-                throw "Security: Module blocked in job context: $($validation.Errors -join '; ')"
-            }
-
-            # Security: import the candidate module inside a runspace whose
-            # InitialSessionState declares ConstrainedLanguage. Setting
-            # $ExecutionContext.SessionState.LanguageMode here would not apply to code
-            # compiled by Import-Module, so the load probe would run unconstrained.
-            $iss = [System.Management.Automation.Runspaces.InitialSessionState]::CreateDefault()
-            $iss.LanguageMode = 'ConstrainedLanguage'
-
-            $runspace = [runspacefactory]::CreateRunspace($iss)
-            $runspace.Open()
-            try {
-                $shell = [powershell]::Create()
-                $shell.Runspace = $runspace
-                try {
-                    $null = $shell.AddScript(@'
-param($ModulePath, $ModuleName)
-Import-Module $ModulePath -Force -ErrorAction Stop
-$module = Get-Module -Name $ModuleName
-if ($module) { return $module.ExportedCommands.Count }
-return 0
-'@).AddArgument($Path).AddArgument($ModuleName)
-
-                    $exported = $shell.Invoke()
-
-                    if ($shell.Streams.Error.Count -gt 0) {
-                        throw ($shell.Streams.Error | ForEach-Object { $_.ToString() }) -join '; '
-                    }
-
-                    return @{
-                        Valid = $true
-                        ExportedCommands = if ($exported.Count -gt 0) { $exported[0] } else { 0 }
-                    }
-                } finally {
-                    $shell.Dispose()
-                }
-            } finally {
-                $runspace.Close()
-                $runspace.Dispose()
-            }
-        } -ArgumentList $PluginPath, $moduleContent, $moduleName, $sandboxModulePath
-
-        $completed = $job | Wait-Job -Timeout $loadTimeout
-
-        if ($null -eq $completed) {
-            $result.TimedOut = $true
-            $result.Error = "Plugin load validation timed out after $loadTimeout seconds"
-            $job | Stop-Job -PassThru | Remove-Job -Force -ErrorAction SilentlyContinue
-        } else {
-            if ($job.State -eq 'Failed') {
-                $result.Error = $job.ChildJobs[0].JobStateInfo.Reason.Message
-            } else {
-                $jobResult = Receive-Job -Job $job
-                if ($jobResult.Valid) {
-                    $result.Success = $true
-                }
-            }
-            Remove-Job -Job $job -Force -ErrorAction SilentlyContinue
+        $execution = Invoke-PluginSandboxed -Handler @{
+            ModuleContent = $moduleContent
+            FunctionName = ''
+        } -PluginName $PluginName -TimeoutSeconds $loadTimeout
+        $result.Success = $execution.Success
+        $result.Error = $execution.Error
+        $result.TimedOut = $execution.TimedOut
+        if ($execution.Success) {
+            $result.ModuleContent = $moduleContent
+            $result.ExportedFunctions = @($execution.Result)
         }
     } catch {
         $result.Error = $_.Exception.Message

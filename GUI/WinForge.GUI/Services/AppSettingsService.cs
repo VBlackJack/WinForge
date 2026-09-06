@@ -42,7 +42,7 @@ public class AppSettingsService : IAppSettingsService
     /// The cache check cannot stay held across the file read (a lock cannot span an
     /// await), so without this gate two concurrent first-callers both miss the cache,
     /// both read and deserialize the file, and each walks away with a *different*
-    /// AppSettings instance — a mutation made through one is invisible to the other.
+    /// AppSettings instance - a mutation made through one is invisible to the other.
     /// </remarks>
     private readonly SemaphoreSlim _asyncLoadGate = new(1, 1);
 

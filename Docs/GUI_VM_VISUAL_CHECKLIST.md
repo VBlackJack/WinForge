@@ -1,5 +1,7 @@
 # GUI VM Visual Checklist
 
+[Français](GUI_VM_VISUAL_CHECKLIST.fr.md)
+
 ## Scope
 Manual visual/accessibility validation for the current WinForge GUI after the May 2026 backlog closure:
 - theme persistence and consistency
@@ -122,7 +124,7 @@ Expected:
 
 ## WinSight Smoke
 
-For an opt-in agent-side smoke pass with screenshots, run from the repository root:
+For an opt-in desktop smoke pass with screenshots, run from the repository root:
 
 ```powershell
 pwsh -NoProfile -File Tools\Invoke-WinsightSmoke.ps1 -WinsightRoot <path-to-winsight>

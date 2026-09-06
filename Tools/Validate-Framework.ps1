@@ -41,7 +41,10 @@
 [CmdletBinding()]
 param(
     [Parameter()]
-    [switch]$Detailed
+    [switch]$Detailed,
+
+    [Parameter()]
+    [switch]$Offline
 )
 
 $ErrorActionPreference = 'Stop'
@@ -569,8 +572,12 @@ Test-CoreFunctions
 Test-EnvironmentDetection
 Test-ProfileLoading
 Test-PrerequisitesValidation
-Test-SystemPermissions
-Test-NetworkConnectivity
+if (-not $Offline) {
+    Test-SystemPermissions
+    Test-NetworkConnectivity
+} else {
+    Write-Host 'Offline validation: host write permissions and live network checks are not requested.'
+}
 
 # === SUMMARY ===
 

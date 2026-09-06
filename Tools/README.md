@@ -1,375 +1,73 @@
-# WinForge - Outils et Utilitaires
+# WinForge Tools
 
-Ce dossier contient les scripts utilitaires et outils pour configurer, valider et maintenir le framework WinForge.
+[Français](README.fr.md)
 
-## 🚀 Outils Principaux
+Run PowerShell commands from the repository root. Tool parameters are documented by `Get-Help <script> -Full`.
 
-### 📋 ProfileCreator.html ⭐
-**Créateur de profils JSON personnalisés**
+## Profile and startup tools
 
-```bash
-# Double-clic sur ProfileCreator.html
-# OU ouvrir dans le navigateur (file://)
-```
+| Tool | Purpose |
+|---|---|
+| `ProfileCreator.html` | Local browser wizard for profile metadata, inheritance, bundled applications, custom sources, system configuration, and JSON export |
+| `applications-data.js` | Standalone wizard catalog; separate from the runtime catalog |
+| `Launch-StartupManager.ps1`, `StartupManager.html` | Review startup entries and export a blacklist for `Config/startup-blacklist.json` |
+| `Launch-AsTrustedInstaller.bat`, `Launch-TrustedInstallerGUI.ps1` | Launch selected administrative tools with TrustedInstaller privileges after explicit confirmation |
 
-**Fonctionnalités** :
-- Interface web standalone (aucun serveur requis)
-- Création guidée en 6 étapes
-- Héritage de profils existants (Base → Office → Gaming → Personnel)
-- Sélection parmi les applications prédéfinies du bundle `applications-data.js`
-- Ajout d'applications personnalisées avec sources (Winget/Choco/Store/URL)
-- Configuration système complète
-- Aperçu JSON et téléchargement
+The TrustedInstaller launcher requires `NtObjectManager`. Review its requested operation before elevation. See the [profile wizard guide](ProfileCreator_Features.md).
 
-**Base de données** : `applications-data.js` (65 applications pour l'outil standalone)
-
----
-
-### 🔧 Launch-AsTrustedInstaller.bat ⭐
-**Lanceur d'outils système avec privilèges TrustedInstaller**
-
-```bash
-# Depuis le répertoire Tools :
-.\Launch-AsTrustedInstaller.bat
-```
-
-**Menu interactif avec 8 options** :
-1. PowerShell (TrustedInstaller)
-2. Command Prompt (TrustedInstaller)
-3. Registry Editor (TrustedInstaller)
-4. Task Manager (TrustedInstaller)
-5. Computer Management (TrustedInstaller)
-6. Windows Explorer (TrustedInstaller)
-7. Custom executable path
-8. WinForge GUI (TrustedInstaller)
-
-**Fonctionnalités** :
-- Exécution avec privilèges NT AUTHORITY\SYSTEM
-- GUI visible dans la session utilisateur (Session 1)
-- Support automatique des fichiers .msc (via mmc.exe)
-- Confirmation explicite avant élévation TrustedInstaller
-- Module NtObjectManager requis ; installation manuelle recommandée :
-  `Install-Module -Name NtObjectManager -Scope CurrentUser -Force -AllowClobber`
-
-**Script PowerShell associé** : `Launch-TrustedInstallerGUI.ps1`
-
----
-
-### 🔍 Startup Manager
-**Gestionnaire de démarrage automatique**
-
-```bash
-.\Launch-StartupManager.ps1
-```
-
-**Fonctionnalités** :
-- Interface HTML pour gérer les applications au démarrage
-- Sélection des apps à désactiver
-- Export de la configuration en JSON
-- À copier dans `Config/startup-blacklist.json`
-
-**Interface** : `StartupManager.html`
-
----
-
-## 🛠️ Scripts de Validation
-
-### Validate-AppDatabase.ps1
-**Validation de la base de données d'applications**
+## Build dependencies
 
 ```powershell
-# Validation basique
-.\Tools\Validate-AppDatabase.ps1
-
-# Avec validation Winget et Chocolatey
-.\Tools\Validate-AppDatabase.ps1 -ValidateWinget -ValidateChocolatey
-
-# Génération de rapport HTML
-.\Tools\Validate-AppDatabase.ps1 -GenerateReport
+.\Tools\Resolve-ThemeForge.ps1
+dotnet build GUI\WinForge.slnx -c Release
 ```
 
-**Fonctionnalités** :
-- Teste les 175 applications de `Apps/Database/applications.json`
-- Vérifie les IDs Winget, Chocolatey, Store
-- Génère un rapport HTML de validation
-- Calcule le taux de succès
+The resolver creates `ThemeForge/` inside this checkout at the exact commit recorded in `Config/build-dependencies.json`. CI reads the same file. An existing dirty checkout or a different revision is rejected without resetting it. The sibling repository is not modified. For a deliberately different development source, pass `-p:ThemeForgeRoot=<path>` to MSBuild; that build is outside the pinned dependency baseline.
 
-**Rapport généré** : `Tools/ValidationReport.html`
-
----
-
-### Validate-Framework.ps1
-**Validation complète du framework**
+## Validation
 
 ```powershell
-.\Tools\Validate-Framework.ps1
-
-# Mode détaillé
-.\Tools\Validate-Framework.ps1 -Detailed
-```
-
-**Vérifications** :
-- Structure des répertoires
-- Présence des fichiers requis
-- Chargement des modules PowerShell
-- Validation des profils JSON
-- Tests de fonctionnalités de base
-
----
-
-### Invoke-PSScriptAnalyzer.ps1
-**Analyse statique PowerShell**
-
-```powershell
+.\Tools\Validate-Framework.ps1 -Detailed -Offline
 .\Tools\Invoke-PSScriptAnalyzer.ps1
-```
-
-**Vérifications** :
-- Analyse les scripts/modules principaux avec PSScriptAnalyzer
-- Échoue sur warnings/errors selon le seuil configuré
-- Utilisé dans la validation pré-merge
-
----
-
-### Verify-VersionConsistency.ps1
-**Vérification de la chaîne de version calendrier**
-
-```powershell
 .\Tools\Verify-VersionConsistency.ps1
+.\Tools\Validate-AppDatabase.ps1
+.\Tests\Invoke-Tests.ps1 -OutputFormat NUnitXml
 ```
 
-**Vérifications** :
-- `Config/version.json` au format `YYYYMMDDxx`
-- Cohérence `ReleaseDate`
-- Versions GUI `AssemblyVersion` / `FileVersion` / `InformationalVersion`
-- `ModuleVersion` et `ReleaseNotes` des manifests PowerShell
+Offline framework validation checks repository structure, modules, profiles, schemas, and locally detectable prerequisites. It omits live network checks and host write-permission probes. Run without `-Offline` when checking a deployment host. CI does not depend on ICMP availability.
 
----
-
-### Invoke-WinsightSmoke.ps1
-**Smoke GUI opt-in via WinSight MCP**
+For remote package-source checks:
 
 ```powershell
-.\Tools\Invoke-WinsightSmoke.ps1 -WinsightRoot <path-to-winsight>
+.\Tools\Validate-AppDatabase.ps1 -ValidateWinget -ValidateChocolatey -GenerateReport
 ```
 
-**Vérifications** :
-- Build du serveur MCP WinSight et de la GUI WinForge si nécessaire
-- Lancement de `WinForge.GUI.dll`
-- Inspection `list_windows` / `inspect_ui_tree`
-- Navigation Dashboard → Settings → App Catalog
-- Captures sous `TestResults\winsight`
+`Search-ApplicationSources.ps1` helps find package identifiers. Consult its help for the available source filters.
 
-WinSight reste un repo frère local, configurable par `-WinsightRoot` ou `$env:WINSIGHT_ROOT`. Aucun chemin machine ni `.mcp.json` ne doit être tracké.
-
----
-
-## 🔎 Recherche et Développement
-
-### Search-ApplicationSources.ps1
-**Recherche d'applications dans tous les gestionnaires de packages**
+## Package verification
 
 ```powershell
-# Recherche simple
-.\Tools\Search-ApplicationSources.ps1 -AppName "Discord"
-
-# Mode interactif avec détails
-.\Tools\Search-ApplicationSources.ps1 -AppName "Notepad++" -Interactive
+.\Tools\Test-ReleasePackage.ps1 -ArchivePath '<release.zip>'
 ```
 
-**Sources recherchées** :
-- Winget (si installé)
-- Chocolatey (si installé)
-- Microsoft Store
-- URLs de téléchargement direct
+The check compares required schema and entry-document content against this checkout without executing the archive. `Build-Release.ps1` includes `Schemas/`, English and French README/changelog files, and runs this gate before writing the archive checksum. Package creation changes version metadata; use the release workflow deliberately.
 
-**Utilité** : Trouver les sources pour ajouter une nouvelle application à la base de données
-
----
-
-## 🔍 Surveillance et Audit
-
-### Launch-SystemAudit.bat ⭐
-**Lanceur interactif pour System-Audit.ps1 avec auto-élévation admin**
-
-```bash
-# Depuis le répertoire Tools :
-.\Launch-SystemAudit.bat
-```
-
-**Menu interactif avec 8 modes** :
-1. WinForge Deployment (auto-stop à la fin)
-2. Monitor Process by Name
-3. Monitor Process by PID
-4. Monitor Log File
-5. Monitor Log Directory
-6. Timed Audit (30 minutes)
-7. Custom Parameters (avancé)
-8. Launch with PowerShell ISE
-
-**Fonctionnalités** :
-- Auto-élévation admin si nécessaire
-- Interface guidée pour tous les modes
-- Génération automatique de rapports
-- Retour au menu après chaque audit
-
----
-
-### System-Audit.ps1 ⭐ v2.4.0 - UNIVERSAL
-**Outil d'audit système universel - Fonctionne avec N'IMPORTE QUEL script ou processus**
+## Desktop checks
 
 ```powershell
-# ═══ WinForge Deployment ═══
-.\Tools\System-Audit.ps1 -MonitorLogPath ".\Logs" -LogCompletionMarkers "Deployment completed|Summary" -GenerateReport
-
-# ═══ Surveiller un processus spécifique (par nom) ═══
-.\Tools\System-Audit.ps1 -MonitorProcessName "powershell" -AuditName "PowerShellAudit" -GenerateReport
-
-# ═══ Surveiller un processus spécifique (par PID) ═══
-$proc = Start-Process powershell -ArgumentList "-File", "MonScript.ps1" -PassThru
-.\Tools\System-Audit.ps1 -MonitorProcessId $proc.Id -AuditName "MonScript" -GenerateReport
-
-# ═══ Surveiller un fichier log spécifique ═══
-.\Tools\System-Audit.ps1 -MonitorLogFile "C:\Logs\app.log" -LogCompletionMarkers "DONE|COMPLETED" -GenerateReport
-
-# ═══ Audit temporisé (sans auto-stop) ═══
-.\Tools\System-Audit.ps1 -Duration 30 -AuditName "PerformanceTest" -GenerateReport
-
-# ═══ Audit complet avec toutes les options ═══
-.\Tools\System-Audit.ps1 -MonitorProcessName "installer" `
-    -MonitorRegistry -MonitorFileSystem `
-    -SampleInterval 5 -GenerateReport `
-    -AuditName "CompleteInstallAudit"
+.\Tools\Invoke-WinsightSmoke.ps1 -WinsightRoot '<path-to-winsight>'
 ```
 
-**🆕 Fonctionnalités v2.4.0 - Performance Optimized** :
-- ✅ **Overhead réduit de 67%** : 3000ms → ~750ms par échantillon (60% → 20% overhead)
-- ✅ **Intervalle ajusté** : 2s → 5s par défaut (configurable)
-- ✅ **Fréquences optimisées** : Apps (30s), Events (60s), Network (120s)
-- ✅ **Mode Skip Apps** : `-SkipApplicationMonitoring` pour réduire overhead de 40%
-- ✅ **Performance mesurée** : Affichage temps réel avg/max par échantillon
+This opt-in check builds and launches the real GUI, drives navigation, and saves screenshots under `TestResults/winsight`. It requires an interactive Windows desktop and a WinSight checkout. See the [visual checklist](../Docs/GUI_VM_VISUAL_CHECKLIST.md) and [UIA tests](../GUI/WinForge.GUI.UITests/README.md).
 
-**Fonctionnalités v2.2.0** :
-- ✅ **Bug fixes critiques** : Processus terminés comptés correctement, protection division par zéro
-- ✅ **Ctrl+C gracieux** : Génère automatiquement le rapport même en cas d'interruption
-- ✅ **Mode Quiet** : `-Quiet` pour exécution silencieuse (scripts automatisés)
-- ✅ **Performance +20%** : Session CIM réutilisable, HashSet pour comparaisons O(1)
+## System monitoring
 
-**Fonctionnalités v2.1.0** :
-- ✅ **100% Générique** : Fonctionne avec n'importe quel script, processus ou log
-- ✅ **Monitor par Process** : Surveille un processus (nom ou PID) et s'arrête à sa terminaison
-- ✅ **Monitor par Log** : Surveille un fichier log et détecte sa complétion
-- ✅ **Monitor par Directory** : Détecte nouveau log dans un dossier et surveille sa complétion
-- ✅ **Marqueurs personnalisables** : Regex pour détecter la fin (default: "completed|finished|Summary")
-- ✅ **Inactivité configurable** : Temps sans écriture = complet (default: 2 min)
-- ✅ **Nommage personnalisé** : `-AuditName` pour identifier vos audits
-- ✅ **Event Viewer amélioré** : Critical/Error/Warning + Winget/DesktopAppInstaller
-- ✅ **Rapports nommés** : `AuditName_YYYYMMDD_HHMMSS.json/html`
+`Launch-SystemAudit.bat` starts the system-audit tool interactively. The PowerShell interface supports process, log, and timed observation:
 
-**Métriques surveillées** :
-- **Performance** : CPU, RAM, Disk I/O en temps réel
-- **Processus** : Création/terminaison, PID, chemins d'exécution
-- **Applications** : Installations/désinstallations détectées automatiquement
-- **Registre** : Surveillance des clés critiques (optionnel)
-- **Fichiers** : Activité système de fichiers (optionnel)
-- **Réseau** : Connexions actives, statistiques par processus
-- **Event Viewer** : Critical/Error/Warning (Application + System)
-- **Installations** : MSI Installer + Winget/DesktopAppInstaller
-- **Anomalies** : Détection automatique (CPU >90%, RAM >90%, Disk I/O >100MB/s)
-
-**Rapports générés** :
-- `AuditReports/audit_YYYYMMDD_HHMMSS.json` - Données complètes
-- `AuditReports/audit_YYYYMMDD_HHMMSS.html` - Rapport visuel (avec -GenerateReport)
-
-**Affichage temps réel** :
-```
-[20:15:32] Starting system audit...
-[Performance] CPU: 45% | RAM: 62% (8.3GB) | Processes: 187
-[20:15:34] New process: winget.exe (PID: 12345)
-[20:15:45] Application installed: Recuva 1.53.2083
-[20:15:50] ALERT: High CPU usage at 92%
+```powershell
+.\Tools\System-Audit.ps1 -MonitorProcessName 'msiexec' -GenerateReport -AuditName 'ManualInstall'
+.\Tools\System-Audit.ps1 -MonitorLogPath '.\Logs' -GenerateReport
+.\Tools\System-Audit.ps1 -Duration 30 -SampleInterval 5 -GenerateReport
 ```
 
-**Utilité** :
-- Surveiller les déploiements WinForge en parallèle
-- Diagnostiquer les problèmes d'installation
-- Analyser l'impact performance des applications
-- Détecter les anomalies système
-- Audit de conformité et sécurité
-
----
-
-## 📊 Fichiers de Support
-
-| Fichier | Description |
-|---------|-------------|
-| `applications-data.js` | Base de données JS pour ProfileCreator (65 apps) |
-| `ProfileCreator_Features.md` | Documentation des fonctionnalités du ProfileCreator |
-| `StartupManager.html` | Interface de gestion du démarrage automatique |
-| `Launch-TrustedInstallerGUI.ps1` | Script PowerShell pour TrustedInstaller launcher |
-| `Launch-SystemAudit.bat` | Lanceur interactif pour System-Audit avec menu guidé |
-| `System-Audit-README.md` | Documentation complète de System-Audit (30+ pages) |
-
----
-
-## 🎯 Quand Utiliser Ces Outils ?
-
-**ProfileCreator.html** :
-- Créer un profil de déploiement personnalisé
-- Ajouter des applications custom au framework
-- Modifier un profil existant
-
-**Launch-AsTrustedInstaller.bat** :
-- Maintenance système profonde
-- Modification de registres protégés
-- Accès à des fichiers système restreints
-- Debug avec privilèges maximaux
-
-**Validate-AppDatabase.ps1** :
-- Avant un déploiement complet
-- Après modification de la base de données
-- Vérification périodique de la disponibilité des packages
-
-**Validate-Framework.ps1** :
-- Après installation initiale du framework
-- Avant un déploiement important
-- Diagnostic de problèmes de structure
-
-**Search-ApplicationSources.ps1** :
-- Recherche d'une nouvelle application à ajouter
-- Vérification de sources alternatives
-- Mise à jour des IDs d'applications
-
-**Startup Manager** :
-- Optimisation du démarrage Windows
-- Désactivation d'applications au boot
-- Création de blacklist personnalisée
-
-**Launch-SystemAudit.bat** :
-- Lancement rapide de System-Audit avec menu guidé
-- Mode débutant sans ligne de commande
-- Tous les modes pré-configurés (WinForge, Process, Log, etc.)
-
-**System-Audit.ps1** (v2.4.0 - UNIVERSEL) :
-- Surveiller N'IMPORTE QUEL script, processus ou déploiement
-- Analyser l'impact performance de toute opération
-- Diagnostiquer des problèmes d'installation ou d'exécution
-- Audit de sécurité et conformité
-- Monitoring automatique avec arrêt intelligent
-- Rapports détaillés (JSON + HTML)
-
----
-
-## ✅ Résultats de Validation (2026050901)
-
-- **175 applications** dans la base de données principale
-- **65 applications** dans le bundle standalone ProfileCreator
-- **100% de taux de validation** sur les sources principales
-- **TrustedInstaller launcher** : Confirmation explicite et module externe non installé automatiquement
-- **ProfileCreator** : Support complet du bundle standalone + custom
-
----
-
-**Version** : 2026050901
-**Dernière mise à jour** : 2026-05-09
-**Auteur** : Julien Bombled
+See the [system-audit reference](System-Audit-README.md) for stop conditions, report paths, optional monitoring, and limitations. Installation operations are separate from these monitoring commands.

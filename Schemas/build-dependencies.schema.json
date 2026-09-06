@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "Build dependencies",
+  "type": "object",
+  "required": ["ThemeForge"],
+  "additionalProperties": false,
+  "properties": {
+    "ThemeForge": {
+      "type": "object",
+      "required": ["repository", "revision"],
+      "additionalProperties": false,
+      "properties": {
+        "repository": { "type": "string", "enum": ["https://github.com/VBlackJack/ThemeForge.git"] },
+        "revision": { "type": "string", "pattern": "^[0-9a-f]{40}$" }
+      }
+    }
+  }
+}
