@@ -2,7 +2,7 @@ name: WinForge CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, "codex/**"]
     tags: ['v*']
   pull_request:
     branches: [main]
@@ -25,11 +25,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
+      - name: Read dependency revision
+        id: dependencies
+        shell: pwsh
+        run: |
+          $revision = (Get-Content Config/build-dependencies.json -Raw | ConvertFrom-Json).ThemeForge.revision
+          if ($revision -notmatch '^[0-9a-f]{40}$') { throw 'Invalid ThemeForge revision' }
+          "themeforge=$revision" >> $env:GITHUB_OUTPUT
+
       - name: Checkout ThemeForge (sibling dependency)
         uses: actions/checkout@v7
         with:
           repository: VBlackJack/ThemeForge
           path: ThemeForge
+          ref: ${{ steps.dependencies.outputs.themeforge }}
 
       - name: Guard packages.lock.json RID neutrality
         shell: pwsh
@@ -138,11 +147,12 @@ jobs:
       - name: Install Pester
         shell: pwsh
         run: |
-          Install-Module -Name Pester -Force -Scope CurrentUser -MinimumVersion 5.0.0
+          Install-Module -Name Pester -Force -Scope CurrentUser -RequiredVersion 5.7.1
 
       - name: Run Pester Tests with Code Coverage
         shell: pwsh
         run: |
+          Import-Module Pester -RequiredVersion 5.7.1
           $config = New-PesterConfiguration
           $config.Run.Path = 'Tests'
           $config.Run.Exit = $true
@@ -159,6 +169,14 @@ jobs:
           $config.CodeCoverage.CoveragePercentTarget = 48
 
           Invoke-Pester -Configuration $config
+
+      - name: Verify Windows PowerShell 5.1 regressions
+        shell: powershell
+        run: |
+          $env:PSModulePath += ";" + (Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'PowerShell\Modules')
+          Import-Module Pester -RequiredVersion 5.7.1
+          $result = Invoke-Pester -Path Tests/AuditRemediation.Tests.ps1,Tests/ApiEndpoints.Tests.ps1,Tests/JsonSchemaValidation.Tests.ps1,Tests/SystemConfig.Tests.ps1 -PassThru
+          if ($result.FailedCount -gt 0) { exit 1 }
 
       - name: Generate Pester Coverage Report
         shell: pwsh
@@ -222,11 +240,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
+      - name: Read dependency revision
+        id: dependencies
+        shell: pwsh
+        run: |
+          $revision = (Get-Content Config/build-dependencies.json -Raw | ConvertFrom-Json).ThemeForge.revision
+          if ($revision -notmatch '^[0-9a-f]{40}$') { throw 'Invalid ThemeForge revision' }
+          "themeforge=$revision" >> $env:GITHUB_OUTPUT
+
       - name: Checkout ThemeForge (sibling dependency)
         uses: actions/checkout@v7
         with:
           repository: VBlackJack/ThemeForge
           path: ThemeForge
+          ref: ${{ steps.dependencies.outputs.themeforge }}
 
       - name: Setup .NET 10
         uses: actions/setup-dotnet@v5
@@ -417,7 +444,7 @@ jobs:
         shell: pwsh
         run: |
           if (Test-Path 'Tools/Validate-Framework.ps1') {
-            & 'Tools/Validate-Framework.ps1' -Detailed
+            & 'Tools/Validate-Framework.ps1' -Detailed -Offline
             if ($LASTEXITCODE -ne 0) {
               Write-Host "Framework validation failed" -ForegroundColor Red
               exit 1
@@ -447,11 +474,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
+      - name: Read dependency revision
+        id: dependencies
+        shell: pwsh
+        run: |
+          $revision = (Get-Content Config/build-dependencies.json -Raw | ConvertFrom-Json).ThemeForge.revision
+          if ($revision -notmatch '^[0-9a-f]{40}$') { throw 'Invalid ThemeForge revision' }
+          "themeforge=$revision" >> $env:GITHUB_OUTPUT
+
       - name: Checkout ThemeForge (sibling dependency)
         uses: actions/checkout@v7
         with:
           repository: VBlackJack/ThemeForge
           path: ThemeForge
+          ref: ${{ steps.dependencies.outputs.themeforge }}
 
       - name: Setup .NET 10
         uses: actions/setup-dotnet@v5
@@ -461,12 +497,16 @@ jobs:
       - name: Install Pester (for Build-Release tests)
         shell: pwsh
         run: |
-          Install-Module -Name Pester -Force -Scope CurrentUser -MinimumVersion 5.0.0
+          Install-Module -Name Pester -Force -Scope CurrentUser -RequiredVersion 5.7.1
 
       - name: Build Release Package
         shell: pwsh
         run: |
-          .\Build-Release.ps1 -SkipTests
+          $version = (Get-Content Config/version.json -Raw | ConvertFrom-Json).Version
+          if ($env:GITHUB_REF -like 'refs/tags/*' -and $env:GITHUB_REF_NAME -ne "v$version") {
+            throw 'Release tag and committed version differ.'
+          }
+          .\Build-Release.ps1 -SkipTests -Version $version
 
       - name: Get Version
         id: version

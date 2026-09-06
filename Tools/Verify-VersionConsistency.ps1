@@ -181,7 +181,11 @@ $documentationFiles = @(
     @{ Path = Join-Path $repoRoot 'README.md'; Description = 'README heading and version badge' },
     @{ Path = Join-Path $repoRoot 'Docs\README.md'; Description = 'documentation index' },
     @{ Path = Join-Path $repoRoot 'Docs\USER_GUIDE.md'; Description = 'user guide' },
-    @{ Path = Join-Path $repoRoot 'Tests\README.md'; Description = 'test suite readme' }
+    @{ Path = Join-Path $repoRoot 'Tests\README.md'; Description = 'test suite readme' },
+    @{ Path = Join-Path $repoRoot 'README.fr.md'; Description = 'French README' },
+    @{ Path = Join-Path $repoRoot 'Docs\README.fr.md'; Description = 'French documentation index' },
+    @{ Path = Join-Path $repoRoot 'Docs\USER_GUIDE.fr.md'; Description = 'French user guide' },
+    @{ Path = Join-Path $repoRoot 'Tests\README.fr.md'; Description = 'French test suite readme' }
 )
 
 foreach ($doc in $documentationFiles) {

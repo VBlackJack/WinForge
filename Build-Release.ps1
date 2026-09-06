@@ -269,7 +269,7 @@ if (Test-Path $exePath) {
 $currentStep++
 Write-Host "[$currentStep/$stepCount] $(Get-Text -Key 'build.step_copying_infra' -Default 'Copying PowerShell infrastructure...')" -ForegroundColor Yellow
 
-$foldersToCopy = @("Modules", "Core", "Apps", "Profiles", "Config", "Docs")
+$foldersToCopy = @("Modules", "Core", "Apps", "Profiles", "Config", "Docs", "Schemas")
 foreach ($folder in $foldersToCopy) {
     $sourcePath = Join-Path $ScriptRoot $folder
     $destPath = Join-Path $ReleasePath $folder
@@ -278,7 +278,7 @@ foreach ($folder in $foldersToCopy) {
         $itemCount = (Get-ChildItem $sourcePath -Recurse -File).Count
         Write-Host "  $(Get-Text -Key 'build.copied_folder' -Parameters @{ Folder = $folder; Count = $itemCount } -Default "Copied: $folder/ ($itemCount files)")" -ForegroundColor Gray
     } else {
-        Write-Host "  $(Get-Text -Key 'build.folder_not_found' -Parameters @{ Folder = $folder } -Default "WARNING: $folder not found, skipping...")" -ForegroundColor Yellow
+        throw "Required release directory is missing: $sourcePath"
     }
 }
 
@@ -286,8 +286,10 @@ foreach ($folder in $foldersToCopy) {
 $rootFiles = @(
     "Deploy-Win11Environment.ps1",
     "CHANGELOG.md",
+    "CHANGELOG.fr.md",
     "LICENSE",
-    "README.md"
+    "README.md",
+    "README.fr.md"
 )
 
 foreach ($file in $rootFiles) {
@@ -357,6 +359,8 @@ if (-not $NoZip) {
     }
 
     Compress-Archive -Path "$ReleasePath\*" -DestinationPath $ZipPath -CompressionLevel Optimal
+
+    & (Join-Path $ScriptRoot 'Tools/Test-ReleasePackage.ps1') -ArchivePath $ZipPath -SourceRoot $ScriptRoot
 
     $zipSize = [math]::Round((Get-Item $ZipPath).Length / 1MB, 2)
     Write-Host "  $(Get-Text -Key 'build.created_zip' -Parameters @{ Name = "$ReleaseName.zip"; Size = $zipSize } -Default "Created: $ReleaseName.zip ($zipSize MB)")" -ForegroundColor Green

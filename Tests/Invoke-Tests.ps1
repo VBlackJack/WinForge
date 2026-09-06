@@ -86,13 +86,13 @@ Write-Host ""
 
 # Check Pester installation and import v5+
 $pesterModules = @(Get-Module -Name Pester -ListAvailable -ErrorAction SilentlyContinue | Sort-Object Version -Descending)
-$pesterV5 = $pesterModules | Where-Object { $_.Version.Major -ge 5 } | Select-Object -First 1
+$pesterV5 = $pesterModules | Where-Object { $_.Version -eq [version]'5.7.1' } | Select-Object -First 1
 
 if (-not $pesterV5) {
-    Write-Host "[ERROR] Pester v5+ not found!" -ForegroundColor Red
+    Write-Host "[ERROR] Pester v5.7.1 not found!" -ForegroundColor Red
     Write-Host ""
     Write-Host "Install Pester v5+ with:" -ForegroundColor Yellow
-    Write-Host "  Install-Module -Name Pester -Force -SkipPublisherCheck" -ForegroundColor Yellow
+    Write-Host "  Install-Module -Name Pester -Force -RequiredVersion 5.7.1" -ForegroundColor Yellow
     exit 1
 }
 
