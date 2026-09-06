@@ -1,201 +1,36 @@
-# ProfileCreator.html - Guide d'Utilisation
+# Profile Creator
 
-## 📋 Vue d'ensemble
+[Français](ProfileCreator_Features.fr.md)
 
-ProfileCreator.html est un outil standalone (utilisable en `file://`) pour créer des profils JSON personnalisés pour WinForge.
+Open `Tools/ProfileCreator.html` in a browser. The wizard runs locally without a web server and reads its standalone application bundle from `applications-data.js`.
 
-## ✨ Fonctionnalités
+## Workflow
 
-### 🎯 6 Étapes de Création
+1. Enter the profile name, description, and version.
+2. Choose an optional parent profile, such as Base or Office.
+3. Select bundled applications by category.
+4. Add custom applications with a name, category, at least one installation source, and optional installation arguments.
+5. Configure Explorer, taskbar, network, privacy, performance, and security options.
+6. Review the generated JSON and download the profile.
 
-#### 1️⃣ Informations du Profil
-- Nom du profil
-- Description
-- Version
+Custom sources can use Winget, Chocolatey, Microsoft Store, or a direct URL. Remove unwanted entries before exporting. The preview and application counters reflect the current wizard selection.
 
-#### 2️⃣ Héritage
-- Hériter d'un profil existant (Base, Office, Gaming, Personnel)
-- Compteur automatique des applications héritées
+## Example
 
-#### 3️⃣ Applications Prédéfinies
-- Sélection d'applications depuis la base de données intégrée
-- Catégories : Navigateurs, Développement, Gaming, Média, Utilitaires
-- 18+ applications préconfigurées
+For Postman, enter `Postman.Postman` as the Winget ID, `postman` as the Chocolatey package, and `Development` as the category. Verify identifiers against their sources before deployment.
 
-#### 4️⃣ Applications Personnalisées ⭐ (NOUVEAU)
-**Fonctionnalités** :
-- Ajouter vos propres applications avec sources personnalisées
-- Champs disponibles :
-  - ✅ **Nom de l'application** (requis)
-  - ✅ **Winget ID** (optionnel)
-  - ✅ **Chocolatey Package** (optionnel)
-  - ✅ **Microsoft Store ID** (optionnel)
-  - ✅ **URL de téléchargement direct** (optionnel)
-  - ✅ **Arguments d'installation** (optionnel)
-  - ✅ **Catégorie** (sélectionnable)
+Profiles contain `Name`, `Description`, `Version`, `Inherits`, `Applications`, and optional `SystemConfig`. The wizard can emit inline application definitions; the runtime catalog also supports ID references.
 
-**Validation** :
-- Au moins une source (Winget/Choco/Store/URL) requise
-- Liste des applications ajoutées avec aperçu des sources
-- Bouton de suppression pour chaque app personnalisée
+## Validate and deploy
 
-#### 5️⃣ Configuration Système
-- **Explorer** : Fichiers cachés, extensions, navigation
-- **Taskbar** : Widgets, alignement, recherche
-- **Réseau** : DNS personnalisés (9.9.9.9, 1.1.1.1)
-- **Confidentialité** : Télémétrie, collecte de données
-- **Performance** : Services, plan d'alimentation
-- **Sécurité** : Defender, Firewall
+Place the downloaded JSON under `Profiles/` using a distinct filename. Review custom detection and download-verification fields against the shipped schemas. Browser field validation does not prove installer authenticity or successful runtime detection.
 
-#### 6️⃣ Aperçu & Téléchargement
-- Aperçu JSON complet
-- Statistiques (nombre d'apps, sections config)
-- Téléchargement du fichier JSON
-
-## 🚀 Utilisation
-
-### Méthode 1 : Double-clic
-```
-Double-clic sur ProfileCreator.html
+```powershell
+Import-Module .\Modules\JsonSchemaValidation.psm1 -Force
+Test-JsonAgainstSchema -JsonPath 'Profiles/MyProfile.json' -SchemaPath 'Schemas/deployment-profile.schema.json'
+.\Deploy-Win11Environment.ps1 -ProfileName 'MyProfile' -TestMode
 ```
 
-### Méthode 2 : Navigateur
-```
-file:///C:/Users/User/Desktop/WinForge/Tools/ProfileCreator.html
-```
+Inspect the result before running a real deployment without `-TestMode`. Current security controls reject arbitrary command detection and direct downloads without the required trust metadata.
 
-## 📝 Exemple : Ajouter une Application Personnalisée
-
-### Cas 1 : Application Winget + Chocolatey
-```
-Nom             : Postman
-Winget ID       : Postman.Postman
-Chocolatey      : postman
-Store ID        : (vide)
-URL             : (vide)
-Arguments       : (vide)
-Catégorie       : Development
-```
-
-### Cas 2 : Application avec URL directe et arguments
-```
-Nom             : MonAppli
-Winget ID       : (vide)
-Chocolatey      : (vide)
-Store ID        : (vide)
-URL             : https://example.com/setup.exe
-Arguments       : /S /quiet /norestart
-Catégorie       : Custom
-```
-
-### Cas 3 : Microsoft Store uniquement
-```
-Nom             : Windows Terminal
-Winget ID       : (vide)
-Chocolatey      : (vide)
-Store ID        : 9N0DX20HK701
-URL             : (vide)
-Arguments       : (vide)
-Catégorie       : Utilities
-```
-
-## 📊 Structure JSON Générée
-
-```json
-{
-  "Name": "MonProfil",
-  "Description": "Profil personnalisé",
-  "Version": "1.0.0",
-  "Inherits": ["Base"],
-  "Applications": [
-    {
-      "Name": "MonAppli",
-      "Priority": 100,
-      "Required": false,
-      "Category": "Custom",
-      "Sources": {
-        "Winget": "Publisher.App",
-        "Chocolatey": "packagename",
-        "Store": null,
-        "DirectUrl": "https://example.com/setup.exe"
-      },
-      "InstallArguments": "/S /quiet",
-      "Detection": {
-        "Method": "Command",
-        "Command": "echo Installed"
-      },
-      "EnvironmentRestrictions": []
-    }
-  ],
-  "SystemConfig": { ... }
-}
-```
-
-## ✅ Validation Automatique
-
-- ✅ Nom d'application obligatoire
-- ✅ Au moins une source requise
-- ✅ Compteur temps réel des applications
-- ✅ Aperçu avant téléchargement
-- ✅ Format JSON valide garanti
-
-## 🎨 Interface
-
-- **Design moderne** : Gradient violet, style Fluent
-- **Navigation intuitive** : Barre latérale + boutons Précédent/Suivant
-- **Responsive** : Adaptatif mobile/desktop
-- **Statistiques en temps réel** : Compteurs d'applications
-- **Aperçu coloré** : Code JSON avec syntaxe highlight
-
-## 📥 Déploiement du Profil Créé
-
-1. **Télécharger le JSON** depuis l'étape 6
-2. **Placer le fichier** dans `WinForge/Profiles/`
-3. **Lancer le déploiement** :
-   ```powershell
-   .\Deploy-Win11Environment.ps1 -ProfileName "MonProfil"
-   ```
-
-## 🔧 Cas d'Usage
-
-### Profil Développeur Web
-```
-Base + VSCode, Node.js, Git, Chrome, Firefox
-+ Apps personnalisées : Postman, MongoDB Compass, Docker Desktop
-```
-
-### Profil Designer
-```
-Base + Adobe Creative Cloud, Figma, Sketch
-+ Apps personnalisées : Fontbase, ColorSlurp, Blender
-```
-
-### Profil Gaming Avancé
-```
-Gaming + Discord, Steam, Battle.net
-+ Apps personnalisées : MSI Afterburner, GeForce Experience, Playnite
-```
-
-## 📌 Notes Importantes
-
-- ✅ Aucune connexion Internet requise (standalone)
-- ✅ Fonctionne en mode `file://` (pas de serveur web)
-- ✅ Données stockées localement (pas de cloud)
-- ✅ Compatible avec tous les navigateurs modernes
-- ✅ Applications personnalisées persistent dans la session
-
-## 🆕 Nouveautés v2.1.3
-
-- ✅ **Étape 4 ajoutée** : Applications personnalisées
-- ✅ **Sources multiples** : Winget, Choco, Store, DirectUrl
-- ✅ **Arguments personnalisés** : Support InstallArguments
-- ✅ **Catégories** : 8 catégories prédéfinies
-- ✅ **Gestion dynamique** : Ajout/Suppression d'apps custom
-- ✅ **Validation robuste** : Vérification des champs obligatoires
-- ✅ **Compteur amélioré** : Inclut les apps custom dans le total
-
----
-
-**Version** : 2.1.3
-**Date** : 2025-10-06
-**Auteur** : WinForge Team
+The wizard stores its working selection locally in the browser session; download the file to retain a profile. Its bundled catalog may differ from the main application database. See the [catalog reference](../Apps/README.md) and [user guide](../Docs/USER_GUIDE.md).

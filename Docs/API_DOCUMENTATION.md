@@ -16,6 +16,8 @@ limitations under the License.
 
 # WinForge API Documentation
 
+[Français](API_DOCUMENTATION.fr.md)
+
 ## Overview
 WinForge exposes a local REST API for GUI integration and automation.
 
@@ -40,11 +42,17 @@ Authentication:
 - API key auth enabled.
 - CSRF protection enabled for state-changing endpoints. Tokens are single-use and bound to the issuing key.
 - Rate limiting enabled, applied twice per request:
-  - **Per client IP** — `maxRequestsPerMinute` / `maxRequestsPerHour`. On a localhost-only listener every caller is `127.0.0.1`, so this bucket is shared by all local processes.
-  - **Per API key** — `maxRequestsPerHour`, evaluated after authentication. This is what separates callers on a local listener.
+  - **Per client IP** - `maxRequestsPerMinute` / `maxRequestsPerHour`. On a localhost-only listener every caller is `127.0.0.1`, so this bucket is shared by all local processes.
+  - **Per API key** - `maxRequestsPerHour`, evaluated after authentication. This is what separates callers on a local listener.
   Both return `429` with a `Retry-After` header.
 - Repeated authentication failures block the client IP for `blockDurationMinutes` (`403`, code `AUTH_BLOCKED`).
 - Request bodies are read under a hard cap (`maxRequestBodyBytes`, default 5 MB) regardless of the declared `Content-Length`, so a chunked request cannot stream an unbounded body. Oversize requests fail with `HANDLER_ERROR`.
+
+## Deployment lifecycle
+
+POST a JSON body such as `{"profile":"Base","testMode":true}` with API-key and single-use CSRF headers. Required schemas must be present. A successful response means a background deployment worker was started, not that deployment succeeded.
+
+Poll `GET /api/status` for `Running`, `Completed`, or `Failed`. A second deployment is rejected while one is starting or running. Completion requires an explicit successful result from the deployment script. Progress is currently reported as 0 while running and 100 on completion; per-application progress is not streamed by this worker.
 
 ## Notes
 - Configure API behavior in `Config/api-settings.json`.

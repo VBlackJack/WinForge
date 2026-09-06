@@ -16,6 +16,8 @@ limitations under the License.
 
 # WinForge Architecture
 
+[Français](ARCHITECTURE.fr.md)
+
 WinForge combines a PowerShell automation framework with a WPF desktop GUI.
 The repository keeps the installation engine, application catalogue, profiles,
 GUI, tests, and maintenance tooling together so a release can be built and
@@ -60,7 +62,7 @@ The GUI migrates bundled profiles into the user data profile directory on first 
 - save the current selection as a new profile,
 - update the selected profile from the current checked apps.
 
-When a profile inherits from a parent, inherited applications remain owned by the parent. Updating the child profile writes only the direct application delta for that child.
+When a profile inherits from a parent, inherited applications remain owned by the parent. Updating the child profile writes only the direct application delta for that child. The JSON writer preserves other properties, including SystemConfig, and replaces the completed file atomically.
 
 ## Theming
 
@@ -73,8 +75,7 @@ The PowerShell REST API is configured through `Config/api-settings.json` and imp
 ## Plugin isolation
 
 Plugins are PowerShell modules discovered under `Plugins/`. Two independent controls bound
-what they can do, because the import in `Import-Plugin` ultimately runs in the main session
-at the host's privilege level:
+what they can do when sandboxing is enabled:
 
 - **Static validation** (`Core/PluginSandbox.psm1`) parses the plugin AST and enforces
   allowlists: an allowlist of cmdlets, and an allowlist of .NET types. Any type reference or
@@ -85,8 +86,10 @@ at the host's privilege level:
   be declared on the session state rather than assigned afterwards: a scriptblock carries
   the language mode it was compiled under.
 
-`Import-Plugin` fingerprints the validated source and re-checks it immediately before
-`Import-Module`, so the file cannot be swapped between validation and import. When
+`Import-Plugin` stores the validated source snapshot and exported function names as data.
+It never imports that source into the main session while sandboxing is enabled. Each hook
+imports the same snapshot in the constrained worker, preserving module variables and helpers.
+Later changes to the original file do not change the registered handler. When
 `trustedPublishers` is non-empty in `Config/plugins-settings.json`, entry points must also
 carry a valid Authenticode signature from one of those publishers.
 
@@ -94,7 +97,7 @@ carry a valid Authenticode signature from one of those publishers.
 
 A catalog entry may declare `Detection.Command`, which launches a program to decide whether
 an application is installed. Catalogs can be imported, so that input is untrusted and the
-same two allowlists gate every execution path — the GUI detection probe, the post-update
+same two allowlists gate every execution path - the GUI detection probe, the post-update
 verification in the application-management service, and the PowerShell detection modules:
 
 - **`allowedExecutables`** restricts which programs may run.
@@ -108,7 +111,7 @@ loudly.
 The second list is not redundant. The executable list has to permit interpreters
 (`python`, `node`, `pwsh`, `ruby`, `perl`, `php`) because they are what several entries
 probe, and an interpreter takes code as an argument. Filtering shell metacharacters does
-not help there — `pwsh -Command Start-Process calc` contains none. Detection only ever
+not help there - `pwsh -Command Start-Process calc` contains none. Detection only ever
 needs to ask a program for its version, so the arguments are allowlisted as well.
 
 ## Configuration validation
@@ -119,6 +122,11 @@ convention and validates it. This matters because the runtime loaders read confi
 field by field with fallbacks: without schema validation a misspelled key is silently
 ignored and the setting simply never applies. The check runs through
 `Invoke-JsonSchemaValidation` and as a section of `Tools/Validate-Framework.ps1`.
+
+## Reproducible dependency
+
+`Config/build-dependencies.json` pins the ThemeForge commit for CI and `Tools/Resolve-ThemeForge.ps1`.
+Run the resolver before building locally. Explicit MSBuild source overrides are intended for development and change the dependency baseline.
 
 ## Validation
 

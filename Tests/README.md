@@ -1,14 +1,16 @@
 # WinForge Tests
 
+[Français](README.fr.md)
+
 ## Scope
 
 This folder contains the PowerShell/Pester test suite for the framework modules. GUI unit tests live under `GUI/WinForge.GUI.Tests`, and opt-in desktop UI smoke tests are documented in `GUI/WinForge.GUI.UITests/README.md`.
 
-Current baseline after the May 2026 backlog closure:
+Validation baseline measured on 2026-09-06:
 
-- Framework display version: `2026081201` (`Config/version.json`)
+- Framework display version: `2026090601` (`Config/version.json`)
 - Pester runner: `Tests/Invoke-Tests.ps1`
-- Latest full Pester validation: `1842` tests total, `1836` passed, `0` failed, `6` skipped
+- Latest full Pester validation: `1978` tests total, `1972` passed, `0` failed, `6` skipped
 - Normal output artifacts: `Tests/Results/`
 
 ## Encoding
@@ -22,7 +24,7 @@ $OutputEncoding = [Console]::OutputEncoding = [Text.UTF8Encoding]::new()
 
 ## Setup
 
-Install or update Pester v5:
+Install Pester 5.7.1:
 
 ```powershell
 .\Tests\Install-Pester.ps1
@@ -31,7 +33,7 @@ Install or update Pester v5:
 Manual fallback:
 
 ```powershell
-Install-Module -Name Pester -MinimumVersion 5.0.0 -Force -SkipPublisherCheck
+Install-Module -Name Pester -RequiredVersion 5.7.1 -Force
 ```
 
 ## Common Commands
@@ -125,8 +127,8 @@ Keep tests isolated:
 If Pester v3 shadows v5:
 
 ```powershell
-Uninstall-Module -Name Pester -AllVersions -Force
-Install-Module -Name Pester -MinimumVersion 5.0.0 -Force -SkipPublisherCheck
+Import-Module Pester -RequiredVersion 5.7.1 -Force
+Install-Module -Name Pester -RequiredVersion 5.7.1 -Force
 ```
 
 If module imports fail, verify paths from the test file:

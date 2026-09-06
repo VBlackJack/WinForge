@@ -1,14 +1,31 @@
 # WinForge Framework - Changelog
 
+[Français](CHANGELOG.fr.md)
+
 Note: the framework version source of truth is `Config/version.json`. Launchers and GUI read this value dynamically.
 
 ## [Unreleased]
+
+## [2026090601] - 2026-09-06
+
+### Fixed
+- Keep sandboxed plugin imports and hooks outside the main PowerShell session, execute immutable validated module snapshots, and safely unregister hooks.
+- Preserve SystemConfig and custom JSON properties when saving or updating profiles, with atomic file replacement.
+- Enforce process deadlines while draining standard output and standard error concurrently.
+- Validate API JSON bodies through a supported in-memory parameter, fail closed when required schemas are missing, and run deployments in an owned background worker with overlap rejection and completion/failure reporting.
+- Include runtime schemas and both documentation languages in release packages, and verify required archive entries before generating checksums.
+
+### Build and documentation
+- Pin Pester to 5.7.1 and use supported mock assertions.
+- Make CI framework validation independent of ICMP and host write-permission probes.
+- Pin ThemeForge to a recorded commit shared by CI and the local dependency resolver.
+- Publish documentation in English with separate French files and reciprocal links.
 
 ## [2026081201] - 2026-08-12
 
 ### Security
 - Command detection is now gated by an argument allowlist in addition to the executable allowlist, on all three paths (GUI probe, post-update verification, PowerShell detection modules). The executable list is not a boundary on its own because it permits interpreters (`python`, `node`, `pwsh`, `ruby`, `perl`, `php`) that accept code as an argument, and screening for shell metacharacters does not stop them: `pwsh -Command Start-Process calc` contains none and was executed. Detection only ever needs to ask a program for its version, and every entry in the shipped catalog uses `--version`, `-version` or `--list-runtimes`, so the permitted arguments are configured in `Config/detection-allowlist.json` and loaded fail-closed.
-- The post-update verification path in the application-management service applied no argument guard at all — a third Command-detection execution site that the earlier audit missed.
+- The post-update verification path in the application-management service applied no argument guard at all - a third Command-detection execution site that the earlier audit missed.
 - Plugin AST validation now uses a type allowlist instead of a denylist. Plugin code may only reference value types and PowerShell container types, and static member access is rejected unless the owning type is allowlisted. The previous denylist admitted `[System.Diagnostics.Process]::Start`, `[System.IO.File]::WriteAllText`/`Delete`, `[Microsoft.Win32.Registry]::SetValue`, `[System.Activator]::CreateInstance` and `[System.AppDomain]` reflection.
 - Plugin handlers and plugin-load probes are now compiled inside a runspace whose `InitialSessionState` declares ConstrainedLanguage. Setting `$ExecutionContext.SessionState.LanguageMode` after `[scriptblock]::Create` had no effect, because a scriptblock carries the language mode it was compiled under, so handlers ran in FullLanguage.
 - `Import-Plugin` re-fingerprints the entry point immediately before `Import-Module` and refuses the import if the file changed after sandbox validation, closing a time-of-check/time-of-use window on an import that runs in the main session at the host's privilege level.
@@ -16,7 +33,7 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 - The GUI detection probe now applies the same argument guard as the PowerShell detection paths before launching a Command detection. The executable allowlist alone was insufficient because it permits interpreters (`python`, `node`, `pwsh`, `ruby`, `perl`, `php`) that accept code as an argument.
 - REST API endpoint handlers are validated against the same .NET type allowlist as plugin code instead of a separate denylist that admitted `[System.Diagnostics.Process]::Start`, `[System.IO.File]` and reflective activation. Handlers keep a slightly wider surface than plugins (`regex`, `StringComparison`, `System.IO.Path`), enumerated at the call site with the reason for each, so the plugin sandbox is not widened to accommodate them.
 - REST API request bodies are now read under a hard cap instead of trusting the declared `Content-Length`. A chunked request reports `ContentLength64 = -1`, which passed the previous size check and allowed an unbounded read.
-- Per-API-key rate limiting is now enforced in the request loop. The limiter was implemented, exported and unit-tested but never called, so only IP-based limiting ran — and on a localhost-only listener every caller shares one bucket.
+- Per-API-key rate limiting is now enforced in the request loop. The limiter was implemented, exported and unit-tested but never called, so only IP-based limiting ran - and on a localhost-only listener every caller shares one bucket.
 
 ### Changed
 - `ApplicationManagementServiceImpl` is decomposed from 1635 to 1166 lines. Package matching, deployment log formatting, update-source routing and external-process execution move to `PackageMatcher`, `DeploymentLog`, `UpdateSourcePolicy` and `VendorCommandRunner`. The `protected virtual` seams that test doubles override are preserved and now delegate to the runner.
@@ -27,7 +44,7 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 - Every `Config/*.json` file that declares a schema is now validated against it through `Test-AllConfigurationFiles`, wired into `Invoke-JsonSchemaValidation` and `Validate-Framework.ps1`. Twelve of the sixteen shipped schemas previously had no runtime consumer.
 - `Verify-VersionConsistency.ps1` now covers the documentation files, which could previously state an older release while the check stayed green.
 - GUI PowerShell timeouts are derived from `Config/timeouts-settings.json` instead of being hardcoded, with the built-in values kept only as fallbacks. The installation timeout is computed from the slowest configured install plus explicit headroom, so raising a timeout in configuration no longer leaves the GUI killing installs early and reporting a timeout the engine never saw.
-- Removed the unused `PowerShellProcessWrapper` (271 lines). It had no production call site, its stated rationale (the PowerShell SDK not working in single-file deployments) no longer applies since `Build-Release.ps1` sets `PublishSingleFile=false`, and its `Invoke()` read stdout to completion before stderr and before `WaitForExit`, which deadlocks on a child that fills the stderr pipe — past the reach of the timeout below it. Its UTF-8 decoding coverage moved to the execution path that actually runs.
+- Removed the unused `PowerShellProcessWrapper` (271 lines). It had no production call site, its stated rationale (the PowerShell SDK not working in single-file deployments) no longer applies since `Build-Release.ps1` sets `PublishSingleFile=false`, and its `Invoke()` read stdout to completion before stderr and before `WaitForExit`, which deadlocks on a child that fills the stderr pipe - past the reach of the timeout below it. Its UTF-8 decoding coverage moved to the execution path that actually runs.
 
 ### Fixed
 - `Test-DetectionArgumentAllowed` resolved its allowlist through the caller's scope, so in a parallel detection runspace the lookup failed closed and reported every application as not installed. The guard module now imports the allowlist module itself.
@@ -37,7 +54,7 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 - Nine controls that cannot derive an automation name from their content now declare a localized accessible name.
 - `LoadSettingsAsync` no longer races: the cache check could not be held across the file read, so two concurrent first-callers each loaded the file and walked away with a different `AppSettings` instance, making a mutation through one invisible to the other.
 - `Test-DirectDownloadChecksumGate` hashes the downloaded file once instead of twice, which is measurable on installer-sized payloads.
-- PowerShell files containing non-ASCII characters now carry a UTF-8 BOM. Windows PowerShell 5.1 reads a BOM-less file as ANSI, so those characters rendered as mojibake there — and 5.1 is a real execution path: every module manifest declares `PowerShellVersion = '5.1'`, the GUI falls back to `powershell.exe`, and the analyzer targets `desktop-5.1` compatibility. `.editorconfig` now specifies `utf-8-bom` for PowerShell files and `PSUseBOMForUnicodeEncodedFile` is enforced so this cannot regress.
+- PowerShell files containing non-ASCII characters now carry a UTF-8 BOM. Windows PowerShell 5.1 reads a BOM-less file as ANSI, so those characters rendered as mojibake there - and 5.1 is a real execution path: every module manifest declares `PowerShellVersion = '5.1'`, the GUI falls back to `powershell.exe`, and the analyzer targets `desktop-5.1` compatibility. `.editorconfig` now specifies `utf-8-bom` for PowerShell files and `PSUseBOMForUnicodeEncodedFile` is enforced so this cannot regress.
 
 ### Tests
 - Added regression coverage for the plugin type allowlist, effective constrained-language enforcement, plugin content fingerprinting, GUI/PowerShell detection-guard parity, bounded request-body reads, per-key rate-limit wiring, settings normalization, configuration schema validation, JSON null handling, accessible names across all XAML, endpoint-handler type validation including every built-in handler, GUI timeouts tracking their configured source, and profile-migration resumption after an interrupted run.
@@ -114,7 +131,7 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 - Removed unused Dracula theme dictionaries and dead button styles.
 - Removed internal historical audit documentation from the public documentation set.
 
-### Profile editing and public documentation cleanup — June 2026
+### Profile editing and public documentation cleanup - June 2026
 
 #### Added
 - **Existing profiles can now be updated from the Applications grid.** After applying a profile, users can check or uncheck apps and save that selection back to the active profile. Inherited applications remain owned by their parent profile and are restored with a warning when a child profile is updated.
@@ -124,7 +141,7 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 - **Updated user-facing documentation.** `README.md`, `Docs/USER_GUIDE.md`, `Docs/README.md`, and `Docs/GUI_VM_VISUAL_CHECKLIST.md` now document profile editing and avoid local machine paths.
 - **Removed internal historical docs from the public documentation set.** Old closed-work archives and detailed internal ADR/audit notes were removed in favor of the concise public architecture page.
 
-### Application catalog utilities refresh — June 2026
+### Application catalog utilities refresh - June 2026
 
 #### Added
 - **Added six utility/runtime catalog entries.** `WindowsAppSDK21`, `BleachBit`,
@@ -151,7 +168,7 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
   StrictMode.** `Test-DependenciesSatisfied` now normalizes dependency output to
   an array before counting missing prerequisites.
 
-### Direct-download publisher gate activation — June 2026
+### Direct-download publisher gate activation - June 2026
 
 #### Security
 - **Authenticode publisher gate now enforced for the AIMP direct-download.**
@@ -180,24 +197,24 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
   fallback from `7.0.0` to `x64-8.12.0`, restoring the broken direct-download
   fallback while keeping the existing Authenticode publisher gate enforced.
 
-### Button visual hierarchy restored — May 2026 follow-up
+### Button visual hierarchy restored - May 2026 follow-up
 
 After visual inspection of the `v2026051001` release built from the unified
 flat-text state, the lack of visual hierarchy on every action button proved
-unworkable in practice — hero CTAs, dialog confirm buttons, and toolbar
+unworkable in practice - hero CTAs, dialog confirm buttons, and toolbar
 actions all rendered as identical plain text labels. Reversed §2.6 of
 the historical design notes for the full rationale. Those internal notes are
 no longer part of the public documentation set.
 
 #### Changed
 - **Restored 70 `Appearance` attributes** across 20 view files to their
-  pre-PR #94 values — `Primary` for constructive primary actions
+  pre-PR #94 values - `Primary` for constructive primary actions
   (Confirm/Save/OK/Apply/Install/Add/Start/Restart/etc.), `Secondary` for
   outlined actions (Cancel/Close/Browse/Test/Filter/Save Profile/etc.),
   `Danger` for App Catalog row Delete. Hero CTAs (Start Deployment, Fix
   Prerequisites) regain their accent fill. Inline `Background` / `Foreground`
   / `Padding` / `Height` overrides previously stripped by PR #94 are **not**
-  restored — the implicit `ui:Button` `Style.Triggers` in App.xaml drive the
+  restored - the implicit `ui:Button` `Style.Triggers` in App.xaml drive the
   theme-adaptive look from `ThemeAdaptiveAccentBrush` / `BadgeTextBrush`.
 
 #### Kept (unchanged from PR #94)
@@ -213,7 +230,7 @@ no longer part of the public documentation set.
   `DestructiveSolidButton` / etc. remain defined in App.xaml as a fallback
   API; views still drive look through `Appearance="..."` directly.
 
-### UI flat-text consolidation + WPF-UI 4.3 disabled-state fix — May 2026
+### UI flat-text consolidation + WPF-UI 4.3 disabled-state fix - May 2026
 
 Visual unification pass and several orthogonal Apps-view defect fixes uncovered
 along the way.
@@ -233,8 +250,8 @@ along the way.
   `UserControls/DetectionEditor`.
 - **Hover contrast WCAG AA.** `Secondary` and `Transparent`
   `MouseOverBackground` / `PressedBackground` re-targeted from `HighlightBrush`
-  (~`#4A4E66`, ~2.25:1 vs purple text — fails AA) to `SurfaceBrush`
-  (`#1B1C25`, ~5.6:1–6:1 against the configured foregrounds — clears AA).
+  (~`#4A4E66`, ~2.25:1 vs purple text - fails AA) to `SurfaceBrush`
+  (`#1B1C25`, ~5.6:1–6:1 against the configured foregrounds - clears AA).
 
 #### Fixed
 - **Column Visibility menu silently broken (Apps view).** The `ui:Flyout` placed
@@ -251,7 +268,7 @@ along the way.
   `ContentBorder.Background = {DynamicResource ButtonBackgroundDisabled}`,
   and that `DynamicResource` lookup does not honor any user-scope override at
   any level we tested (`StackPanel.Resources`, `ui:Button.Resources`,
-  `UserControl.Resources`, or `Application.Current.Resources` direct entry —
+  `UserControl.Resources`, or `Application.Current.Resources` direct entry -
   all probed and verified inert). Fix: fork the upstream
   `DefaultUiButtonStyle` `ControlTemplate` verbatim into our App.xaml implicit
   `ui:Button` style. Single deviation: the `IsEnabled=False` trigger now sets
@@ -278,24 +295,24 @@ along the way.
   states pull Dracula brushes.
 - Extended `PaletteColorResourceMap` with `PaletteRedColor` /
   `PaletteGreenColor` / `PaletteOrangeColor` / `PaletteLightBlueColor` Color
-  overrides — preserved for forward compatibility even though no instance
+  overrides - preserved for forward compatibility even though no instance
   currently uses `Appearance="Danger|Success|Caution|Info"`.
 
-### Dead code + i18n audit pass — May 2026
+### Dead code + i18n audit pass - May 2026
 
 Two-axis cleanup pass closing 18 dead-code and localization findings across 7 self-contained commits. No behavior change at runtime; build, 566 GUI tests, Pester suite, PSScriptAnalyzer, FR diacritics lint, and version-consistency check all green.
 
 #### Removed
-- **PowerShell manifest cleanup (DC-013)** — `Core/Core.psd1` no longer declares `Test-AdminRights` or `Get-FrameworkVersion` in `FunctionsToExport` (these functions never existed in `Core.psm1`).
-- **Resx keys cleanup (DC-002 to DC-012)** — 10 unused EN+FR resx pairs deleted: `AppEditor_Category`, `Apps_SelectWithUpdates`, `Dashboard_Updates_Available`, `Deploy_InheritedFrom`, `Deploy_Installing`, `Help_Shortcut_Actions`, `Help_Shortcut_Navigation`, `Recovery_NetworkTimeout`, `SourceEditor_TestPlaceholder`, `Toast_UninstallComplete`. Designer.cs trimmed where applicable. Guard test `DeadResourceCleanup_RemovesUnusedKeys2026May` added on `AccessibilityHardeningTests`.
-- **IAccessibilityService scaffolding (DC-001 / DC-008)** — `IAccessibilityService`, `AccessibilityService`, `AnnouncementPriority`, DI registration, `MainWindow` field/initialize call, plus correlated resx keys `Accessibility_Progress`, `Accessibility_ProgressWithItem`, `Accessibility_ProgressComplete`, `Accessibility_DeploymentStarted`. Live-region screen-reader behavior is preserved via the existing XAML automation properties on `ScreenReaderLiveRegion` (PR #61/#62 baseline) and the 5 `LiveRegionAttributesTests` guards.
+- **PowerShell manifest cleanup (DC-013)** - `Core/Core.psd1` no longer declares `Test-AdminRights` or `Get-FrameworkVersion` in `FunctionsToExport` (these functions never existed in `Core.psm1`).
+- **Resx keys cleanup (DC-002 to DC-012)** - 10 unused EN+FR resx pairs deleted: `AppEditor_Category`, `Apps_SelectWithUpdates`, `Dashboard_Updates_Available`, `Deploy_InheritedFrom`, `Deploy_Installing`, `Help_Shortcut_Actions`, `Help_Shortcut_Navigation`, `Recovery_NetworkTimeout`, `SourceEditor_TestPlaceholder`, `Toast_UninstallComplete`. Designer.cs trimmed where applicable. Guard test `DeadResourceCleanup_RemovesUnusedKeys2026May` added on `AccessibilityHardeningTests`.
+- **IAccessibilityService scaffolding (DC-001 / DC-008)** - `IAccessibilityService`, `AccessibilityService`, `AnnouncementPriority`, DI registration, `MainWindow` field/initialize call, plus correlated resx keys `Accessibility_Progress`, `Accessibility_ProgressWithItem`, `Accessibility_ProgressComplete`, `Accessibility_DeploymentStarted`. Live-region screen-reader behavior is preserved via the existing XAML automation properties on `ScreenReaderLiveRegion` (PR #61/#62 baseline) and the 5 `LiveRegionAttributesTests` guards.
 
 #### Refactored
-- **Centralized GUI timeouts (ZH-002, ZH-003, ZH-004)** — three duplicated/literal timeout values now live in `GUI/Win11Forge.GUI/Configuration/TimeoutDefaults.cs` (`HttpClient` 15 s, `PackageOperation` 30 s, `CacheWarmingShutdown` 2 s). PowerShell install timeouts continue to live in `Config/timeouts-settings.json`.
-- **Centralized GitHub project links (ZH-001)** — `GUI/Win11Forge.GUI/Configuration/ProjectLinks.cs` now provides `Repository`, `Issues`, `NewIssue`. `ErrorDialog` and `SettingsViewModel` route through this single source; the `ErrorDialog` issue-report fallback path is now consistent with the primary URL (previously dropped the `/new` suffix).
+- **Centralized GUI timeouts (ZH-002, ZH-003, ZH-004)** - three duplicated/literal timeout values now live in `GUI/Win11Forge.GUI/Configuration/TimeoutDefaults.cs` (`HttpClient` 15 s, `PackageOperation` 30 s, `CacheWarmingShutdown` 2 s). PowerShell install timeouts continue to live in `Config/timeouts-settings.json`.
+- **Centralized GitHub project links (ZH-001)** - `GUI/Win11Forge.GUI/Configuration/ProjectLinks.cs` now provides `Repository`, `Issues`, `NewIssue`. `ErrorDialog` and `SettingsViewModel` route through this single source; the `ErrorDialog` issue-report fallback path is now consistent with the primary URL (previously dropped the `/new` suffix).
 
 #### Documented
-- **ReDoS regex timeout (ZH-005)** — `JsonApplicationDetectionService.RegexTimeout` (500 ms) is annotated as intentionally non-configurable to prevent attacker-controlled config from disabling the protection.
+- **ReDoS regex timeout (ZH-005)** - `JsonApplicationDetectionService.RegexTimeout` (500 ms) is annotated as intentionally non-configurable to prevent attacker-controlled config from disabling the protection.
 
 Resx parity after this pass: 943/943.
 
@@ -345,35 +362,35 @@ Completed the P0/P1 remediation sweep from the May 2026 UX review, then closed t
 
 ### Added
 
-- **Test coverage** — `AccessibilityHardeningTests` adds three static-analysis guards: `RequiredA11yLocKeys_ArePresentInXaml` (theory across the 6 a11y-touched XAML files), `HighContrastMode_TextOnAccentBrushes_AreRemapped` (asserts the 3 `SwapIfExists` entries in `App.xaml.cs`), and `HighContrastTheme_ImplicitlyStylesWpfUiButton` (asserts the implicit `ui:Button` style based on `HighContrastButtonStyle` in `HighContrastTheme.xaml`). Total test count: 527 passed (`dotnet test -c Release GUI\Win11Forge.slnx --filter "FullyQualifiedName!~UIA"`).
-- **Test coverage** — `AccessibilityHardeningTests` adds four static visual-hierarchy guards for P-15: AppsView header pattern, AppsView filter/profile reflow without `MinWidth="920"`, implicit `ReinforcedTabItemStyle`, and workflow/config navigation clustering. Total test count: 531 passed (`dotnet test -c Release GUI\Win11Forge.slnx --filter "FullyQualifiedName!~UIA"`).
-- **Test coverage** — `AccessibilityHardeningTests` adds three post-smoke guards for DC-012/DC-013/DC-014: AppCatalog unavailable action visibility, AppsView install CTA deduplication, and theme-aware TabItem template states. Total test count: 534 passed (`dotnet test -c Release GUI\Win11Forge.slnx --filter "FullyQualifiedName!~UIA"`).
-- **Test coverage** — PR #81 adds guards for filtered Apps selection helpers, import Replace/Merge/Cancel behavior, cancel confirmations, Settings no-toast auto-save, AppEditor source-specific a11y keys, AppCatalog HC contrast, dead resource cleanup, Settings icon de-duplication, and cross-view `CardPadding` token usage. Total test count: 554 passed (`dotnet test -c Release GUI\Win11Forge.slnx --filter "FullyQualifiedName!~UIA"`).
+- **Test coverage** - `AccessibilityHardeningTests` adds three static-analysis guards: `RequiredA11yLocKeys_ArePresentInXaml` (theory across the 6 a11y-touched XAML files), `HighContrastMode_TextOnAccentBrushes_AreRemapped` (asserts the 3 `SwapIfExists` entries in `App.xaml.cs`), and `HighContrastTheme_ImplicitlyStylesWpfUiButton` (asserts the implicit `ui:Button` style based on `HighContrastButtonStyle` in `HighContrastTheme.xaml`). Total test count: 527 passed (`dotnet test -c Release GUI\Win11Forge.slnx --filter "FullyQualifiedName!~UIA"`).
+- **Test coverage** - `AccessibilityHardeningTests` adds four static visual-hierarchy guards for P-15: AppsView header pattern, AppsView filter/profile reflow without `MinWidth="920"`, implicit `ReinforcedTabItemStyle`, and workflow/config navigation clustering. Total test count: 531 passed (`dotnet test -c Release GUI\Win11Forge.slnx --filter "FullyQualifiedName!~UIA"`).
+- **Test coverage** - `AccessibilityHardeningTests` adds three post-smoke guards for DC-012/DC-013/DC-014: AppCatalog unavailable action visibility, AppsView install CTA deduplication, and theme-aware TabItem template states. Total test count: 534 passed (`dotnet test -c Release GUI\Win11Forge.slnx --filter "FullyQualifiedName!~UIA"`).
+- **Test coverage** - PR #81 adds guards for filtered Apps selection helpers, import Replace/Merge/Cancel behavior, cancel confirmations, Settings no-toast auto-save, AppEditor source-specific a11y keys, AppCatalog HC contrast, dead resource cleanup, Settings icon de-duplication, and cross-view `CardPadding` token usage. Total test count: 554 passed (`dotnet test -c Release GUI\Win11Forge.slnx --filter "FullyQualifiedName!~UIA"`).
 
 ### Changed
 
-- **Applications workflow** — `SelectAll`, `SelectNotInstalled`, `SelectFavorites`, and `SelectWithUpdates` now operate on the active filtered application list; `SelectNone` remains global to clear hidden selections deliberately. Closes WF-011 (PR #81).
+- **Applications workflow** - `SelectAll`, `SelectNotInstalled`, `SelectFavorites`, and `SelectWithUpdates` now operate on the active filtered application list; `SelectNone` remains global to clear hidden selections deliberately. Closes WF-011 (PR #81).
 
 ### Fixed
-- **Workflow safety (WF-012)** — Import Selection and Import Favorites now show Replace / Merge / Cancel previews when current state is non-empty, summarize matched/missing/final counts, and leave state untouched on cancel. Closes WF-012 (PR #81).
-- **Workflow feedback (WF-013)** — Settings auto-save updates continue to set inline status, but no longer fire repetitive info toasts during every keystroke/toggle change. Closes WF-013 (PR #81).
-- **Workflow safety (WF-014)** — Apps batch cancellation and Monitoring/Deployment cancellation now prompt before requesting cooperative cancellation, including completed/total context. Closes WF-014 (PR #81).
-- **Visual hierarchy (DC-009)** — Settings keeps tab icons but removes redundant repeated icons from section headers inside cards. Closes DC-009 (PR #81).
-- **Visual hierarchy (DC-010)** — Audited card borders across Apps, AppCatalog, Dashboard, Deployment, Logs, Prerequisites, and Settings now use `{StaticResource CardPadding}` instead of literal `16`/`20` card padding. Closes DC-010 (PR #81).
-- **Accessibility follow-up** — ApplicationEditorDialog source action buttons now use source-specific automation names for Winget, Chocolatey, and Microsoft Store search/apply actions. Resolves the AppEditor P3 a11y follow-up (PR #81).
-- **Accessibility follow-up** — High Contrast AppCatalog header contrast is guarded by WCAG AA tests and HC brush mappings for mapped surface brushes. Resolves A11Y-011 candidate (PR #81).
-- **Resource cleanup** — Removed dead `AppCatalog_DeleteMultiple*` EN/FR resource keys and hardcoded English fallbacks in `LogsViewModel.ClearOldLogsAsync`. Resolves TODO cleanup follow-ups (PR #81).
-- **Visual hierarchy (DC-012)** — AppCatalog now hides Undo/Redo and row actions when unavailable instead of rendering large disabled blocks. Closes DC-012 (PR #80).
-- **Information architecture (DC-013)** — AppsView keeps `Install Selected` only in the selection action bar, removing the duplicate Profile-card CTA. Closes DC-013 (PR #80).
-- **Visual hierarchy (DC-014)** — Shared WPF `TabItem` styling now uses a theme-aware template with explicit hover, focus, selected, and disabled states. Closes DC-014 (PR #80).
-- **Visual hierarchy (DC-005)** — AppsView now mirrors the app-wide page header structure with an `Apps24` icon, `PageTitleTextStyle`, `PageSubtitleTextStyle`, and new localized `Apps_Subtitle` resource. EN/FR resource parity is 920/920. Closes DC-005 (PR #79).
-- **Visual hierarchy (DC-006)** — AppsView profile and filter cards no longer force internal horizontal scrolling through `MinWidth="920"`; both surfaces now reflow in a two-row responsive layout. Closes DC-006 (PR #79).
-- **Visual hierarchy (DC-007)** — Settings and shared WPF `TabItem` surfaces use `ReinforcedTabItemStyle` with a stronger selected underline and selected-state tint. Closes the DC-007 implementation scope; stronger post-smoke tab treatment is tracked separately as DC-014. Closes DC-007 (PR #79).
-- **Information architecture (DC-008)** — Main navigation now separates workflow and configuration clusters with `NavigationViewItemSeparator`, moving App Catalog next to Settings while keeping Settings `Tag="4"` and App Catalog `Tag="5"` stable. Closes DC-008 (PR #79).
-- **Accessibility (A11Y-007)** — Sweep `AutomationProperties.Name` on AppsView toolbar buttons (LogViewer Copy/Close, Summary Close, Save Profile, Reset Columns) and ApplicationEditorDialog source actions (Search + Apply Selection × 3 sources). Screen readers now announce explicit names instead of relying on inferred Content text. Closes A11Y-007 from the May 2026 UX review (PR #78).
-- **Accessibility (A11Y-008)** — High-contrast mode now remaps `TextOnAccentFillColor*` brushes (Primary/Secondary/Disabled) to high-contrast foreground variants in `App.ApplyHighContrastMode`, and selectively applies `HighContrastButtonStyle` to `ui:Button` only (WPF-UI). Resolves the 1.07:1 white-on-cyan hover regression on accent-painted buttons in HC mode. Plain WPF `Button` controls remain untouched to preserve custom-styled buttons. Closes A11Y-008 (PR #78).
-- **Accessibility (A11Y-009)** — Settings toggle switches (Reduce Motion, High Contrast) now expose their descriptive subtitle via `AutomationProperties.HelpText`, in addition to the existing `Name`. Closes A11Y-009 (PR #78).
-- **Accessibility (A11Y-010)** — Explicit `AutomationProperties.Name` added to templated/dialog buttons that previously relied on inferred announcement: Prerequisites Check (StackPanel-wrapped Button with ProgressRing), ConfirmDialog Cancel/Confirm, ErrorDialog Help/Retry/OK. Closes A11Y-010 (PR #78).
+- **Workflow safety (WF-012)** - Import Selection and Import Favorites now show Replace / Merge / Cancel previews when current state is non-empty, summarize matched/missing/final counts, and leave state untouched on cancel. Closes WF-012 (PR #81).
+- **Workflow feedback (WF-013)** - Settings auto-save updates continue to set inline status, but no longer fire repetitive info toasts during every keystroke/toggle change. Closes WF-013 (PR #81).
+- **Workflow safety (WF-014)** - Apps batch cancellation and Monitoring/Deployment cancellation now prompt before requesting cooperative cancellation, including completed/total context. Closes WF-014 (PR #81).
+- **Visual hierarchy (DC-009)** - Settings keeps tab icons but removes redundant repeated icons from section headers inside cards. Closes DC-009 (PR #81).
+- **Visual hierarchy (DC-010)** - Audited card borders across Apps, AppCatalog, Dashboard, Deployment, Logs, Prerequisites, and Settings now use `{StaticResource CardPadding}` instead of literal `16`/`20` card padding. Closes DC-010 (PR #81).
+- **Accessibility follow-up** - ApplicationEditorDialog source action buttons now use source-specific automation names for Winget, Chocolatey, and Microsoft Store search/apply actions. Resolves the AppEditor P3 a11y follow-up (PR #81).
+- **Accessibility follow-up** - High Contrast AppCatalog header contrast is guarded by WCAG AA tests and HC brush mappings for mapped surface brushes. Resolves A11Y-011 candidate (PR #81).
+- **Resource cleanup** - Removed dead `AppCatalog_DeleteMultiple*` EN/FR resource keys and hardcoded English fallbacks in `LogsViewModel.ClearOldLogsAsync`. Resolves TODO cleanup follow-ups (PR #81).
+- **Visual hierarchy (DC-012)** - AppCatalog now hides Undo/Redo and row actions when unavailable instead of rendering large disabled blocks. Closes DC-012 (PR #80).
+- **Information architecture (DC-013)** - AppsView keeps `Install Selected` only in the selection action bar, removing the duplicate Profile-card CTA. Closes DC-013 (PR #80).
+- **Visual hierarchy (DC-014)** - Shared WPF `TabItem` styling now uses a theme-aware template with explicit hover, focus, selected, and disabled states. Closes DC-014 (PR #80).
+- **Visual hierarchy (DC-005)** - AppsView now mirrors the app-wide page header structure with an `Apps24` icon, `PageTitleTextStyle`, `PageSubtitleTextStyle`, and new localized `Apps_Subtitle` resource. EN/FR resource parity is 920/920. Closes DC-005 (PR #79).
+- **Visual hierarchy (DC-006)** - AppsView profile and filter cards no longer force internal horizontal scrolling through `MinWidth="920"`; both surfaces now reflow in a two-row responsive layout. Closes DC-006 (PR #79).
+- **Visual hierarchy (DC-007)** - Settings and shared WPF `TabItem` surfaces use `ReinforcedTabItemStyle` with a stronger selected underline and selected-state tint. Closes the DC-007 implementation scope; stronger post-smoke tab treatment is tracked separately as DC-014. Closes DC-007 (PR #79).
+- **Information architecture (DC-008)** - Main navigation now separates workflow and configuration clusters with `NavigationViewItemSeparator`, moving App Catalog next to Settings while keeping Settings `Tag="4"` and App Catalog `Tag="5"` stable. Closes DC-008 (PR #79).
+- **Accessibility (A11Y-007)** - Sweep `AutomationProperties.Name` on AppsView toolbar buttons (LogViewer Copy/Close, Summary Close, Save Profile, Reset Columns) and ApplicationEditorDialog source actions (Search + Apply Selection × 3 sources). Screen readers now announce explicit names instead of relying on inferred Content text. Closes A11Y-007 from the May 2026 UX review (PR #78).
+- **Accessibility (A11Y-008)** - High-contrast mode now remaps `TextOnAccentFillColor*` brushes (Primary/Secondary/Disabled) to high-contrast foreground variants in `App.ApplyHighContrastMode`, and selectively applies `HighContrastButtonStyle` to `ui:Button` only (WPF-UI). Resolves the 1.07:1 white-on-cyan hover regression on accent-painted buttons in HC mode. Plain WPF `Button` controls remain untouched to preserve custom-styled buttons. Closes A11Y-008 (PR #78).
+- **Accessibility (A11Y-009)** - Settings toggle switches (Reduce Motion, High Contrast) now expose their descriptive subtitle via `AutomationProperties.HelpText`, in addition to the existing `Name`. Closes A11Y-009 (PR #78).
+- **Accessibility (A11Y-010)** - Explicit `AutomationProperties.Name` added to templated/dialog buttons that previously relied on inferred announcement: Prerequisites Check (StackPanel-wrapped Button with ProgressRing), ConfirmDialog Cancel/Confirm, ErrorDialog Help/Retry/OK. Closes A11Y-010 (PR #78).
 - Hardened the Windows runner CI baseline after enabling strict Pester gating.
 - Replaced a fragile File detection fixture path with a stable system executable present on Windows Server runners.
 - Made Store app detection tolerate app definitions without optional `Sources.Store` metadata.
@@ -409,7 +426,7 @@ Completed the P0/P1 remediation sweep from the May 2026 UX review, then closed t
 - **Added**: IP blocking after repeated authentication failures
 
 ### Bug Fixes
-- **Fixed**: SecureStorage DPAPI round-trip failures — `Get-DpapiEntropy` now persists entropy to disk on PS7 (replaced .NET Framework-only `File.Create(FileSecurity)` overload with cross-platform `FileStream` + `Set-SecureFileAcl`) and caches entropy in memory for session consistency
+- **Fixed**: SecureStorage DPAPI round-trip failures - `Get-DpapiEntropy` now persists entropy to disk on PS7 (replaced .NET Framework-only `File.Create(FileSecurity)` overload with cross-platform `FileStream` + `Set-SecureFileAcl`) and caches entropy in memory for session consistency
 - **Fixed**: Added `Add-Type -AssemblyName System.Security` to `SecureStorage.psm1` for PowerShell 5.1 compatibility (DPAPI types not auto-loaded)
 
 ### Zero Hardcoding Audit Remediation
@@ -452,16 +469,16 @@ Complete audit remediation addressing 225+ violations across conformity, code qu
 Post-merge audit of 23 GUI files with targeted fixes for correctness, accessibility, and code quality.
 
 #### Critical / High
-- **Fixed**: `SettingsViewModel.TrySaveSettings()` — was creating a new `AppSettings` object, losing fields from other views; now loads existing settings first and updates only managed fields
-- **Fixed**: `AppSettingsService.SaveSettingsAsync()` — return type changed from `Task` to `Task<bool>` for consistency with sync method
+- **Fixed**: `SettingsViewModel.TrySaveSettings()` - was creating a new `AppSettings` object, losing fields from other views; now loads existing settings first and updates only managed fields
+- **Fixed**: `AppSettingsService.SaveSettingsAsync()` - return type changed from `Task` to `Task<bool>` for consistency with sync method
 - **Fixed**: Duplicate `ApplyHighContrastMode` call removed from `App.xaml.cs` startup
-- **Fixed**: Duplicate `AutomationProperties.Name="ScheduledDeployment_DateTime"` on DatePicker and TextBox — now unique (`ScheduledDeployment_Date` / `ScheduledDeployment_Time`)
+- **Fixed**: Duplicate `AutomationProperties.Name="ScheduledDeployment_DateTime"` on DatePicker and TextBox - now unique (`ScheduledDeployment_Date` / `ScheduledDeployment_Time`)
 - **Fixed**: Hardcoded undo/redo tooltip strings replaced with localized computed properties (`UndoButtonTooltip` / `RedoButtonTooltip`)
 
 #### Medium
 - **Fixed**: Magic animation duration numbers replaced with named constants (`AnimationFastMs`, `AnimationNormalMs`, `AnimationSlowMs`)
 - **Fixed**: `Contains("HighContrastTheme")` now uses `StringComparison.Ordinal`
-- **Fixed**: `GetLocalizedString` fallback removed — replaced with strongly-typed `Resources.Resources.Settings_SaveFailed`
+- **Fixed**: `GetLocalizedString` fallback removed - replaced with strongly-typed `Resources.Resources.Settings_SaveFailed`
 - **Fixed**: Undo/Redo buttons now use `TouchFriendlyIconButton` style (44x44px WCAG 2.1 AA)
 - **Fixed**: `DashboardView.xaml` Grid.ColumnDefinitions indentation corrected
 
@@ -896,640 +913,78 @@ Win11Forge v3.0.0 introduces a complete graphical interface while maintaining fu
 
 ## [2.4.0] - 2025-10-06
 
-### 🎉 Compatibility & Performance Release
+### Compatibility and performance
 
-Cette version apporte des améliorations majeures de compatibilité PowerShell 5.1, des optimisations de performance pour System-Audit, et des corrections critiques pour la stabilité du mode séquentiel.
+This historical release improved PowerShell 5.1 compatibility, System-Audit performance, and sequential deployment stability. Measurements below are the original release measurements, not a current benchmark.
 
-### ✨ Nouvelles Fonctionnalités
+- System-Audit 2.4.0 changed the default sample interval from 2 to 5 seconds and scheduled application, event, and network scans every 30, 60, and 120 seconds. The release recorded sample overhead changing from 3000 ms to about 750 ms, added SkipApplicationMonitoring, and displayed average/maximum sample costs.
+- Added an eight-option TrustedInstaller launcher for administrative tools, SYSTEM execution, .msc support through mmc.exe, and dependency installation.
+- Fixed StrictMode property access in InstallationEngine with nested conditions and PSObject.Properties checks for InstallationOptions, IgnoreExitCodeIfFileExists, and ValidExitCodes.
+- Added automatic PowerShell 7 restart with parameter preservation for sequential and parallel modes.
+- Fixed System-Audit process accounting, division by zero in HTML reports, Ctrl+C report generation, Quiet mode, CIM-session reuse, and HashSet-based comparisons.
+- Fixed launcher quoting for paths containing spaces, custom-argument validation, ARGS assignment, and removed unused delayed-expansion code.
+- Fixed GUI module-cache property access, call-operator detection, paths containing spaces, AppId overrides, and exit-code propagation.
+- Fixed null environment reports, Skipped-property checks, skipped-app statistics, and summary colors in parallel mode.
+- Improved application-database validation for numeric boolean Required values, priority/required overrides, priority zero, and registry writes.
+- Fixed DirectDownload and portable ZIP deployment in parallel PowerShell 7 and sequential PowerShell 5.1, including Detection.Path handling.
+- Fixed setup directory creation, documentation references, version consistency, and EnvironmentDetection module lookup through RepositoryRoot.
+- Standardized UTF-8 BOM and formatting, console versions, application counts, GUI documentation, and update dates across more than 50 files.
 
-#### System-Audit v2.4.0 - Performance Optimized
-- **Ajouté**: `Tools/System-Audit.ps1` v2.4.0
-  - Overhead réduit de 67% : 3000ms → ~750ms par échantillon (60% → 20%)
-  - Intervalle d'échantillonnage ajusté de 2s à 5s par défaut
-  - Fréquences de scan optimisées : Apps (30s), Events (60s), Network (120s)
-  - Nouveau paramètre `-SkipApplicationMonitoring` (réduit overhead de 40%)
-  - Affichage temps réel des performances (avg/max par échantillon)
-
-#### TrustedInstaller Launcher Improvements
-- **Ajouté**: `Tools/Launch-AsTrustedInstaller.bat`
-  - Menu interactif avec 8 options (PowerShell, CMD, Registry, Task Manager, etc.)
-  - Exécution avec privilèges NT AUTHORITY\SYSTEM
-  - Support automatique des fichiers .msc via mmc.exe
-  - Auto-installation du module NtObjectManager si nécessaire
-
-### 🔧 Corrections Majeures
-
-#### PowerShell 5.1 Sequential Mode Compatibility
-- **Corrigé**: `Modules/InstallationEngine.psm1` - StrictMode PropertyNotFoundException
-  - Remplacement des conditions chainées par des conditions imbriquées
-  - Accès sécurisé aux propriétés PSObject : `$app.PSObject.Properties['PropertyName']`
-  - Compatible avec StrictMode en PowerShell 5.1 et 7.x
-  - Fixes appliqués aux propriétés : InstallationOptions, IgnoreExitCodeIfFileExists, ValidExitCodes
-
-#### PowerShell 7 Auto-Restart Enhancement
-- **Ajouté**: `Deploy-Win11Environment.ps1` - Auto-restart en PowerShell 7
-  - Détection automatique de PowerShell 5.1
-  - Redémarrage automatique avec préservation des paramètres
-  - Support modes Parallel et Sequential
-  - Message informatif avant redémarrage
-
-#### System-Audit Bug Fixes (v2.2.0)
-- **Corrigé**: `Tools/System-Audit.ps1` - Bugs critiques
-  - Processus terminés comptés avant calcul overhead (timing fix)
-  - Protection division par zéro dans génération rapport HTML
-  - Gestionnaire Ctrl+C gracieux avec génération automatique du rapport
-  - Mode `-Quiet` pour exécution silencieuse (scripts automatisés)
-  - Session CIM réutilisable pour +20% de performance
-  - Optimisation HashSet pour comparaisons O(1) au lieu de O(n²)
-
-#### TrustedInstaller Launcher Fixes
-- **Corrigé**: `Tools/Launch-AsTrustedInstaller.bat` - Gestion des chemins avec espaces
-  - Correction du quoting pour paths avec espaces
-  - Suppression du code mort (delayed expansion inutilisée)
-  - Robustesse assignment ARGS avec quoted set statement
-  - Validation correcte des paramètres personnalisés
-
-#### GUI Stability Improvements
-- **Corrigé**: `Modules/Win11ForgeGUI.psm1` - Module caching PropertyNotFoundException
-  - Détection call operator vs direct execution
-  - Correction crash au lancement avec paths contenant espaces
-  - Validation AppId override et propagation exit codes
-
-#### StrictMode and Parallel Mode Fixes
-- **Corrigé**: `Deploy-Win11Environment.ps1` - Crash statistiques mode parallèle
-  - Null-safe environment report avec fallbacks
-  - Propriété Skipped correctement vérifiée dans stats
-  - Apps skippées comptées correctement (pas comme Failed)
-  - Affichage summary correct pour apps skippées (jaune au lieu de rouge)
-
-#### Detection and Registry Fixes
-- **Corrigé**: `Modules/ApplicationDatabase.psm1` - Validation et type coercion
-  - Support valeurs numériques booléennes (0/1) pour champ Required
-  - Validation type pour priority/required overrides
-  - Prévention coercion type cassant default priority/required
-  - Corrections critiques registry writes et handling priority 0
-
-#### DirectDownload and ZIP Deployment
-- **Corrigé**: `Modules/InstallationEngine.psm1` - Support multi-format
-  - DirectDownload fonctionnel en mode parallèle pour PS7
-  - Déploiement ZIP archive correct pour outils portables
-  - Mode séquentiel ZIP deployment avec Detection.Path
-  - Compatibilité PowerShell 5.1 pour DirectDownload
-  - Suppression `-UseBasicParsing` en mode séquentiel
-
-#### Setup and Validation Improvements
-- **Corrigé**: `Setup-Framework.ps1` - Création répertoires et validation
-  - Création correcte du répertoire Tools
-  - Correction références documentation dans messages d'erreur
-  - Cohérence version avec framework principal
-
-### 🛠️ Améliorations
-
-#### Documentation Consistency
-- **Corrigé**: 50+ fichiers pour cohérence de version
-  - Harmonisation toutes bannières console à v2.4.0
-  - Correction counts applications dans Apps/README.md
-  - Synchronisation statistiques CHANGELOG et PROJET_STRUCTURE
-  - Correction documentation GUI tags et sources
-  - Cohérence dates dernière mise à jour (2025-10-06)
-
-#### EnvironmentDetection Module Path
-- **Corrigé**: `Modules/InstallationEngine.psm1` - Utilisation RepositoryRoot
-  - Remplacement calcul path relatif par variable $script:RepositoryRoot
-  - Path module fiable en mode séquentiel
-  - Plus maintenable avec variable centralisée
-
-#### Module Encoding and Formatting
-- **Corrigé**: Tous modules - Encodage UTF-8 BOM
-  - UTF-8 BOM appliqué à tous modules et scripts
-  - Formatage linter appliqué uniformément
-  - Amélioration démarrage GUI
-
-### 📊 Statistiques v2.4.0
-
-- **100+ commits** depuis v2.3.0
-- **50+ fichiers** corrigés pour cohérence
-- **15+ bugs critiques** résolus (StrictMode, parallel, GUI)
-- **4 versions System-Audit** (2.1.0 → 2.2.0 → 2.3.0 → 2.4.0)
-- **67% réduction overhead** System-Audit (3000ms → 750ms)
-- **100% compatibilité** PowerShell 5.1 + 7.x en modes séquentiel/parallèle
-
-### 🔗 Liens Utiles
-
-- **Documentation complète** : `README.md`
-- **System-Audit docs** : `Tools/System-Audit-README.md` (30+ pages)
-- **Structure projet** : historical v2.x docs retired from the public documentation set
-- **Quick Start** : `Apps/QUICK_START.md`
-
----
+The release recorded more than 100 commits, more than 15 critical fixes, and four System-Audit revisions since 2.3.0. See the repository history for the original validation reports.
 
 ## [2.3.0] - 2025-10-04
 
-### 🎉 Stability & Detection Improvements Release
+### Features
 
-Cette version corrige des problèmes majeurs de détection d'applications Store, améliore la stabilité PowerShell 7, et introduit le logging parallèle avec l'épinglage Start Menu fiable.
+- Added StartMenuPinning using start2.bin for Windows 11 22H2+, supporting the Default profile and current user.
+- Added StartMenuLayout for category-based organization and folders, integrated with pinning.
+- Added StartupManager for enabling and disabling startup applications.
+- Added per-application parallel logs under Logs/Parallel, with timestamps, detailed errors, and a consolidated main log.
 
-### ✨ Nouvelles Fonctionnalités
+### Fixes
 
-#### Start Menu Pinning (start2.bin)
-- **Ajouté**: `Modules/StartMenuPinning.psm1`
-  - Méthode fiable pour Windows 11 22H2+
-  - Épinglage d'items au Start Menu via start2.bin
-  - Support Default profile + utilisateur courant
-  - Remplace LayoutModification.json (déprécié)
-  - Intégration avec StartMenuLayout.psm1
+- Added StoreApp detection with PackageName, vendor-prefix extraction, base-name fallback, and winget list to avoid Appx assembly conflicts under PowerShell 7.
+- Fixed WhatsAppDesktop and multilingual MicrosoftCorporationII.QuickAssist detection.
+- Corrected the Epic Games Launcher detection path to the Win32 executable under Program Files (x86).
+- Removed invalid file paths for Proton Drive, Mail Bridge, and Pass, using the package-name fallback instead.
+- Corrected CUE Splitter to Store package 9NBLGGH43MH5 and base-name detection.
+- Made InstallArguments access safe under StrictMode using PSObject.Properties.
+- Improved Test-ApplicationByName and isolated log output per runspace.
 
-#### Start Menu Layout Organisation
-- **Ajouté**: `Modules/StartMenuLayout.psm1`
-  - Organisation automatique par catégorie
-  - Création de dossiers dans le Start Menu
-  - Mapping applications → catégories
-  - Compatible avec StartMenuPinning
+### Historical validation and migration
 
-#### Startup Manager
-- **Ajouté**: `Modules/StartupManager.psm1`
-  - Gestion applications au démarrage
-  - Activation/désactivation au démarrage
-  - Compatible mode parallèle et séquentiel
+The release included Test-ProtonAppsDetection.ps1. Sequential testing used the Personnel profile: 64 processed applications, 16 installed, 41 already present, 4 skipped, and 3 Proton failures subsequently addressed. Parallel testing used five workers. Recorded inventory: 66 applications, four profiles, and ten modules, including the three new modules.
 
-#### Logs Parallèles Individuels
-- **Ajouté**: Logs séparés par application en mode parallèle
-  - Nouveau dossier `Logs/Parallel/`
-  - Logs individuels par application (ex: `Logs/Parallel/GoogleChrome_20251004_203045.log`)
-  - Tracking temps réel de chaque installation
-  - Stack traces détaillées avec numéros de ligne
-  - Facilite le debugging des crashs et erreurs
-  - Chaque runspace écrit dans son propre fichier
-
-### 🔧 Corrections Majeures
-
-#### Détection Store Apps Améliorée
-- **Corrigé**: `Modules/InstallationEngine.psm1` - Support complet méthode `StoreApp`
-  - **PackageName Detection**: Support complet pour applications Store
-  - **Détection multilingue**: Quick Assist FR/EN, autres apps localisées
-  - **Vendor Prefix Extraction**: Regex `^([^.]+)\.` pour extraire préfixe du PackageName
-  - **Fallback nom de base**: Si PackageName complet non trouvé, essaie nom de base
-  - **Méthode winget list**: Évite conflits module Appx en PowerShell 7
-  - **Compatible PS7 parallèle**: Fonctionne en mode parallèle et séquentiel
-
-#### WhatsApp Desktop
-- **Corrigé**: `Apps/Database/applications.json`
-  - Méthode: `StoreApp` avec `PackageName: "WhatsAppDesktop"`
-  - Détection par nom de base (suffixe vendor tronqué pour compatibilité)
-  - Fallback intelligent vers nom sans suffixe dans code de détection
-  - Sources: Store prioritaire, sinon Winget/Chocolatey
-
-#### Quick Assist
-- **Corrigé**: `Apps/Database/applications.json`
-  - Méthode: `StoreApp` avec `PackageName: "MicrosoftCorporationII.QuickAssist"`
-  - Détection par préfixe vendor (suffixe hash tronqué pour compatibilité)
-  - Support multilingue (FR: Assistance Rapide, EN: Quick Assist)
-  - Résolution regex avancée pour noms tronqués dans code de détection
-
-#### Epic Games Launcher
-- **Corrigé**: `Apps/Database/applications.json`
-  - Chemin File corrigé: `C:\Program Files (x86)\Epic Games\Launcher\Portal\Binaries\Win32\EpicGamesLauncher.exe`
-  - Ancien chemin incorrect: `.../Win64/...` (n'existe pas)
-  - Validation: Chemin vérifié sur installation réelle
-
-#### Proton Apps (Drive, Mail Bridge, Pass)
-- **Corrigé**: `Apps/Database/applications.json`
-  - **Detection supprimée** pour les 3 apps Proton
-  - Utilisation fallback `Test-ApplicationByName` via winget list
-  - Chemins File incorrects supprimés (n'existaient pas)
-  - Détection fiable par nom winget:
-    - `Proton.ProtonDrive`
-    - `Proton.ProtonMailBridge`
-    - `Proton.ProtonPass`
-
-#### CUE Splitter
-- **Corrigé**: `Apps/Database/applications.json`
-  - **App corrigée**: De CUETools vers CUE Splitter (app Store correcte)
-  - AppId: `CUESplitter`
-  - Source Store uniquement: `9NBLGGH43MH5`
-  - Détection: `StoreApp` avec `PackageName: "CUESplitter"` (nom de base)
-
-#### InstallArguments Access
-- **Corrigé**: `Modules/InstallationEngine.psm1`
-  - Accès sécurisé aux propriétés PSObject en StrictMode
-  - Utilisation de `$app.PSObject.Properties['InstallArguments']` au lieu de `$app.InstallArguments`
-  - Évite erreurs "property does not exist" en mode strict
-  - Compatible avec toutes les versions PowerShell
-
-### 🛠️ Améliorations
-
-#### Stabilité PowerShell 7
-- **Corrigé**: Conflits assembly Appx en mode séquentiel
-  - Détection StoreApp via `winget list` au lieu de `Get-AppxPackage`
-  - Évite conflit "Could not load file or assembly 'System.Runtime.WindowsRuntime'"
-  - Support complet PS7 parallèle sans crashes
-  - Utilisation systématique de winget pour cohérence
-
-#### Test-ApplicationByName Fallback
-- **Amélioré**: Fallback automatique pour apps sans Detection
-  - Détection par `winget list --name "AppName"`
-  - Alternative fiable quand chemins File incorrects
-  - Exemple: Proton apps utilisent ce fallback avec succès
-  - Mode par défaut pour nouvelles apps
-
-#### Logging en Mode Parallèle
-- **Amélioré**: Architecture de logging parallèle
-  - Chaque runspace a son propre fichier log
-  - Horodatage précis pour chaque opération
-  - Stack traces complètes avec numéros de ligne
-  - Résumé consolidé dans log principal
-  - Facilite identification problèmes spécifiques par app
-
-### 🧪 Tests et Validation
-
-#### Test-ProtonAppsDetection.ps1
-- **Ajouté**: `Tests/Test-ProtonAppsDetection.ps1`
-  - Script de validation des 3 apps Proton
-  - Vérifie chemins File (n'existent pas)
-  - Vérifie détection winget (fonctionne)
-  - Recherche emplacements réels si paths incorrects
-
-#### Validation Déploiement Séquentiel
-- **Testé**: Mode séquentiel PowerShell 7
-  - Profil Personnel (66 apps)
-  - Résultat: 64 apps traitées, 16 installées, 41 déjà présentes, 4 skipped, 3 échecs (Proton - maintenant corrigé)
-  - Quick Assist: ✅ Détecté correctement
-  - WhatsApp Desktop: ✅ Détecté correctement
-  - Epic Games Launcher: ✅ Détecté correctement
-
-#### Validation Déploiement Parallèle
-- **Testé**: Mode parallèle PowerShell 7
-  - 5 jobs concurrents
-  - Logs individuels fonctionnels
-  - Stabilité confirmée sans crashes Appx
-  - Performance optimale maintenue
-
-### 📊 Statistiques v2.3.0
-
-**Applications** : 66 (stable vs v2.2.0)
-**Profils** : 4 (Base, Office, Gaming, Personnel)
-**Modules** : 10 (+3 vs v2.2.0: StartMenuLayout, StartMenuPinning, StartupManager)
-**Tests** : +1 (Test-ProtonAppsDetection.ps1)
-
-**Apps Corrigées** : 7
-- WhatsApp Desktop (StoreApp)
-- Quick Assist (StoreApp multilingue)
-- Epic Games Launcher (File path)
-- Proton Drive (Detection removed)
-- Proton Mail Bridge (Detection removed)
-- Proton Pass (Detection removed)
-- CUE Splitter (App corrigée)
-
-**Taux de Succès d'Installation** :
-- v2.2.0: ~95% (3 échecs Proton)
-- v2.3.0: ~99% (0-1 échec attendu)
-
-### 🔧 Fichiers Modifiés
-
-**Modules Ajoutés** :
-- `Modules/StartMenuLayout.psm1`
-- `Modules/StartMenuPinning.psm1`
-- `Modules/StartupManager.psm1`
-
-**Modules Modifiés** :
-- `Modules/InstallationEngine.psm1` (StoreApp detection, PSObject safe access, parallel logging)
-
-**Base de Données** :
-- `Apps/Database/applications.json` (7 apps corrigées)
-
-**Tests** :
-- `Tests/Test-ProtonAppsDetection.ps1` (nouveau)
-
-**Documentation** :
-- `README.md` (v2.3.0)
-- `CHANGELOG.md` (ce fichier)
-
-### 🐛 Bugs Résolus
-
-1. **WhatsApp Desktop pas détecté**
-   - Cause: Détection par Registry incorrecte
-   - Fix: StoreApp avec PackageName + fallback nom de base
-   - Status: ✅ Résolu
-
-2. **Quick Assist pas détecté (FR/EN)**
-   - Cause: Nom multilingue, PackageName tronqué par winget
-   - Fix: Vendor prefix extraction regex
-   - Status: ✅ Résolu
-
-3. **Epic Games Launcher File path incorrect**
-   - Cause: Chemin Win64 au lieu de Win32
-   - Fix: Correction vers `.../Win32/EpicGamesLauncher.exe`
-   - Status: ✅ Résolu
-
-4. **Proton Apps File paths invalides**
-   - Cause: Chemins `C:\Program Files\Proton\...` n'existent pas
-   - Fix: Suppression Detection, utilisation fallback winget
-   - Status: ✅ Résolu
-
-5. **CUE Splitter app incorrecte**
-   - Cause: Référence à CUETools au lieu de CUE Splitter
-   - Fix: App Store correcte avec PackageName
-   - Status: ✅ Résolu
-
-6. **PowerShell 7 crash avec Get-AppxPackage**
-   - Cause: Conflit assembly Appx en mode séquentiel
-   - Fix: Utilisation winget list pour détection StoreApp
-   - Status: ✅ Résolu
-
-7. **InstallArguments erreur StrictMode**
-   - Cause: Accès direct propriété non existante
-   - Fix: PSObject.Properties safe access
-   - Status: ✅ Résolu
-
-### ⚠️ Breaking Changes
-
-Aucun breaking change. Version 100% rétrocompatible avec v2.2.0.
-
-### 🚀 Migration depuis v2.2.0
-
-Aucune migration requise. Mise à jour transparente :
-
-```powershell
-# 1. Pull derniers changements
-git pull
-
-# 2. Valider base de données
-.\Tools\Validate-AppDatabase.ps1
-
-# 3. Tester avec un profil
-.\Deploy-Win11Environment.ps1 -ProfileName "Base" -TestMode
-
-# 4. Déployer
-.\Deploy-Win11Environment.ps1 -ProfileName "Personnel" -Parallel
-```
-
-### 📚 Pour Plus d'Informations
-
-- Guide complet : [README.md](README.md)
-- Structure projet : historical v2.x docs retired from the public documentation set
-- Guide GUI : historical v2.x docs retired from the public documentation set
-- Base de données : [Apps/README.md](Apps/README.md)
-
----
+Seven application definitions were corrected. The original release described an expected installation-success improvement from approximately 95% to 99%; this is a historical estimate, not a current guarantee. No breaking change or profile migration was required from 2.2.0. The update procedure was to update the checkout, validate the database, run Base in TestMode, then deploy the chosen profile.
 
 ## [2.2.0] - 2025-10-03
 
-### 🎉 Major Release - Architecture Refactoring
+### Architecture
 
-Cette version majeure introduit une refonte complète de l'architecture avec une base de données centralisée, une interface GUI, et des outils de gestion avancés.
+- Added a centralized application database with 66 entries, multiple installation sources, tags, verification metadata, priorities, environment restrictions, and Registry/File/Command/StoreApp/WindowsFeature detection.
+- Added ApplicationDatabase.psm1 for loading, caching, queries, statistics, and structural validation.
+- Added the PowerShell GUI with eight navigation options, profile deployment, parallel/sequential selection, application and profile browsing, custom-profile creation, statistics, validation, and application-source search.
+- Added the six-step ProfileCreator.html wizard, its applications-data.js catalog, existing-profile loading, filtering, system configuration, local-browser support, and JSON export.
+- Added Search-ApplicationSources.ps1 for Winget, Chocolatey, Store, known direct-download patterns, and JSON templates.
+- Added administrative GUI launchers and automatic UAC elevation.
 
-### ✨ Nouvelles Fonctionnalités
+### Profiles and migration
 
-#### Interface GUI PowerShell (`Win11ForgeGUI.psm1`)
-- **Ajouté**: Interface utilisateur interactive complète
-  - Menu de navigation principal avec 8 options
-  - Déploiement de profils avec sélection mode parallèle/séquentiel
-  - Navigateur d'applications (66 apps) avec filtrage par catégorie/tag
-  - Navigateur de profils avec visualisation détaillée
-  - Créateur de profils custom interactif
-  - Statistiques de base de données en temps réel
-  - Validation de base de données intégrée
-  - **Nouveau**: Option "Add New Application" avec recherche automatique
+Profiles moved to compact AppId references resolved through the central database. ProfileManager added ID validation, cached inheritance, and detailed errors. Historical migration scripts Switch-ToProduction.ps1 and Test-NewProfiles.ps1 converted profiles and created backups under Archive/Profiles-v2.0-*/.
 
-#### Base de Données Centralisée (`Apps/Database/applications.json`)
-- **Ajouté**: Base de données centralisée v2.2.0
-  - 66 applications référencées
-  - Sources multiples: Winget, Chocolatey, Microsoft Store, DirectUrl
-  - Métadonnées complètes: tags, vérification, homepage, priorité
-  - Détection intelligente par méthode (Registry, File, Command, StoreApp, WindowsFeature)
-  - Restrictions d'environnement par application
-  - Format optimisé pour réutilisation
+This was a breaking format change from 2.0/2.1: applications had to be centralized and profiles migrated or recreated. These statements describe the historical release; use current profile documentation for today's supported formats.
 
-- **Module**: `ApplicationDatabase.psm1`
-  - Chargement et cache de la base de données
-  - Fonctions de requête par catégorie, tag, AppId
-  - Export de statistiques
-  - Validation de structure
+### Improvements and fixes
 
-#### ProfileCreator.html - Interface Web
-- **Ajouté**: Créateur/éditeur de profils web
-  - Interface en 6 étapes guidées
-  - **66 applications** chargées dynamiquement depuis `applications-data.js`
-  - Création de profils au format v2.2.0
-  - **Nouveau**: Édition de profils existants (charger JSON)
-  - Filtrage par catégorie et recherche
-  - Configuration système (Explorer, Taskbar, Privacy, Performance)
-  - Compatible `file://` (pas de serveur web requis)
-  - Export JSON téléchargeable
+- Improved Read-Choice with a consistent zero/back/cancel option, contextual help, and input validation.
+- Added Creality Slicer through the creality-print Chocolatey package with File detection.
+- Added Cleanup-ObsoleteFiles.ps1 with preview and reporting; consolidated validation and web tools under Tools.
+- Archived obsolete development reports and added project-structure and GUI documentation.
+- Fixed missing back-navigation choices, PSObject.Properties access, source access, and application counts.
+- Kept the GUI open after deployment by returning instead of exiting.
+- Corrected module scope in parallel execution.
 
-#### Search-ApplicationSources.ps1
-- **Ajouté**: Outil de recherche automatique d'applications
-  - Recherche simultanée dans Winget, Chocolatey, Microsoft Store
-  - Détection des URLs de téléchargement direct (patterns connus)
-  - Génération de template JSON prêt à l'emploi
-  - Modes interactif et automatisé
-  - Affichage coloré avec résumé des résultats
-
-#### Lanceurs avec Auto-Élévation
-- **Amélioré**: `Deploy-Win11Forge.bat`
-  - Auto-élévation automatique (UAC)
-  - Plus besoin de clic-droit "Exécuter en tant qu'admin"
-
-- **Ajouté**: `Start-Win11ForgeGUI-Admin.bat`
-  - Lanceur GUI avec auto-élévation
-  - Double-clic et c'est parti
-
-### 🔄 Changements Majeurs
-
-#### Format des Profils v2.2.0
-- **BREAKING**: Nouveau format ultra-compact
-  - Applications référencées par AppId uniquement
-  - Définitions chargées depuis la base de données centralisée
-  - Profils 10x plus petits et lisibles
-
-**Ancien format (v2.1.x)** :
-```json
-{
-  "Applications": [
-    {
-      "Name": "Google Chrome",
-      "Category": "Browser",
-      "Sources": {...},
-      "Detection": {...}
-    }
-  ]
-}
-```
-
-**Nouveau format (v2.2.0)** :
-```json
-{
-  "Applications": [
-    "GoogleChrome",
-    "MozillaFirefox",
-    "BraveBrowser"
-  ]
-}
-```
-
-#### Migration Automatique
-- **Ajouté**: Scripts de migration v2.0 → v2.2.0
-  - `Switch-ToProduction.ps1` : Migration des profils
-  - `Test-NewProfiles.ps1` : Validation post-migration
-  - Backup automatique dans `Archive/Profiles-v2.0-*/`
-  - Conversion automatique au nouveau format
-
-### ✨ Améliorations
-
-#### Gestion des Profils
-- **Amélioré**: `ProfileManager.psm1`
-  - Résolution d'AppIds via base de données centralisée
-  - Validation de profils avec vérification d'AppIds
-  - Héritage optimisé avec cache
-  - Messages d'erreur détaillés
-
-#### Interface Utilisateur
-- **Ajouté**: Fonction `Read-Choice` améliorée
-  - Support de l'option '0' pour retour/annulation universelle
-  - Messages d'aide contextuels
-  - Validation robuste des choix
-  - Plus de situations bloquantes
-
-#### Applications
-- **Ajouté**: Creality Slicer (impression 3D)
-  - Chocolatey: `creality-print`
-  - Détection: File
-  - Catégorie: 3DPrint
-
-### 🧹 Nettoyage et Organisation
-
-#### Cleanup-ObsoleteFiles.ps1
-- **Ajouté**: Script de nettoyage automatique
-  - Archive les fichiers de test/migration obsolètes
-  - Réorganise `Validate-Framework.ps1` vers `Tools/`
-  - Mode `-DryRun` pour prévisualisation
-  - Rapport détaillé des opérations
-
-#### Structure du Projet
-- **Réorganisé**: Dossier `Tools/`
-  - Tous les utilitaires regroupés
-  - Scripts de validation consolidés
-  - Outils web (ProfileCreator.html)
-
-- **Archivé**: Rapports de développement
-  - `Archive/Docs-Reports-20251003/`
-  - DEBUG_*, DATABASE_*, VALIDATION_*, INTEGRATION_*
-
-### 📝 Documentation
-
-#### Nouvelle Documentation
-- **Ajouté**: `PROJET_STRUCTURE.md`
-  - Structure complète du projet
-  - Guide d'utilisation rapide
-  - Explication de l'architecture
-  - Cas d'usage détaillés
-
-- **Mis à jour**: `README.md` v2.2.0
-  - Nouvelles fonctionnalités GUI
-  - Base de données centralisée
-  - ProfileCreator.html
-  - Guides de démarrage rapide
-
-- **Ajouté**: `GUI_README.md`
-  - Documentation complète de l'interface GUI
-  - Captures d'écran et workflows
-  - Guide des 8 options du menu
-
-### 🐛 Corrections de Bugs
-
-#### GUI
-- **Corrigé**: Menus sans option de retour (blocage utilisateur)
-- **Corrigé**: Erreurs PSObject.Properties sur certaines applications
-- **Corrigé**: Accès aux sources Winget/Choco/Store/DirectUrl
-- **Corrigé**: Comptage incorrect d'applications
-
-#### Profils
-- **Corrigé**: Script `Deploy-Win11Environment.ps1` fermait au lieu de retourner au GUI
-  - Remplacé tous les `exit` par `return`
-  - GUI reste ouvert après déploiement
-
-#### Modules
-- **Corrigé**: Scope des modules en mode parallèle
-  - Ajout du flag `-Global` sur tous les Import-Module
-
-### 📊 Statistiques v2.2.0
-
-**Applications** : 66 (vs v2.1.3)
-**Profils** : 4 (Base, Office, Gaming, Personnel)
-**Modules** : 7 (+1 GUI)
-**Outils** : 6 (+2 vs v2.1.3)
-**Scripts** : 8 (+4 vs v2.1.3)
-
-**Composition des Profils** :
-- Base: 30 apps
-- Office: 35 apps (Base + 5)
-- Gaming: 39 apps (Office + 4)
-- Personnel: 64 apps (Gaming + 25)
-
-### 🔧 Fichiers Modifiés
-
-**Nouveaux Modules** :
-- `Modules/ApplicationDatabase.psm1`
-- `Modules/Win11ForgeGUI.psm1`
-
-**Nouveaux Scripts** :
-- `Start-Win11ForgeGUI.ps1`
-- `Start-Win11ForgeGUI-Admin.bat`
-- `Tools/Search-ApplicationSources.ps1`
-- `Cleanup-ObsoleteFiles.ps1`
-
-**Nouveaux Outils** :
-- `Tools/ProfileCreator.html`
-- `Tools/applications-data.js`
-
-**Base de Données** :
-- `Apps/Database/applications.json` (nouvelle architecture)
-
-**Profils Migrés** :
-- `Profiles/Base.json` (format v2.2.0)
-- `Profiles/Office.json` (format v2.2.0)
-- `Profiles/Gaming.json` (format v2.2.0)
-- `Profiles/Personnel.json` (format v2.2.0)
-
-**Documentation** :
-- `README.md` (v2.2.0)
-- `PROJET_STRUCTURE.md` (nouveau)
-- `GUI_README.md` (nouveau)
-
-### ⚠️ Breaking Changes
-
-1. **Format de Profils** : Les profils v2.0/v2.1 doivent être migrés vers v2.2.0
-   - Utiliser `Switch-ToProduction.ps1` pour migration automatique
-   - Ou utiliser ProfileCreator.html pour recréer
-
-2. **Base de Données** : Les applications sont maintenant centralisées
-   - Pas de définitions inline dans les profils
-   - Toutes les apps doivent être dans `Apps/Database/applications.json`
-
-### 🚀 Migration depuis v2.1.x
-
-```powershell
-# Étape 1: Backup automatique
-.\Switch-ToProduction.ps1
-
-# Étape 2: Test des nouveaux profils
-.\Test-NewProfiles.ps1
-
-# Étape 3: Validation
-.\Tools\Validate-AppDatabase.ps1
-
-# Étape 4 (optionnel): Nettoyage
-.\Cleanup-ObsoleteFiles.ps1
-```
-
-### 📚 Pour Plus d'Informations
-
-- Guide complet : [README.md](README.md)
-- Structure projet : historical v2.x docs retired from the public documentation set
-- Guide GUI : historical v2.x docs retired from the public documentation set
-- Base de données : [Apps/README.md](Apps/README.md)
-
----
+The release recorded 66 applications, four profiles, seven modules, six tools, and eight scripts. Profile sizes were Base 30, Office 35, Gaming 39, and Personnel 64. The migration sequence was backup/conversion, new-profile tests, database validation, then optional obsolete-file cleanup. Some named migration tools and documents have since been retired; consult the historical revision before attempting an old migration.
 
 ## [2.1.3] - 2025-10-03
 
