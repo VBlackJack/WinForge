@@ -158,11 +158,15 @@ function Test-JsonAgainstSchema {
     .EXAMPLE
         Test-JsonAgainstSchema -JsonPath 'Profiles/Base.json' -SchemaPath 'Schemas/deployment-profile.schema.json'
     #>
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'File')]
     [OutputType([JsonValidationResult])]
     param(
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory, ParameterSetName = 'File')]
         [string]$JsonPath,
+
+        [Parameter(Mandatory, ParameterSetName = 'Content')]
+        [AllowEmptyString()]
+        [string]$JsonContent,
 
         [Parameter(Mandatory)]
         [string]$SchemaPath
@@ -173,7 +177,7 @@ function Test-JsonAgainstSchema {
     $result.SchemaPath = $SchemaPath
 
     # Validate file exists
-    if (-not (Test-Path $JsonPath)) {
+    if ($PSCmdlet.ParameterSetName -eq 'File' -and -not (Test-Path -LiteralPath $JsonPath)) {
         $result.AddError("JSON file not found: $JsonPath")
         return $result
     }
@@ -184,7 +188,7 @@ function Test-JsonAgainstSchema {
     }
 
     # Security: Check file sizes before reading to prevent DoS
-    $jsonFileInfo = Get-Item -Path $JsonPath -ErrorAction SilentlyContinue
+    $jsonFileInfo = if ($PSCmdlet.ParameterSetName -eq 'File') { Get-Item -LiteralPath $JsonPath -ErrorAction SilentlyContinue } else { $null }
     if ($jsonFileInfo -and $jsonFileInfo.Length -gt $script:MaxJsonFileSizeBytes) {
         $result.AddError("JSON file exceeds maximum allowed size of $($script:MaxJsonFileSizeBytes / 1MB) MB: $JsonPath")
         return $result
@@ -198,7 +202,12 @@ function Test-JsonAgainstSchema {
 
     try {
         # Parse JSON and Schema
-        $jsonContent = Get-Content -Path $JsonPath -Raw -ErrorAction Stop
+        if ($PSCmdlet.ParameterSetName -eq 'File') {
+            $JsonContent = Get-Content -LiteralPath $JsonPath -Raw -ErrorAction Stop
+        }
+        if ([System.Text.Encoding]::UTF8.GetByteCount($JsonContent) -gt $script:MaxJsonFileSizeBytes) {
+            throw 'JSON content exceeds maximum allowed size.'
+        }
         $json = $jsonContent | ConvertFrom-Json -ErrorAction Stop
 
         $schemaContent = Get-Content -Path $SchemaPath -Raw -ErrorAction Stop
@@ -610,6 +619,13 @@ function Test-AllConfigurationFiles {
         'SystemSettings.json' = 'system-settings.schema.json'
     }
 
+    $requiredSchemas = @(
+        'api-settings.schema.json', 'build-dependencies.schema.json', 'download-sources.schema.json',
+        'feature-flags.schema.json', 'global-optimizations.schema.json', 'logging-settings.schema.json',
+        'plugins-settings.schema.json', 'rollback-settings.schema.json', 'scheduled-deployments.schema.json',
+        'startup-blacklist.schema.json', 'system-settings.schema.json', 'timeouts-settings.schema.json',
+        'version.schema.json'
+    )
     $configDirectory = Join-Path $script:RepositoryRoot 'Config'
     $results = @()
 
@@ -627,6 +643,14 @@ function Test-AllConfigurationFiles {
 
         $schemaPath = Join-Path $script:SchemasDirectory $schemaFileName
         if (-not (Test-Path $schemaPath)) {
+            if ($schemaFileName -in $requiredSchemas) {
+                $missing = [JsonValidationResult]::new()
+                $missing.FilePath = $configFile.FullName
+                $missing.SchemaPath = $schemaPath
+                $missing.AddError("Required schema not found: $schemaPath")
+                $results += $missing
+                continue
+            }
             Write-Status -Message (Get-LogString 'validation.config.no_schema' @{ Name = $configFile.Name }) -Level 'Verbose'
             continue
         }

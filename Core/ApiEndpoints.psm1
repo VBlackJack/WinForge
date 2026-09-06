@@ -75,6 +75,23 @@ $script:JsonSchemaValidationLoaded = $false
 
 # === JSON VALIDATION HELPER ===
 
+function Get-ApiBooleanProperty {
+    <#
+    .SYNOPSIS
+        Reads an optional boolean from either representation of a parsed API body.
+    #>
+    param(
+        [AllowNull()]$Body,
+        [string]$Name
+    )
+    if ($null -eq $Body) { return $false }
+    if ($Body -is [System.Collections.IDictionary]) {
+        return $Body.Contains($Name) -and [bool]$Body[$Name]
+    }
+    $property = $Body.PSObject.Properties[$Name]
+    return $null -ne $property -and [bool]$property.Value
+}
+
 function Test-ApiRequestBody {
     <#
     .SYNOPSIS
@@ -118,9 +135,7 @@ function Test-ApiRequestBody {
 
         $schemaPath = Join-Path $script:SchemasPath $SchemaName
         if (-not (Test-Path -Path $schemaPath)) {
-            # Schema not found - skip validation but log warning
-            Write-Verbose "Schema not found: $schemaPath"
-            $result.IsValid = $true
+            $result.Errors = @("Required schema not found: $schemaPath")
             return $result
         }
 
@@ -140,6 +155,9 @@ function Test-ApiRequestBody {
             }
         }
 
+        if (-not (Get-Command -Name Test-JsonAgainstSchema -ErrorAction SilentlyContinue)) {
+            throw "JSON schema validator is unavailable."
+        }
         $result.IsValid = $true
     }
     catch {
@@ -199,6 +217,11 @@ function Test-JsonFileValid {
             $script:JsonSchemaValidationLoaded = $true
         }
 
+        if ($SchemaName -and (-not (Test-Path -LiteralPath (Join-Path $script:SchemasPath $SchemaName)) -or
+            -not (Get-Command -Name Test-JsonAgainstSchema -ErrorAction SilentlyContinue))) {
+            throw 'Required schema or validator is unavailable.'
+        }
+
         # Optional schema validation
         if ($SchemaName -and (Get-Command -Name Test-JsonAgainstSchema -ErrorAction SilentlyContinue)) {
             $schemaPath = Join-Path $script:SchemasPath $SchemaName
@@ -231,6 +254,35 @@ $script:DeploymentState = @{
 }
 
 # === ENDPOINT HANDLERS ===
+$script:DeploymentJob = $null
+
+function Update-ApiDeploymentJob {
+    <#
+    .SYNOPSIS
+        Reconciles deployment status with the owned worker job.
+    #>
+    if ($null -eq $script:DeploymentJob) { return }
+    if ($script:DeploymentJob.State -in @('Running', 'NotStarted')) { return }
+
+    $job = $script:DeploymentJob
+    try {
+        $output = @(Receive-Job -Job $job -ErrorAction Stop)
+        $receipt = @($output | Where-Object {
+            $_ -is [System.Collections.IDictionary] -and $_.Contains('WinForgeDeploymentReceipt')
+        }) | Select-Object -Last 1
+        if ($job.State -ne 'Completed' -or -not $receipt -or $receipt.ExitCode -ne 0) {
+            throw 'Deployment worker did not complete successfully.'
+        }
+        $script:DeploymentState.Status = 'Completed'
+        $script:DeploymentState.Progress = 100
+    } catch {
+        $script:DeploymentState.Status = 'Failed'
+        $script:DeploymentState.Errors += $_.Exception.Message
+    } finally {
+        Remove-Job -Job $job -Force -ErrorAction SilentlyContinue
+        $script:DeploymentJob = $null
+    }
+}
 
 function Get-VersionHandler {
     <#
@@ -437,6 +489,7 @@ function Get-StatusHandler {
         $Context
     )
 
+    Update-ApiDeploymentJob
     $uptime = $null
     if ($script:DeploymentState.StartTime) {
         $uptime = ((Get-Date) - $script:DeploymentState.StartTime).ToString()
@@ -477,7 +530,8 @@ function Start-DeploymentHandler {
         $Context
     )
 
-    if ($script:DeploymentState.Status -eq 'Running') {
+    Update-ApiDeploymentJob
+    if ($script:DeploymentState.Status -in @('Starting', 'Running')) {
         return @{
             success = $false
             error = (Get-LogString -Key 'api.endpoints.deployment_already_running')
@@ -505,7 +559,7 @@ function Start-DeploymentHandler {
     }
 
     $profileName = $body.profile
-    $testMode = if ($body.testMode) { $body.testMode } else { $false }
+    $testMode = Get-ApiBooleanProperty -Body $body -Name 'testMode'
 
     # Security: Validate profile name doesn't contain path traversal attempts
     if ($profileName -match '\.\.|[/\\]') {
@@ -551,8 +605,24 @@ function Start-DeploymentHandler {
     $script:DeploymentState.Applications = @()
     $script:DeploymentState.Errors = @()
 
-    # Note: Actual deployment would be triggered here
-    # This is a stub that would integrate with InstallationEngine
+    try {
+        $deploymentScript = Join-Path $script:RepositoryRoot 'Deploy-Win11Environment.ps1'
+        if (-not (Test-Path -LiteralPath $deploymentScript -PathType Leaf)) {
+            throw 'Deployment entry point is unavailable.'
+        }
+        $script:DeploymentJob = Start-Job -ScriptBlock {
+            param($EntryPoint, $ProfilePath, $IsTestMode)
+            $ErrorActionPreference = 'Stop'
+            $global:LASTEXITCODE = -1
+            & $EntryPoint -ProfileName $ProfilePath -TestMode:$IsTestMode -SkipPrerequisites:$IsTestMode
+            @{ WinForgeDeploymentReceipt = $true; ExitCode = $global:LASTEXITCODE }
+        } -ArgumentList $deploymentScript, $canonicalPath, $testMode -ErrorAction Stop
+        $script:DeploymentState.Status = 'Running'
+    } catch {
+        $script:DeploymentState.Status = 'Failed'
+        $script:DeploymentState.Errors += $_.Exception.Message
+        return @{ success = $false; error = $_.Exception.Message }
+    }
 
     return @{
         success = $true
@@ -597,7 +667,7 @@ function Start-RollbackHandler {
         }
     }
 
-    $force = if ($body -and $body.force) { $body.force } else { $false }
+    $force = Get-ApiBooleanProperty -Body $body -Name 'force'
 
     # Import RollbackManager if available
     $rollbackManagerPath = Join-Path $script:RepositoryRoot 'Modules\RollbackManager.psm1'

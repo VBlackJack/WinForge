@@ -445,38 +445,42 @@ function Import-Plugin {
                 throw "Plugin '$Name' failed sandbox load validation: $reason"
             }
 
-            # Security: Import-Module below re-reads the file, so re-fingerprint it and
-            # compare against what the sandbox validated. Without this, a write between
-            # validation and import (TOCTOU) would load unvalidated code into this
-            # session, which runs in FullLanguage at the host's privilege level.
-            if ($loadValidation.ContentSha256) {
-                $currentContent = Get-Content -Path $canonicalEntryPath -Raw -ErrorAction Stop
-                $currentHash = Get-PluginContentHash -Content $currentContent
-                if ($currentHash -ne $loadValidation.ContentSha256) {
-                    throw "Plugin '$Name' entry point changed after sandbox validation. Refusing to import."
-                }
-            }
+        } else {
+            Import-Module $canonicalEntryPath -Force -ErrorAction Stop
         }
 
-        # Import the plugin module
-        Import-Module $canonicalEntryPath -Force -ErrorAction Stop
-
-        # Register hooks
-        foreach ($hook in $plugin.Hooks) {
-            if ($hook -in $config.AllowedHooks) {
-                # Look for hook function in plugin
-                $hookFunctionName = "Invoke-$Name-$hook" -replace '-', ''
-                if (Get-Command -Name $hookFunctionName -ErrorAction SilentlyContinue) {
-                    Register-PluginHook -HookName $hook -PluginName $Name -Handler (Get-Command $hookFunctionName)
+        # Sandboxed registrations carry immutable source data, never host-compiled code.
+        foreach ($registration in @(
+            foreach ($hook in $plugin.Hooks) {
+                if ($hook -in $config.AllowedHooks) {
+                    @{ Kind = 'Hook'; Name = $hook; Prefix = 'Invoke' }
                 }
             }
-        }
-
-        # Register custom installation methods
-        foreach ($method in $plugin.InstallationMethods) {
-            $methodFunctionName = "Install-$Name-$method" -replace '-', ''
-            if (Get-Command -Name $methodFunctionName -ErrorAction SilentlyContinue) {
-                Register-CustomInstallMethod -MethodName $method -PluginName $Name -Handler (Get-Command $methodFunctionName)
+            foreach ($method in $plugin.InstallationMethods) {
+                @{ Kind = 'Method'; Name = $method; Prefix = 'Install' }
+            }
+        )) {
+            $candidates = @(
+                "$($registration.Prefix)-$Name-$($registration.Name)" -replace '-', ''
+                "$($registration.Prefix)-$(($Name + $registration.Name) -replace '-', '')"
+            )
+            foreach ($functionName in $candidates) {
+                $handler = $null
+                if ($config.SandboxingEnabled) {
+                    if ($functionName -in $loadValidation.ExportedFunctions) {
+                        $handler = @{ ModuleContent = $loadValidation.ModuleContent; FunctionName = $functionName }
+                    }
+                } else {
+                    $handler = Get-Command -Name $functionName -ErrorAction SilentlyContinue
+                }
+                if ($null -ne $handler) {
+                    if ($registration.Kind -eq 'Hook') {
+                        Register-PluginHook -HookName $registration.Name -PluginName $Name -Handler $handler
+                    } else {
+                        Register-CustomInstallMethod -MethodName $registration.Name -PluginName $Name -Handler $handler
+                    }
+                    break
+                }
             }
         }
 
@@ -525,7 +529,7 @@ function Remove-Plugin {
     }
 
     # Unregister hooks
-    foreach ($hookName in $script:PluginState.RegisteredHooks.Keys) {
+    foreach ($hookName in @($script:PluginState.RegisteredHooks.Keys)) {
         $script:PluginState.RegisteredHooks[$hookName] = @(
             $script:PluginState.RegisteredHooks[$hookName] | Where-Object { $_.PluginName -ne $Name }
         )
@@ -647,7 +651,7 @@ function Invoke-PluginHook {
 
     # Check if sandboxing should be used. The JSON config enables it by default;
     # the feature flag remains as an additional opt-in path for older configs.
-    $useSandbox = $ForceSandbox.IsPresent
+    $useSandbox = $ForceSandbox.IsPresent -or @($handlers | Where-Object { $_.Handler -is [System.Collections.IDictionary] -and $_.Handler.Contains('ModuleContent') }).Count -gt 0
     if (-not $useSandbox -and $script:SandboxingEnabled) {
         $useSandbox = [bool]$config.SandboxingEnabled
         if (Get-Command -Name Test-FeatureEnabled -ErrorAction SilentlyContinue) {

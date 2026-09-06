@@ -37,6 +37,10 @@ BeforeAll {
 }
 
 Describe 'ApiEndpoints Module' {
+    BeforeEach {
+        Mock Start-Job { [pscustomobject]@{ State = 'Running' } } -ModuleName ApiEndpoints
+        InModuleScope ApiEndpoints { $script:DeploymentJob = $null }
+    }
     Context 'Module Loading' {
         It 'Should load without errors' {
             { Import-Module $script:ModulePath -Force } | Should -Not -Throw
@@ -280,7 +284,7 @@ Describe 'ApiEndpoints Module' {
             $result = Start-DeploymentHandler -Context $context
             $result | Should -BeOfType [hashtable]
             $result.Keys | Should -Contain 'success'
-            # May succeed or fail depending on schema validation availability
+            $result.success | Should -BeTrue
             if ($result.success) {
                 $result.profile | Should -Be 'Base'
                 $result.startTime | Should -Match '^\d{4}-\d{2}-\d{2}T'
@@ -303,7 +307,7 @@ Describe 'ApiEndpoints Module' {
             $result = Start-DeploymentHandler -Context $context
             $result | Should -BeOfType [hashtable]
             $result.Keys | Should -Contain 'success'
-            # May succeed or fail depending on schema validation availability
+            $result.success | Should -BeTrue
             if ($result.success) {
                 $result.testMode | Should -Be $true
                 $result.profile | Should -Be 'Base'
