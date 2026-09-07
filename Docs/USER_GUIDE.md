@@ -18,7 +18,7 @@ limitations under the License.
 
 [Français](USER_GUIDE.fr.md)
 
-Current framework display version: `2026090701`.
+Current framework display version: `2026090702`.
 
 ## Quick Start
 1. Extract the release archive.

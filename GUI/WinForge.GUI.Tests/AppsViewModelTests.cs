@@ -2236,6 +2236,28 @@ public class AppsViewModelTests
         Assert.False(Directory.Exists(profiles.PathService.UserProfilesDirectory));
     }
 
+    [Fact]
+    public async Task SaveProfile_OverwritePreservesHiddenMetadataAndInheritance()
+    {
+        using TestProfilesDirectory profiles = new(("Base", [], ["Git.Git"]), ("Work", ["Base"], ["Mozilla.Firefox"]));
+        MockPowerShellBridge bridge = CreateMockBridge();
+        bridge.AvailableProfiles = ["Base", "Work"];
+        AppsViewModel viewModel = CreateViewModel(bridge, pathService: profiles.PathService);
+        await viewModel.InitializeAsync();
+        System.Reflection.MethodInfo method = typeof(AppsViewModel).GetMethod("SaveProfileAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+        List<ApplicationModel> selection = [FindApp(viewModel, "Git.Git"), FindApp(viewModel, "Google.Chrome")];
+        await (Task)method.Invoke(viewModel, [new SaveProfileResult { ProfileName = "Work", OverwriteExisting = true }, selection])!;
+        Assert.Null(viewModel.ErrorMessage);
+        string savedPath = Path.Combine(profiles.PathService.UserProfilesDirectory, "Work.json");
+        using JsonDocument document = JsonDocument.Parse(await File.ReadAllTextAsync(savedPath));
+        JsonElement root = document.RootElement;
+        Assert.Equal("Work test profile", root.GetProperty("Description").GetString());
+        Assert.Equal("1.0.0", root.GetProperty("Version").GetString());
+        Assert.Equal("Base", Assert.Single(root.GetProperty("Inherits").EnumerateArray()).GetString());
+        Assert.Equal("Google.Chrome", Assert.Single(root.GetProperty("Applications").EnumerateArray()).GetString());
+        Assert.True(FindApp(viewModel, "Git.Git").IsSelected);
+    }
+
     private sealed class TestProfilesDirectory : IDisposable
     {
         private readonly string _profilesPath;

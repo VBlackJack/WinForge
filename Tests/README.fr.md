@@ -6,7 +6,7 @@
 
 Ce dossier contient les tests PowerShell/Pester. Les tests unitaires de l’interface sont dans `GUI/WinForge.GUI.Tests`. Les [tests UIA](../GUI/WinForge.GUI.UITests/README.fr.md) sont facultatifs.
 
-Mesure du 2026-09-06 : 1978 tests Pester, 1972 réussis, 0 échec et 6 ignorés. La version du framework est `2026090701`, définie dans `Config/version.json`. Les résultats habituels sont écrits dans `Tests/Results/`. Ces nombres décrivent une exécution, pas une contrainte sur le nombre futur de tests.
+Mesure du 2026-09-06 : 1978 tests Pester, 1972 réussis, 0 échec et 6 ignorés. La version du framework est `2026090702`, définie dans `Config/version.json`. Les résultats habituels sont écrits dans `Tests/Results/`. Ces nombres décrivent une exécution, pas une contrainte sur le nombre futur de tests.
 
 ## Installation
 
