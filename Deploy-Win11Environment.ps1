@@ -419,6 +419,11 @@ Write-Log -Message "=== $(Get-LocalizedString -Key 'profile.loading' -Params @{ 
 
 try {
     $profilesDirectory = Join-Path -Path $script:ScriptRoot -ChildPath 'Profiles'
+    if ([System.IO.Path]::IsPathRooted($ProfileName)) {
+        # A scheduled snapshot must resolve its parents beside the snapshot,
+        # never against live repository profiles belonging to another identity.
+        $profilesDirectory = Split-Path -Parent $ProfileName
+    }
     $deploymentProfile = Get-DeploymentProfile -ProfileName $ProfileName -ProfilesDirectory $profilesDirectory
 
     Write-Log -Message (Get-LocalizedString -Key 'profile.loaded' -Params @{ Name = $deploymentProfile.Name; AppCount = $deploymentProfile.Applications.Count }) -Level 'Success'
