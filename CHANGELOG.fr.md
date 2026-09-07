@@ -6,7 +6,7 @@ La version de référence est définie dans `Config/version.json`. Ce document p
 
 ## [Unreleased]
 
-## [2026090701] - 2026-09-07
+## [2026090702] - 2026-09-07
 
 ### Corrections
 - Raccordement du dialogue de sauvegarde des profils, validation des destinations, protection contre le remplacement accidentel et conservation des métadonnées existantes.

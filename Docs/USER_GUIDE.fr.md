@@ -2,7 +2,7 @@
 
 [English](USER_GUIDE.md)
 
-Version actuelle du framework : `2026090701`.
+Version actuelle du framework : `2026090702`.
 
 ## Démarrage rapide
 

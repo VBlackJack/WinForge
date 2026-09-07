@@ -708,6 +708,24 @@ public partial class AppsViewModel
         try
         {
             Services.PowerShell.PowerShellValidation.ValidateProfileName(saveResult.ProfileName);
+            if (saveResult.OverwriteExisting)
+            {
+                // Description and inheritance are hidden in overwrite mode. Only
+                // the selected applications are editable in this dialog mode.
+                ProfileEditSnapshot existing = await ReadProfileEditSnapshotAsync(saveResult.ProfileName);
+                HashSet<string> inheritedIds = await ResolveInheritedAppIdsAsync(existing.InheritedFrom);
+                List<string> directIds = selectedApps.Select(app => app.AppId)
+                    .Where(id => !inheritedIds.Contains(id))
+                    .Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+                await WriteProfileEditSnapshotAsync(existing, directIds);
+                await RefreshProfileCachesAfterUpdateAsync(existing.Name);
+                ApplyResolvedProfileToSelection(existing.Name);
+                _lastAppliedProfile = existing.Name;
+                StoreLastAppliedProfileSelectionSnapshot();
+                SelectedProfile = existing.Name;
+                ErrorMessage = null;
+                return;
+            }
             if (saveResult.ParentProfile != null)
                 Services.PowerShell.PowerShellValidation.ValidateProfileName(saveResult.ParentProfile);
             string profilesDir = GetProfilesWriteDirectory();
@@ -739,10 +757,8 @@ public partial class AppsViewModel
                 profile["Applications"] = ownApps;
             }
 
-            string? sourcePath = saveResult.OverwriteExisting ? TryGetProfilePath(GetProfileReadDirectories(), saveResult.ProfileName) : null;
-            string? sourceJson = sourcePath != null ? await File.ReadAllTextAsync(sourcePath) : null;
-            if (!File.Exists(profilePath) && sourceJson == null) profile["Version"] = "1.0.0";
-            await Task.Run(() => ProfileJsonWriter.Write(profilePath, profile, sourceJson, overwrite: saveResult.OverwriteExisting));
+            profile["Version"] = "1.0.0";
+            await Task.Run(() => ProfileJsonWriter.Write(profilePath, profile, overwrite: false));
 
             // Update cache
             HashSet<string> appIds = selectedApps.Select(a => a.AppId).ToHashSet(StringComparer.OrdinalIgnoreCase);

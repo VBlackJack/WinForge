@@ -6,7 +6,7 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 
 ## [Unreleased]
 
-## [2026090701] - 2026-09-07
+## [2026090702] - 2026-09-07
 
 ### Fixed
 - Complete the profile save dialog, reject invalid destinations and accidental replacement, and preserve existing profile metadata.
