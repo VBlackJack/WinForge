@@ -4,7 +4,27 @@
 
 La version de référence est définie dans `Config/version.json`. Ce document présente les changements en français. Les anciennes versions sont résumées ; leurs détails et mesures d’origine restent consultables dans l’historique Git.
 
-## [Unreleased]
+## [2026090703] - 2026-09-07
+
+### Ajouts
+
+- Aperçu des déploiements avec preuves par source et limites des droits, redémarrages et retours arrière.
+- Définitions conservées, versions observées et reprise ciblée dans l'historique GUI.
+- Atelier PowerShell avec verrouillage des versions, comparaison, reçus atomiques, reprise et retour arrière par plan.
+- Harnais de recette en VM VMware jetable et prototype facultatif de test de configuration WinGet.
+- Test de régression avec interruption réelle et rapport de déploiement accessible et sélectionnable.
+
+
+### Corrections
+- Compatibilité des arguments natifs et délais sous PowerShell 5.1 ; séparation entre version verrouillée et version observée.
+- Actualisation des versions après installation et chemin PowerShell 7 explicite pour les tâches SYSTEM.
+- Inclusion de l'atelier dans le ZIP et séparation de ses reçus de rollback du journal historique.
+- Arguments PowerShell natifs valides pour les déploiements planifiés et copie des profils utilisateur avec leur héritage dans un stockage partagé protégé.
+- Enregistrement des nouvelles installations dans un journal partagé entre les parcours séquentiel et parallèle ; exclusion des applications préexistantes, y compris lors d'une réinstallation forcée.
+- Conservation des entrées dont le rollback échoue, utilisation des identifiants canoniques et restitution des résultats réels.
+- Écriture atomique de l'état de reprise PowerShell et propagation des erreurs de stockage.
+- Alignement des ressources XAML sur la langue sélectionnée pendant l'initialisation asynchrone.
+- Exclusion des identifiants Microsoft Store des contrôles de fraîcheur du dépôt communautaire Winget et correction de cinq identifiants du catalogue. Retrait de trois sources Winget indisponibles lorsqu'un autre canal est déjà déclaré ; LDPlayer reste indisponible dans les sources interrogées.
 
 ## [2026090702] - 2026-09-07
 

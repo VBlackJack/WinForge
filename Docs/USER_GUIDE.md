@@ -18,7 +18,7 @@ limitations under the License.
 
 [Français](USER_GUIDE.fr.md)
 
-Current framework display version: `2026090702`.
+Current framework display version: `2026090703`.
 
 ## Quick Start
 1. Extract the release archive.
@@ -62,6 +62,18 @@ those inherited applications, or save a new profile without that parent.
 4. Check logs if any step fails.
 5. Use rollback if needed.
 
+## Scheduled Deployments
+
+Open the scheduled deployments tab in Settings with administrator privileges. Select a profile, a trigger and a date/time, then create the deployment.
+
+Scheduling captures the selected user profile and all inherited profiles. User profiles take precedence over packaged defaults. Later profile edits do not change an existing schedule; recreate the schedule to use those edits. Keep the WinForge installation at its original location so the scheduled launcher remains available.
+
+## Rollback and Recovery
+
+New successful installations are recorded as they finish, including parallel installations. Applications detected before installation are excluded, even when a forced reinstall is requested. The journal persists across worker processes and remains available until entries are rolled back or explicitly cleared.
+
+Automatic rollback supports Winget and Chocolatey. Other installation methods remain listed for manual recovery. A partial failure keeps the failed entries for a later attempt and reports the number actually removed. An unreadable or unwritable recovery file raises an error; preserve the file and resolve the storage problem before retrying.
+
 ## Application Catalog
 - Browse and edit the application database from the GUI.
 - Edits preserve verification metadata when the application payload does not change.
@@ -77,3 +89,7 @@ those inherited applications, or save a new profile without that parent.
 ## Additional References
 - API documentation: `Docs/API_DOCUMENTATION.md`
 - Project README: `README.md`
+
+## Deployment preparation and recovery
+
+See [deployment previews, execution history and the PowerShell workbench](DEPLOYMENT_WORKBENCH.md).
