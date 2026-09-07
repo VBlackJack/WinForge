@@ -31,11 +31,11 @@ public partial class SaveProfileDialog : UserControl
 
     private void CancelButton_Click(object sender, RoutedEventArgs e)
     {
-        // Dialog lifecycle managed by parent ViewModel
+        (DataContext as ViewModels.SaveProfileDialogViewModel)?.Close(false);
     }
 
     private void SaveButton_Click(object sender, RoutedEventArgs e)
     {
-        // Dialog lifecycle managed by parent ViewModel
+        (DataContext as ViewModels.SaveProfileDialogViewModel)?.Close(true);
     }
 }

@@ -362,8 +362,16 @@ public partial class DashboardViewModel : ViewModelBase
             AppCount = apps.Count;
 
             // Load recent deployments
-            List<DeploymentHistoryEntry> history = await _historyService.GetRecentHistoryAsync(MaxRecentHistory);
-            RecentDeployments = new ObservableCollection<DeploymentHistoryEntry>(history);
+            try
+            {
+                List<DeploymentHistoryEntry> history = await _historyService.GetRecentHistoryAsync(MaxRecentHistory);
+                RecentDeployments = new ObservableCollection<DeploymentHistoryEntry>(history);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Deployment history could not be read; the original file was preserved", ex);
+                ErrorMessage = ex.Message;
+            }
             OnPropertyChanged(nameof(HasRecentDeployments));
 
             // Phase 2: Check prerequisites

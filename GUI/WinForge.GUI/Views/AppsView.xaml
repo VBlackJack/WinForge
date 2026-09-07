@@ -40,6 +40,8 @@
                     CornerRadius="{StaticResource RadiusMedium}"
                     Padding="0">
                 <Grid>
+                    <ContentPresenter Content="{Binding SaveProfileDialogContent}"
+                                      Visibility="{Binding IsSaveProfileDialogOpen, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                     <!-- Log Viewer Dialog -->
                     <Border MinWidth="360" MaxWidth="900" MaxHeight="500" Padding="{StaticResource SectionPadding}"
                             Visibility="{Binding IsLogViewerOpen, Converter={StaticResource BooleanToVisibilityConverter}}">

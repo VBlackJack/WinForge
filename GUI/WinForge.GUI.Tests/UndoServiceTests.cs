@@ -346,7 +346,7 @@ public class UndoServiceTests
     public void Dispose_ShouldClearStacks()
     {
         // Arrange
-        UndoService service = new UndoService();
+        using UndoService service = new UndoService();
         service.RecordAction(new UndoableAction
         {
             Description = "Test",

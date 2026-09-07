@@ -249,31 +249,18 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
         switch (choice)
         {
             case true:
-                // Resume: navigate to the Apps view and kick off the batch in the
-                // background. Delete the old checkpoint immediately so the new batch
-                // owns its own state file; if the new batch crashes too, only the new
-                // checkpoint will be detected at the next startup.
+                // Keep the original checkpoint until the resumed batch succeeds.
                 WeakReferenceMessenger.Default.Send(new NavigateMessage(ViewIndex.Apps));
                 try
                 {
+                    await AppsViewModel.ResumeBatchAsync(latest);
                     await _batchResumeService.DeleteCheckpointAsync(latest.BatchId);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning($"Failed to delete old checkpoint: {ex.Message}");
+                    _logger.LogError("Failed to finish the resumed batch", ex);
+                    await dialogService.ShowInfoAsync(Loc.Resume_Title, ex.Message);
                 }
-
-                _ = Task.Run(async () =>
-                {
-                    try
-                    {
-                        await AppsViewModel.ResumeBatchAsync(latest);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError("ResumeBatchAsync failed", ex);
-                    }
-                });
                 break;
 
             case false:
@@ -285,6 +272,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
                 catch (Exception ex)
                 {
                     _logger.LogWarning($"Discard failed: {ex.Message}");
+                    await dialogService.ShowInfoAsync(Loc.Resume_Title, ex.Message);
                 }
                 break;
 

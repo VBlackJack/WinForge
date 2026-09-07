@@ -42,6 +42,7 @@ public partial class AppsView : UserControl
         if (DataContext is AppsViewModel viewModel)
         {
             // Close whichever dialog is currently open
+            if (viewModel.IsSaveProfileDialogOpen) viewModel.CancelSaveProfileDialog();
             if (viewModel.IsLogViewerOpen)
             {
                 viewModel.CloseLogViewerCommand.Execute(null);
@@ -60,7 +61,12 @@ public partial class AppsView : UserControl
             return;
         }
 
-        if (viewModel.IsLogViewerOpen)
+        if (viewModel.IsSaveProfileDialogOpen)
+        {
+            viewModel.CancelSaveProfileDialog();
+            e.Handled = true;
+        }
+        else if (viewModel.IsLogViewerOpen)
         {
             viewModel.CloseLogViewerCommand.Execute(null);
             e.Handled = true;

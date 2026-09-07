@@ -678,8 +678,17 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
             return;
         }
 
-        await _historyService.ClearHistoryAsync();
-        StatusMessage = Resources.Resources.Settings_HistoryCleared;
+        try
+        {
+            await _historyService.ClearHistoryAsync();
+            StatusMessage = Resources.Resources.Settings_HistoryCleared;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Failed to clear deployment history", ex);
+            StatusMessage = ex.Message;
+            _toastService?.ShowError(StatusMessage);
+        }
     }
 
     /// <summary>

@@ -123,12 +123,12 @@ public class AppOperationRunnerTests
     }
 
     [Fact]
-    public async Task RunAsync_WhenOnItemCompletedThrows_ShouldNotAbortBatch()
+    public async Task RunAsync_WhenOnItemCompletedThrows_ShouldFinishItemsAndReportFailure()
     {
         AppOperationRunner runner = new AppOperationRunner(maxParallelism: 2);
         int processed = 0;
 
-        IReadOnlyList<int> results = await runner.RunAsync(
+        AggregateException error = await Assert.ThrowsAsync<AggregateException>(() => runner.RunAsync(
             Enumerable.Range(1, 5).ToList(),
             (item, _) =>
             {
@@ -145,11 +145,10 @@ public class AppOperationRunnerTests
                     throw new InvalidOperationException("simulated checkpoint write failure");
                 }
                 return Task.CompletedTask;
-            });
+            }));
 
         Assert.Equal(5, processed);
-        Assert.Equal(5, results.Count);
-        Assert.Equal(Enumerable.Range(1, 5), results);
+        Assert.IsType<InvalidOperationException>(Assert.Single(error.InnerExceptions));
     }
 
     private sealed class RecordingProgress<T> : IProgress<T>

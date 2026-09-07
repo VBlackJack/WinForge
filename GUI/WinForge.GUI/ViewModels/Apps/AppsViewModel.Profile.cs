@@ -682,16 +682,22 @@ public partial class AppsViewModel
         SaveProfileDialogContent = dialog;
         IsSaveProfileDialogOpen = true;
 
-        // Wait for the dialog to complete (set by view's dialog closing handler)
-        while (IsSaveProfileDialogOpen)
+        try
         {
-            await Task.Delay(100);
+            SaveProfileResult? result = await dialogViewModel.Completion;
+            if (result != null) await SaveProfileAsync(result, selectedApps);
         }
+        finally
+        {
+            IsSaveProfileDialogOpen = false;
+            SaveProfileDialogContent = null;
+        }
+    }
 
-        if (dialog.DataContext is SaveProfileDialogViewModel vm)
-        {
-            await SaveProfileAsync(vm.GetResult(), selectedApps);
-        }
+    public void CancelSaveProfileDialog()
+    {
+        if (SaveProfileDialogContent is SaveProfileDialog { DataContext: SaveProfileDialogViewModel dialog })
+            dialog.Close(false);
     }
 
     /// <summary>
@@ -701,18 +707,21 @@ public partial class AppsViewModel
     {
         try
         {
+            Services.PowerShell.PowerShellValidation.ValidateProfileName(saveResult.ProfileName);
+            if (saveResult.ParentProfile != null)
+                Services.PowerShell.PowerShellValidation.ValidateProfileName(saveResult.ParentProfile);
             string profilesDir = GetProfilesWriteDirectory();
 
             string profilePath = Path.Combine(
                 profilesDir,
                 $"{saveResult.ProfileName}{WinForgePathNames.JsonFileExtension}");
+            profilePath = Services.PowerShell.PowerShellValidation.ValidatePathWithinDirectory(profilePath, profilesDir);
 
             // Build profile JSON
             Dictionary<string, object> profile = new Dictionary<string, object>
             {
                 ["Name"] = saveResult.ProfileName,
                 ["Description"] = saveResult.Description,
-                ["Version"] = "3.2.0",
                 ["Inherits"] = saveResult.ParentProfile != null
                     ? new[] { saveResult.ParentProfile }
                     : Array.Empty<string>(),
@@ -730,7 +739,10 @@ public partial class AppsViewModel
                 profile["Applications"] = ownApps;
             }
 
-            await Task.Run(() => ProfileJsonWriter.Write(profilePath, profile));
+            string? sourcePath = saveResult.OverwriteExisting ? TryGetProfilePath(GetProfileReadDirectories(), saveResult.ProfileName) : null;
+            string? sourceJson = sourcePath != null ? await File.ReadAllTextAsync(sourcePath) : null;
+            if (!File.Exists(profilePath) && sourceJson == null) profile["Version"] = "1.0.0";
+            await Task.Run(() => ProfileJsonWriter.Write(profilePath, profile, sourceJson, overwrite: saveResult.OverwriteExisting));
 
             // Update cache
             HashSet<string> appIds = selectedApps.Select(a => a.AppId).ToHashSet(StringComparer.OrdinalIgnoreCase);

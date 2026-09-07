@@ -59,6 +59,7 @@ internal sealed class AppOperationRunner
         TResult[] results = new TResult[items.Count];
         int completed = 0;
 
+        System.Collections.Concurrent.ConcurrentQueue<Exception> persistenceErrors = new();
         IEnumerable<Task> tasks = items.Select(async (item, index) =>
         {
             await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -93,6 +94,7 @@ internal sealed class AppOperationRunner
                     catch (Exception ex)
                     {
                         _logger.LogWarning($"[AppOperationRunner] onItemCompleted callback failed: {ex.Message}");
+                        persistenceErrors.Enqueue(ex);
                     }
                 }
 
@@ -105,6 +107,7 @@ internal sealed class AppOperationRunner
         });
 
         await Task.WhenAll(tasks).ConfigureAwait(false);
+        if (!persistenceErrors.IsEmpty) throw new AggregateException("Batch progress could not be saved.", persistenceErrors);
         return results;
     }
 }

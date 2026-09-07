@@ -2222,6 +2222,20 @@ public class AppsViewModelTests
         }
     }
 
+    [Theory]
+    [InlineData("../outside")]
+    [InlineData("C:\\outside")]
+    public async Task SaveProfile_InvalidDestinationDoesNotWrite(string name)
+    {
+        using TestProfilesDirectory profiles = new();
+        AppsViewModel viewModel = CreateViewModel(pathService: profiles.PathService);
+        await viewModel.InitializeAsync();
+        System.Reflection.MethodInfo method = typeof(AppsViewModel).GetMethod("SaveProfileAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+        await (Task)method.Invoke(viewModel, [new SaveProfileResult { ProfileName = name }, new List<ApplicationModel>()])!;
+        Assert.False(string.IsNullOrEmpty(viewModel.ErrorMessage));
+        Assert.False(Directory.Exists(profiles.PathService.UserProfilesDirectory));
+    }
+
     private sealed class TestProfilesDirectory : IDisposable
     {
         private readonly string _profilesPath;

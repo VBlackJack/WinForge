@@ -54,14 +54,31 @@ internal sealed class WinForgeAppSession : IDisposable
             UseShellExecute = false
         }) ?? throw new InvalidOperationException($"Failed to launch {appAssemblyPath}.");
 
-        WinForgeAppSession session = new WinForgeAppSession(
-            process,
-            WaitForMainWindow(process, DefaultTimeout),
-            artifactDirectory);
+        try
+        {
+            WinForgeAppSession session = new WinForgeAppSession(
+                process,
+                WaitForMainWindow(process, DefaultTimeout),
+                artifactDirectory);
 
-        session.BringMainWindowToFront();
-        session.WaitForElementByAutomationId("NavDashboard", DefaultTimeout);
-        return session;
+            session.BringMainWindowToFront();
+            session.WaitForElementByAutomationId("NavDashboard", DefaultTimeout);
+            session.NavigateByAutomationId("NavDashboard");
+            return session;
+        }
+        catch
+        {
+            try
+            {
+                if (!process.HasExited) process.Kill(entireProcessTree: true);
+            }
+            catch (Exception cleanupError)
+            {
+                Trace.TraceWarning($"Failed to stop the UI test process: {cleanupError.Message}");
+            }
+            finally { process.Dispose(); }
+            throw;
+        }
     }
 
     public string CaptureWindow(string name)
@@ -80,16 +97,34 @@ internal sealed class WinForgeAppSession : IDisposable
 
     public AutomationElement WaitForElementByAutomationId(string automationId, TimeSpan timeout)
     {
-        return WaitUntil(
-            () =>
+        try
+        {
+            return WaitUntil(
+                () =>
+                {
+                    RefreshMainWindow();
+                    return MainWindow.FindFirst(
+                        TreeScope.Descendants,
+                        new PropertyCondition(AutomationElement.AutomationIdProperty, automationId));
+                },
+                timeout,
+                $"Timed out waiting for AutomationId '{automationId}'.");
+        }
+        catch (TimeoutException)
+        {
+            try
             {
-                RefreshMainWindow();
-                return MainWindow.FindFirst(
-                    TreeScope.Descendants,
-                    new PropertyCondition(AutomationElement.AutomationIdProperty, automationId));
-            },
-            timeout,
-            $"Timed out waiting for AutomationId '{automationId}'.");
+                CaptureWindow("missing-" + automationId);
+                AutomationElementCollection elements = MainWindow.FindAll(TreeScope.Descendants, System.Windows.Automation.Condition.TrueCondition);
+                File.WriteAllLines(Path.Combine(ArtifactDirectory, "missing-" + automationId + ".txt"),
+                    elements.Cast<AutomationElement>().Select(element => $"{element.Current.ControlType.ProgrammaticName} | {element.Current.AutomationId} | {element.Current.Name}"));
+            }
+            catch (Exception diagnosticError)
+            {
+                Trace.TraceWarning($"UI failure diagnostics could not be captured: {diagnosticError.Message}");
+            }
+            throw;
+        }
     }
 
     public AutomationElement WaitForElementByName(string name, TimeSpan timeout)

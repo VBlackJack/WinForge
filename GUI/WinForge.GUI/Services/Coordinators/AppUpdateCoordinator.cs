@@ -163,6 +163,7 @@ public sealed class AppUpdateCoordinator : IAppUpdateCoordinator
                 catch (Exception ex)
                 {
                     _logger.LogWarning($"[AppUpdateCoordinator] Checkpoint append failed for {app.AppId}: {ex.Message}");
+                    throw;
                 }
 
                 progress?.Report(new AppOperationProgress(completed, apps.Count, app));

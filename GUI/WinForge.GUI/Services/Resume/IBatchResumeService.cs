@@ -28,6 +28,8 @@ namespace WinForge.GUI.Services.Resume;
 /// Each checkpoint lives at <c>%LocalAppData%\WinForge\state\batch-{BatchId}.json</c>.
 /// Files in <see cref="BatchState.InProgress"/> at startup signal an interrupted batch.
 /// Files older than the configured TTL are silently removed at startup.
+/// Mutations report persistence failures to callers. They never report a successful
+/// write or deletion when storage rejects the operation.
 /// </remarks>
 public interface IBatchResumeService
 {

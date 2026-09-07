@@ -69,7 +69,7 @@ public sealed class WinForgeUiaSmokeTests
     }
 
     [UiaFact]
-    public void AppCatalog_UndoRedoButtons_HaveNonEmptyBounds()
+    public void AppCatalog_UnavailableUndoRedoActionsAreHidden()
     {
         using WinForgeAppSession app = WinForgeAppSession.Launch();
         app.WaitForElementByAutomationId("PageDashboard", TimeSpan.FromSeconds(10));
@@ -77,13 +77,34 @@ public sealed class WinForgeUiaSmokeTests
         app.NavigateByAutomationId("NavAppCatalog");
         app.WaitForElementByAutomationId("PageAppCatalog", TimeSpan.FromSeconds(10));
 
-        AutomationElement undoButton = app.WaitForElementByName("Undo last action", TimeSpan.FromSeconds(10));
-        AutomationElement redoButton = app.WaitForElementByName("Redo last action", TimeSpan.FromSeconds(10));
+        AutomationElement? undoButton = app.MainWindow.FindFirst(TreeScope.Descendants,
+            new PropertyCondition(AutomationElement.NameProperty, "Undo last action"));
+        AutomationElement? redoButton = app.MainWindow.FindFirst(TreeScope.Descendants,
+            new PropertyCondition(AutomationElement.NameProperty, "Redo last action"));
+        Assert.Null(undoButton);
+        Assert.Null(redoButton);
+    }
 
-        Assert.True(undoButton.Current.BoundingRectangle.Width > 0, "Undo button should render with visible width.");
-        Assert.True(undoButton.Current.BoundingRectangle.Height > 0, "Undo button should render with visible height.");
-        Assert.True(redoButton.Current.BoundingRectangle.Width > 0, "Redo button should render with visible width.");
-        Assert.True(redoButton.Current.BoundingRectangle.Height > 0, "Redo button should render with visible height.");
+    [UiaFact]
+    public void ProfileDialog_InvalidNameDisablesSaveAndCancelCloses()
+    {
+        using WinForgeAppSession app = WinForgeAppSession.Launch();
+        app.NavigateByAutomationId("NavApplications");
+        AutomationElement selectAll = app.WaitForElementByName("Select All", TimeSpan.FromSeconds(10));
+        ((InvokePattern)selectAll.GetCurrentPattern(InvokePattern.Pattern)).Invoke();
+        AutomationElement open = app.WaitForElementByName("Save Profile", TimeSpan.FromSeconds(10));
+        ((InvokePattern)open.GetCurrentPattern(InvokePattern.Pattern)).Invoke();
+        AutomationElement createNew = app.WaitForElementByAutomationId("CreateNewRadio", TimeSpan.FromSeconds(10));
+        ((SelectionItemPattern)createNew.GetCurrentPattern(SelectionItemPattern.Pattern)).Select();
+        AutomationElement name = app.WaitForElementByAutomationId("SaveProfileName", TimeSpan.FromSeconds(10));
+        ((ValuePattern)name.GetCurrentPattern(ValuePattern.Pattern)).SetValue("../outside");
+        app.WaitForIdle();
+        Assert.False(app.WaitForElementByAutomationId("SaveProfileSave", TimeSpan.FromSeconds(10)).Current.IsEnabled);
+        app.CaptureWindow("profile-invalid-name");
+        app.NavigateByAutomationId("SaveProfileCancel");
+        AutomationElement? remaining = app.MainWindow.FindFirst(TreeScope.Descendants,
+            new PropertyCondition(AutomationElement.AutomationIdProperty, "SaveProfileCancel"));
+        Assert.Null(remaining);
     }
 
     private static string CaptureAfterNavigation(
