@@ -87,6 +87,7 @@
                            FontSize="{StaticResource FontSizeCaption}"
                            Margin="0,0,0,8"/>
                 <ui:TextBox Text="{Binding NewProfileName, UpdateSourceTrigger=PropertyChanged}"
+                            AutomationProperties.AutomationId="SaveProfileName"
                             PlaceholderText="{loc:Loc Editor_Hint_ProfileName}"
                             Margin="{StaticResource BlockGap}"
                             AutomationProperties.Name="{loc:Loc A11y_Profile_Name}"/>
@@ -127,6 +128,7 @@
                        Content="{loc:Loc Btn_Cancel}"
                        Style="{StaticResource SecondaryButton}"
                        Click="CancelButton_Click"
+                       AutomationProperties.AutomationId="SaveProfileCancel"
                        Margin="0,0,12,0"
                        AutomationProperties.Name="{loc:Loc A11y_Profile_Cancel}"/>
 
@@ -135,6 +137,7 @@
                        Content="{loc:Loc Btn_Save}"
                        Style="{StaticResource PrimaryButton}"
                        Click="SaveButton_Click"
+                       AutomationProperties.AutomationId="SaveProfileSave"
                        IsEnabled="{Binding CanSave}"
                        AutomationProperties.Name="{loc:Loc A11y_Profile_Save}"/>
         </Grid>

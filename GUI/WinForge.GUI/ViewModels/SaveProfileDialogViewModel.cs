@@ -16,6 +16,7 @@
 
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using WinForge.GUI.Services.PowerShell;
 
 namespace WinForge.GUI.ViewModels;
 
@@ -50,6 +51,16 @@ public class SaveProfileResult
 /// </summary>
 public partial class SaveProfileDialogViewModel : ObservableObject
 {
+    private readonly TaskCompletionSource<SaveProfileResult?> _completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    public Task<SaveProfileResult?> Completion => _completion.Task;
+
+    public void Close(bool save)
+    {
+        if (!save) _completion.TrySetResult(null);
+        else if (CanSave) _completion.TrySetResult(GetResult());
+    }
+
     /// <summary>
     /// Whether a profile is currently selected (can overwrite).
     /// </summary>
@@ -101,7 +112,23 @@ public partial class SaveProfileDialogViewModel : ObservableObject
     /// <summary>
     /// Whether the save button should be enabled.
     /// </summary>
-    public bool CanSave => OverwriteExisting || !string.IsNullOrWhiteSpace(NewProfileName);
+    public bool CanSave
+    {
+        get
+        {
+            try
+            {
+                PowerShellValidation.ValidateProfileName(OverwriteExisting ? ExistingProfileName : NewProfileName.Trim());
+                if (SelectedParent != null && SelectedParent != Resources.Resources.Editor_NoParent)
+                    PowerShellValidation.ValidateProfileName(SelectedParent);
+                return true;
+            }
+            catch (ArgumentException) { return false; }
+        }
+    }
+
+    partial void OnExistingProfileNameChanged(string value) => OnPropertyChanged(nameof(CanSave));
+    partial void OnSelectedParentChanged(string? value) => OnPropertyChanged(nameof(CanSave));
 
     /// <summary>
     /// Initializes a new instance of SaveProfileDialogViewModel.
@@ -138,6 +165,7 @@ public partial class SaveProfileDialogViewModel : ObservableObject
     /// </summary>
     public SaveProfileResult GetResult()
     {
+        if (!CanSave) throw new InvalidOperationException("The profile name is invalid.");
         return new SaveProfileResult
         {
             OverwriteExisting = OverwriteExisting,

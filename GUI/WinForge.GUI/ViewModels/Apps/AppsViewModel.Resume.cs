@@ -32,8 +32,8 @@ public partial class AppsViewModel
     /// replays items that are still resolvable.
     ///
     /// The new batch creates its own checkpoint via the coordinator; the caller is
-    /// responsible for deleting the original checkpoint once the resume has been
-    /// initiated, otherwise it would be re-offered on the next launch.
+    /// responsible for deleting the original checkpoint after the resumed operation
+    /// returns successfully. Persistence errors leave the original available for retry.
     /// </remarks>
     public async Task ResumeBatchAsync(BatchCheckpoint checkpoint, CancellationToken cancellationToken = default)
     {

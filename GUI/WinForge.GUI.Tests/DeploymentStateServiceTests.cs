@@ -712,7 +712,7 @@ public class DeploymentStateServiceTests
     public void Dispose_ShouldClearApplicationsAndHandlers()
     {
         // Arrange
-        TestableDeploymentStateService service = CreateService();
+        using TestableDeploymentStateService service = CreateService();
         service.StartDeployment(CreateTestApps(3));
         bool stateChangedAfterDispose = false;
         service.StateChanged += (_, _) => stateChangedAfterDispose = true;
@@ -736,7 +736,7 @@ public class DeploymentStateServiceTests
     public void Dispose_CalledTwice_ShouldNotThrow()
     {
         // Arrange
-        TestableDeploymentStateService service = CreateService();
+        using TestableDeploymentStateService service = CreateService();
         service.StartDeployment(CreateTestApps(2));
 
         // Act & Assert

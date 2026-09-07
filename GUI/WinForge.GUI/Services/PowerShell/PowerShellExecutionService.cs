@@ -30,7 +30,7 @@ public class PowerShellExecutionService : IPowerShellExecutionService
 {
     private readonly IRepositoryPathService _pathService;
     private readonly ILoggingService _logger;
-    private static string? _powerShellPath;
+    private readonly Lazy<string> _powerShellPath;
 
     /// <summary>
     /// Maximum allowed output size in bytes (100 MB) to prevent DoS via memory exhaustion.
@@ -68,6 +68,7 @@ public class PowerShellExecutionService : IPowerShellExecutionService
     public PowerShellExecutionService(IRepositoryPathService pathService, ILoggerFactory? loggerFactory = null)
     {
         _pathService = pathService ?? throw new ArgumentNullException(nameof(pathService));
+        _powerShellPath = new Lazy<string>(ResolvePowerShellPath);
         _logger = (loggerFactory ?? new LoggerFactory()).CreateLogger<PowerShellExecutionService>();
         _timeouts = new Lazy<TimeoutSettings>(LoadTimeoutSettings);
     }
@@ -137,10 +138,10 @@ public class PowerShellExecutionService : IPowerShellExecutionService
     }
 
     /// <inheritdoc/>
-    public string GetPowerShellPath()
-    {
-        if (_powerShellPath != null) return _powerShellPath;
+    public string GetPowerShellPath() => _powerShellPath.Value;
 
+    private string ResolvePowerShellPath()
+    {
         // Try PowerShell 7+ in multiple locations
         string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
         string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
@@ -164,8 +165,7 @@ public class PowerShellExecutionService : IPowerShellExecutionService
                         string pwshPath = Path.Combine(versionDir, "pwsh.exe");
                         if (File.Exists(pwshPath))
                         {
-                            _powerShellPath = pwshPath;
-                            return _powerShellPath;
+                            return pwshPath;
                         }
                     }
                 }
@@ -179,8 +179,7 @@ public class PowerShellExecutionService : IPowerShellExecutionService
                 string directPath = Path.Combine(psBaseDir, "7", "pwsh.exe");
                 if (File.Exists(directPath))
                 {
-                    _powerShellPath = directPath;
-                    return _powerShellPath;
+                    return directPath;
                 }
             }
         }
@@ -191,8 +190,7 @@ public class PowerShellExecutionService : IPowerShellExecutionService
             string storeAppPath = Path.Combine(localAppData, "Microsoft", "WindowsApps", "pwsh.exe");
             if (File.Exists(storeAppPath))
             {
-                _powerShellPath = storeAppPath;
-                return _powerShellPath;
+                return storeAppPath;
             }
         }
 
@@ -202,8 +200,7 @@ public class PowerShellExecutionService : IPowerShellExecutionService
             string? pwshInPath = FindExecutableInPath("pwsh.exe");
             if (!string.IsNullOrEmpty(pwshInPath) && File.Exists(pwshInPath))
             {
-                _powerShellPath = pwshInPath;
-                return _powerShellPath;
+                return pwshInPath;
             }
         }
         catch (Exception ex)
@@ -219,8 +216,7 @@ public class PowerShellExecutionService : IPowerShellExecutionService
             string winPsPath = Path.Combine(systemPath, "WindowsPowerShell", "v1.0", "powershell.exe");
             if (File.Exists(winPsPath))
             {
-                _powerShellPath = winPsPath;
-                return _powerShellPath;
+                return winPsPath;
             }
         }
 
@@ -233,9 +229,9 @@ public class PowerShellExecutionService : IPowerShellExecutionService
                 string? foundPath = FindExecutableInPath($"{candidate}.exe");
                 if (!string.IsNullOrEmpty(foundPath))
                 {
-                    _powerShellPath = foundPath;
-                    _logger.LogWarning($"[PowerShellExecutionService] Using fallback PowerShell: {_powerShellPath}");
-                    return _powerShellPath;
+
+                    _logger.LogWarning($"[PowerShellExecutionService] Using fallback PowerShell: {foundPath}");
+                    return foundPath;
                 }
             }
             catch (Exception ex)
@@ -247,8 +243,7 @@ public class PowerShellExecutionService : IPowerShellExecutionService
 
         // Last resort - may fail at runtime if not in PATH
         _logger.LogWarning("[PowerShellExecutionService] WARNING: No PowerShell installation found. Using 'pwsh' and hoping it's in PATH.");
-        _powerShellPath = "pwsh";
-        return _powerShellPath;
+        return "pwsh";
     }
 
     /// <summary>
@@ -308,13 +303,11 @@ public class PowerShellExecutionService : IPowerShellExecutionService
         {
             process.Start();
 
-            // Read stdout and stderr concurrently with size limits to prevent DoS
-            Task<string> outputTask = ReadStreamWithLimitAsync(process.StandardOutput, MaxOutputSizeBytes);
-            Task<string> errorTask = ReadStreamWithLimitAsync(process.StandardError, MaxOutputSizeBytes);
-
             // Wait for both streams AND the process to complete with timeout
             using CancellationTokenSource timeoutCts = new CancellationTokenSource(DefaultQueryTimeoutMs);
             using CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(timeoutCts.Token, cancellationToken);
+            Task<string> outputTask = ReadStreamWithLimitAsync(process.StandardOutput, MaxOutputSizeBytes, linkedCts.Token);
+            Task<string> errorTask = ReadStreamWithLimitAsync(process.StandardError, MaxOutputSizeBytes, linkedCts.Token);
             try
             {
                 await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync(linkedCts.Token));
@@ -582,8 +575,9 @@ public class PowerShellExecutionService : IPowerShellExecutionService
     /// </summary>
     /// <param name="reader">The stream reader to read from.</param>
     /// <param name="maxBytes">Maximum bytes to read before truncating.</param>
+    /// <param name="cancellationToken">Cancels reads when the process deadline expires.</param>
     /// <returns>The content read from the stream, potentially truncated.</returns>
-    private static async Task<string> ReadStreamWithLimitAsync(StreamReader reader, int maxBytes)
+    private static async Task<string> ReadStreamWithLimitAsync(StreamReader reader, int maxBytes, CancellationToken cancellationToken)
     {
         char[] buffer = new char[8192];
         StringBuilder result = new System.Text.StringBuilder();
@@ -592,7 +586,7 @@ public class PowerShellExecutionService : IPowerShellExecutionService
 
         while (true)
         {
-            int charsRead = await reader.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
+            int charsRead = await reader.ReadAsync(buffer.AsMemory(), cancellationToken).ConfigureAwait(false);
             if (charsRead == 0) break;
 
             // Estimate byte count (UTF-16 chars can be 2-4 bytes in UTF-8)

@@ -114,7 +114,7 @@ public class RepositoryPathService : IRepositoryPathService
         string[] paths = new string[relativePath.Length + 1];
         paths[0] = GetSafeRepositoryRoot();
         Array.Copy(relativePath, 0, paths, 1, relativePath.Length);
-        return Path.Combine(paths);
+        return CombineWithinRoot(paths);
     }
 
     /// <inheritdoc/>
@@ -129,7 +129,17 @@ public class RepositoryPathService : IRepositoryPathService
         string[] paths = new string[relativePath.Length + 1];
         paths[0] = UserDataRoot;
         Array.Copy(relativePath, 0, paths, 1, relativePath.Length);
-        return Path.Combine(paths);
+        return CombineWithinRoot(paths);
+    }
+
+    private static string CombineWithinRoot(string[] paths)
+    {
+        if (paths.Skip(1).Any(Path.IsPathRooted))
+            throw new ArgumentException("Path components must be relative.", nameof(paths));
+        string combined = Path.GetFullPath(Path.Combine(paths));
+        if (string.Equals(Path.TrimEndingDirectorySeparator(combined), Path.TrimEndingDirectorySeparator(Path.GetFullPath(paths[0])), StringComparison.OrdinalIgnoreCase))
+            return combined;
+        return PowerShellValidation.ValidatePathWithinDirectory(combined, paths[0]);
     }
 
     /// <summary>

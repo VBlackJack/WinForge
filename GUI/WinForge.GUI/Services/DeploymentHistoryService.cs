@@ -71,6 +71,7 @@ public class DeploymentHistoryService : IDeploymentHistoryService, IDisposable
     /// <inheritdoc/>
     public async Task AddEntryAsync(DeploymentHistoryEntry entry)
     {
+        ArgumentNullException.ThrowIfNull(entry);
         await _fileLock.WaitAsync();
         try
         {
@@ -84,10 +85,6 @@ public class DeploymentHistoryService : IDeploymentHistoryService, IDisposable
             }
 
             await SaveHistoryInternalAsync(history);
-        }
-        catch
-        {
-            // Silently fail - history is non-critical
         }
         finally
         {
@@ -103,10 +100,6 @@ public class DeploymentHistoryService : IDeploymentHistoryService, IDisposable
         {
             List<DeploymentHistoryEntry> history = await LoadHistoryInternalAsync();
             return history.Take(limit).ToList();
-        }
-        catch
-        {
-            return [];
         }
         finally
         {
@@ -126,14 +119,7 @@ public class DeploymentHistoryService : IDeploymentHistoryService, IDisposable
         await _fileLock.WaitAsync();
         try
         {
-            if (File.Exists(_historyFilePath))
-            {
-                File.Delete(_historyFilePath);
-            }
-        }
-        catch
-        {
-            // Silently fail - clearing history is non-critical
+            File.Delete(_historyFilePath);
         }
         finally
         {
@@ -143,46 +129,31 @@ public class DeploymentHistoryService : IDeploymentHistoryService, IDisposable
 
     /// <summary>
     /// Loads history from the JSON file.
-    /// Returns empty list on any error.
+    /// Returns an empty list only when the file does not exist.
     /// </summary>
     private async Task<List<DeploymentHistoryEntry>> LoadHistoryInternalAsync()
     {
         try
         {
-            if (string.IsNullOrEmpty(_historyFilePath) || !File.Exists(_historyFilePath))
-            {
-                return [];
-            }
-
             string json = await File.ReadAllTextAsync(_historyFilePath);
-            if (string.IsNullOrEmpty(json))
-            {
-                return [];
-            }
-
             List<DeploymentHistoryEntry>? history = JsonSerializer.Deserialize<List<DeploymentHistoryEntry>>(json, _jsonOptions);
-            return history ?? [];
+            return history ?? throw new JsonException("Deployment history must contain an array.");
         }
-        catch
+        catch (FileNotFoundException)
         {
-            // If file is corrupted or any error occurs, start fresh
             return [];
         }
     }
 
     /// <summary>
     /// Saves history to the JSON file.
-    /// Silently fails on error (history is non-critical).
+    /// Replaces the destination only after the complete JSON has been written.
     /// </summary>
     private async Task SaveHistoryInternalAsync(List<DeploymentHistoryEntry> history)
     {
+        string tempPath = _historyFilePath + "." + Guid.NewGuid().ToString("N") + ".tmp";
         try
         {
-            if (string.IsNullOrEmpty(_historyFilePath))
-            {
-                return;
-            }
-
             // Ensure directory exists before writing
             string? directory = Path.GetDirectoryName(_historyFilePath);
             if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
@@ -191,11 +162,12 @@ public class DeploymentHistoryService : IDeploymentHistoryService, IDisposable
             }
 
             string json = JsonSerializer.Serialize(history, _jsonOptions);
-            await File.WriteAllTextAsync(_historyFilePath, json);
+            await File.WriteAllTextAsync(tempPath, json);
+            File.Move(tempPath, _historyFilePath, overwrite: true);
         }
-        catch
+        finally
         {
-            // Silently fail - history persistence is non-critical
+            if (File.Exists(tempPath)) File.Delete(tempPath);
         }
     }
 

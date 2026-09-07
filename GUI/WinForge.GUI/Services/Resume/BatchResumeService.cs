@@ -132,8 +132,7 @@ public sealed class BatchResumeService : IBatchResumeService
             BatchCheckpoint? existing = await ReadCheckpointAsync(batchId, cancellationToken).ConfigureAwait(false);
             if (existing == null)
             {
-                _logger.LogWarning($"[BatchResumeService] Cannot append to missing checkpoint {batchId}.");
-                return;
+                throw new IOException($"Cannot append to missing or unreadable checkpoint {batchId}.");
             }
 
             BatchCheckpoint updated = existing with
@@ -161,8 +160,7 @@ public sealed class BatchResumeService : IBatchResumeService
             BatchCheckpoint? existing = await ReadCheckpointAsync(batchId, cancellationToken).ConfigureAwait(false);
             if (existing == null)
             {
-                _logger.LogWarning($"[BatchResumeService] Cannot mark missing checkpoint {batchId} completed.");
-                return;
+                throw new IOException($"Cannot complete missing or unreadable checkpoint {batchId}.");
             }
 
             BatchCheckpoint updated = existing with
@@ -219,22 +217,20 @@ public sealed class BatchResumeService : IBatchResumeService
     }
 
     /// <inheritdoc/>
-    public Task DeleteCheckpointAsync(Guid batchId, CancellationToken cancellationToken = default)
+    public async Task DeleteCheckpointAsync(Guid batchId, CancellationToken cancellationToken = default)
     {
-        cancellationToken.ThrowIfCancellationRequested();
+        await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         string path = GetCheckpointPath(batchId);
         try
         {
-            if (File.Exists(path))
-            {
-                File.Delete(path);
-            }
+            File.Delete(path);
         }
         catch (Exception ex)
         {
             _logger.LogWarning($"[BatchResumeService] Failed to delete checkpoint {batchId}: {ex.Message}");
+            throw;
         }
-        return Task.CompletedTask;
+        finally { _writeLock.Release(); }
     }
 
     /// <inheritdoc/>
@@ -283,11 +279,11 @@ public sealed class BatchResumeService : IBatchResumeService
     private async Task WriteCheckpointUnlockedAsync(BatchCheckpoint checkpoint, CancellationToken cancellationToken)
     {
         string finalPath = GetCheckpointPath(checkpoint.BatchId);
-        string tempPath = finalPath + ".tmp";
+        string tempPath = finalPath + "." + Guid.NewGuid().ToString("N") + ".tmp";
 
         try
         {
-            EnsureStateDirectoryExists();
+            Directory.CreateDirectory(_stateDirectory);
             string json = JsonSerializer.Serialize(checkpoint, JsonOptions);
             await File.WriteAllTextAsync(tempPath, json, cancellationToken).ConfigureAwait(false);
             File.Move(tempPath, finalPath, overwrite: true);
@@ -306,6 +302,7 @@ public sealed class BatchResumeService : IBatchResumeService
             {
                 // Best-effort temp cleanup; swallow to avoid masking the original failure.
             }
+            throw;
         }
     }
 

@@ -24,7 +24,7 @@ namespace WinForge.GUI.Helpers;
 /// <summary>Preserves unedited profile properties and publishes a complete JSON file atomically.</summary>
 internal static class ProfileJsonWriter
 {
-    public static void Write(string path, IReadOnlyDictionary<string, object> changes, string? sourceJson = null)
+    public static void Write(string path, IReadOnlyDictionary<string, object> changes, string? sourceJson = null, bool overwrite = true)
     {
         string? existingJson = File.Exists(path) ? File.ReadAllText(path) : sourceJson;
         JsonObject payload = existingJson == null
@@ -40,7 +40,7 @@ internal static class ProfileJsonWriter
         try
         {
             File.WriteAllText(temporaryPath, payload.ToJsonString(new JsonSerializerOptions { WriteIndented = true }), new UTF8Encoding(false));
-            File.Move(temporaryPath, path, overwrite: true);
+            File.Move(temporaryPath, path, overwrite);
         }
         finally
         {
