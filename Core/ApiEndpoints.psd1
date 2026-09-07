@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'ApiEndpoints.psm1'
-    ModuleVersion = '1.0.0906.1'
+    ModuleVersion = '1.0.0907.1'
     GUID = '13574a98-f79b-4035-8abc-5bbb4f91f9d3'
     Author = 'Julien Bombled'
     CompanyName = 'WinForge'
@@ -35,7 +35,7 @@
             Tags = @('WinForge', 'API', 'REST', 'Endpoints')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
-            ReleaseNotes = 'WinForge v2026090601'
+            ReleaseNotes = 'WinForge v2026090701'
         }
     }
 }

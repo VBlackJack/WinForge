@@ -2,7 +2,7 @@
 
 [Français](README.fr.md)
 
-Current framework display version: `2026090601`.
+Current framework display version: `2026090701`.
 
 ## User Documentation
 

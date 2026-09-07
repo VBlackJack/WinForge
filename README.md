@@ -1,10 +1,10 @@
-# WinForge v2026090601
+# WinForge v2026090701
 
 [Français](README.fr.md)
 
 **Set up a Windows 10/11 PC with reproducible application profiles.**
 
-[![Version](https://img.shields.io/badge/version-2026090601-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2026090701-blue.svg)](CHANGELOG.md)
 [![Windows](https://img.shields.io/badge/Windows-10%20%2F%2011-0078D4.svg)](https://www.microsoft.com/windows)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 

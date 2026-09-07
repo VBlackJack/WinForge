@@ -2,7 +2,7 @@
 
 [English](README.md)
 
-Version actuelle du framework : `2026090601`.
+Version actuelle du framework : `2026090701`.
 
 ## Documentation utilisateur
 

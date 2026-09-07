@@ -6,6 +6,18 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 
 ## [Unreleased]
 
+## [2026090701] - 2026-09-07
+
+### Fixed
+- Complete the profile save dialog, reject invalid destinations and accidental replacement, and preserve existing profile metadata.
+- Preserve corrupt deployment history, write atomically and report persistence failures.
+- Propagate checkpoint failures and keep the original checkpoint until recovery succeeds.
+- Cancel redirected PowerShell reads promptly and clean up failed UI test launches.
+
+### Changed
+- Constrain path factories to their roots and use an instance-owned lazy PowerShell discovery cache.
+- Add regression coverage for cancellation, corrupt storage, locked destinations and profile names.
+
 ## [2026090601] - 2026-09-06
 
 ### Fixed

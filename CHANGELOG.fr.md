@@ -6,6 +6,18 @@ La version de référence est définie dans `Config/version.json`. Ce document p
 
 ## [Unreleased]
 
+## [2026090701] - 2026-09-07
+
+### Corrections
+- Raccordement du dialogue de sauvegarde des profils, validation des destinations, protection contre le remplacement accidentel et conservation des métadonnées existantes.
+- Conservation des historiques corrompus, écriture atomique et signalement des erreurs de stockage.
+- Propagation des erreurs de points de reprise et conservation du point original jusqu'au succès de la reprise.
+- Annulation rapide des lectures PowerShell et nettoyage des lancements de tests graphiques échoués.
+
+### Changements
+- Confinement des fabriques de chemins à leurs racines et cache de découverte PowerShell propre à chaque instance.
+- Tests de régression pour l'annulation, le stockage corrompu, les destinations verrouillées et les noms de profils.
+
 ## [2026090601] - 2026-09-06
 
 ### Corrections

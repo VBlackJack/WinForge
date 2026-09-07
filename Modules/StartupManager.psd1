@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'StartupManager.psm1'
-    ModuleVersion = '1.0.0906.1'
+    ModuleVersion = '1.0.0907.1'
     GUID = '874cf8cc-8852-4a49-aaf5-d3efffe86865'
     Author = 'Julien Bombled'
     CompanyName = 'WinForge'
@@ -35,7 +35,7 @@
             Tags = @('WinForge', 'Startup', 'Autorun')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
-            ReleaseNotes = 'WinForge v2026090601'
+            ReleaseNotes = 'WinForge v2026090701'
         }
     }
 }
