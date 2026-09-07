@@ -27,6 +27,17 @@
 # limitations under the License.
 #
 
+Describe 'Explicit installation status refresh' {
+    It 'forwards the refresh request to the installed applications cache' {
+        Mock Get-InstalledApplicationsCache { [pscustomobject]@{} } -ModuleName ApplicationDetection
+        Mock Test-ApplicationInstalledFast { [pscustomobject]@{IsInstalled=$true;Version='26.02'} } -ModuleName ApplicationDetection
+        $app=[pscustomobject]@{AppId='Fixture';Name='Fixture'}
+        $state=Get-ApplicationsInstallationStatus -Applications @($app) -Refresh
+        $state.Fixture.Version | Should -Be '26.02'
+        Should -Invoke Get-InstalledApplicationsCache -ModuleName ApplicationDetection -Times 1 -Exactly -ParameterFilter { $Refresh }
+    }
+}
+
 BeforeAll {
     $ModulePath = Join-Path $PSScriptRoot '..\Modules\ApplicationDetection.psm1'
     Import-Module $ModulePath -Force -ErrorAction Stop
@@ -517,5 +528,25 @@ Describe 'ApplicationDetection - Fast detection guard parity (I4/I5)' {
             $r = Test-ApplicationInstalledFast -Application $app -Cache $script:ParityCache
             $r.IsInstalled | Should -BeFalse
         }
+    }
+}
+
+Describe 'Winget version column identity' {
+    It 'reads the version following the exact ID, not a version in the display name' {
+        $app=[pscustomobject]@{Name='Runtime 8';Detection=$null;Sources=[pscustomobject]@{Winget='Vendor.Runtime.8'}}
+        $cache=[pscustomobject]@{RegistryApps=@{};WingetOutput="Runtime 6.0.36  Vendor.Runtime.8.Extra  9.0`nRuntime 8.0  Vendor.Runtime.8  8.0.30  winget";AppxPackages=@{};CommandOutputs=@{}}
+        $actual=Test-ApplicationInstalledFast -Application $app -Cache $cache
+        $actual.IsInstalled | Should -BeTrue
+        $actual.Version | Should -Be '8.0.30'
+    }
+}
+
+Describe 'Command version row identity' {
+    It 'extracts runtime versions from the matching runtime family only' {
+        $app=[pscustomobject]@{Name='Runtime 8';Sources=$null;Detection=[pscustomobject]@{Method='Command';Command='dotnet --list-runtimes';Arguments='Microsoft.WindowsDesktop.App 8';VersionRegex='(\d+\.\d+\.\d+)'}}
+        $cache=[pscustomobject]@{RegistryApps=@{};WingetOutput='';AppxPackages=@{};CommandOutputs=@{'dotnet --list-runtimes'="Microsoft.WindowsDesktop.App 6.0.36 [C:\dotnet]`nMicrosoft.WindowsDesktop.App 8.0.30 [C:\dotnet]"}}
+        $actual=Test-ApplicationInstalledFast -Application $app -Cache $cache
+        $actual.IsInstalled | Should -BeTrue
+        $actual.Version | Should -Be '8.0.30'
     }
 }

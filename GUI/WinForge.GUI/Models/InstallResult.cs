@@ -29,6 +29,9 @@ public class InstallResult : IValidatableObject
     /// <summary>Whether the installation succeeded.</summary>
     public bool Success { get; init; }
 
+    /// <summary>Version observed after the operation, or null when detection cannot establish it.</summary>
+    public string? InstalledVersion { get; init; }
+
     /// <summary>Result message (success or error description).</summary>
     public string Message { get; init; } = string.Empty;
 
@@ -50,7 +53,7 @@ public class InstallResult : IValidatableObject
     /// <summary>
     /// Creates a successful installation result.
     /// </summary>
-    public static InstallResult Successful(string message, string logs, string method = "", bool alreadyInstalled = false)
+    public static InstallResult Successful(string message, string logs, string method = "", bool alreadyInstalled = false, string? installedVersion = null)
     {
         return new InstallResult
         {
@@ -59,7 +62,8 @@ public class InstallResult : IValidatableObject
             Logs = logs,
             Method = method,
             MethodType = method.ToInstallationMethod(),
-            AlreadyInstalled = alreadyInstalled
+            AlreadyInstalled = alreadyInstalled,
+            InstalledVersion = installedVersion
         };
     }
 

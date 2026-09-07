@@ -465,6 +465,11 @@ function ConvertTo-ProfileApplication {
         $profileApp | Add-Member -NotePropertyName "Notes" -NotePropertyValue $App.Notes
     }
 
+    foreach ($optionalField in @('SourceEvidence', 'SourceLock', 'ManualInstallOnly', 'InstallNotes')) {
+        if ($App.PSObject.Properties[$optionalField]) {
+            $profileApp | Add-Member -NotePropertyName $optionalField -NotePropertyValue $App.$optionalField
+        }
+    }
     return $profileApp
 }
 

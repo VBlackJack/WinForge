@@ -284,8 +284,16 @@ function Invoke-NativeCommandUtf8 {
             $startInfo.StandardErrorEncoding = $utf8NoBom
             $startInfo.CreateNoWindow = $true
 
-            foreach ($argument in $ArgumentList) {
-                [void]$startInfo.ArgumentList.Add($argument)
+            if ($startInfo.PSObject.Properties['ArgumentList']) {
+                foreach ($argument in $ArgumentList) { [void]$startInfo.ArgumentList.Add($argument) }
+            } else {
+                # .NET Framework uses the Windows command-line quoting convention.
+                $quotedArguments = foreach ($argument in $ArgumentList) {
+                    $escaped = [regex]::Replace($argument, '(\\*)"', '$1$1\"')
+                    $escaped = [regex]::Replace($escaped, '(\\+)$', '$1$1')
+                    '"' + $escaped + '"'
+                }
+                $startInfo.Arguments = $quotedArguments -join ' '
             }
 
             $process = [System.Diagnostics.Process]::new()
@@ -297,7 +305,12 @@ function Invoke-NativeCommandUtf8 {
 
                 if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
                     try {
-                        $process.Kill($true)
+                        if ($PSVersionTable.PSVersion.Major -ge 7) {
+                            $process.Kill($true)
+                        } else {
+                            & "$env:SystemRoot\System32\taskkill.exe" /PID $process.Id /T /F 2>&1 | Out-Null
+                            if (-not $process.HasExited) { $process.Kill() }
+                        }
                     } catch {
                         Write-Verbose "Process kill failed (best effort): $($_.Exception.Message)"
                     }

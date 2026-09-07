@@ -47,6 +47,9 @@ Set-StrictMode -Version Latest
 $script:ModuleRoot = Split-Path -Parent $PSCommandPath
 $script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
 
+# Resolve feature flags in this module's scope, including direct imports.
+Import-Module (Join-Path $script:RepositoryRoot 'Core\FeatureFlags.psm1') -ErrorAction Stop
+
 # Import required modules
 $script:CoreModulePath = Join-Path $script:RepositoryRoot 'Core\Core.psm1'
 $script:LocalizationModulePath = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
@@ -80,7 +83,9 @@ if (-not (Get-Command -Name Test-ApplicationInstalled -ErrorAction SilentlyConti
 }
 
 $script:InstallationMethodsPath = Join-Path $script:ModuleRoot 'InstallationMethods.psm1'
-if (-not (Get-Command -Name Install-ViaWinget -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Install-ViaWinget -ErrorAction SilentlyContinue) -or
+    -not (Get-Command -Name Test-ValidDownloadUrl -ErrorAction SilentlyContinue) -or
+    -not (Get-Command -Name Test-InstallerSignature -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:InstallationMethodsPath) {
         Import-Module -Name $script:InstallationMethodsPath -Force
     }
@@ -123,6 +128,12 @@ $script:ParallelLogSubPath = 'Logs\Parallel'
 
 if (Test-Path -Path $script:TimeoutSettingsPath) {
     Import-Module -Name $script:TimeoutSettingsPath -Force -ErrorAction SilentlyContinue
+}
+
+$script:DefaultInstallTimeoutSeconds = 1800
+if (Get-Command -Name Get-TimeoutSetting -ErrorAction SilentlyContinue) {
+    $configuredInstallTimeout = Get-TimeoutSetting -Name 'DefaultInstallTimeoutSeconds'
+    if ($null -ne $configuredInstallTimeout) { $script:DefaultInstallTimeoutSeconds = [int]$configuredInstallTimeout }
 }
 
 if (Test-Path -Path $script:StateManagerPath) {
@@ -218,6 +229,7 @@ function Invoke-Rollback {
             }
 
             if ($uninstalled) {
+                Remove-RollbackEntry -Entry $app
                 Write-Status -Message (Get-LogString -Key 'rollback.rolled_back' -Parameters @{ AppName = $app.AppName }) -Level 'Success'
                 $result.RolledBack += $app.AppName
             } else {
@@ -232,7 +244,6 @@ function Invoke-Rollback {
         }
     }
 
-    Clear-RollbackState
     return $result
 }
 
@@ -447,7 +458,12 @@ function Invoke-InstallationMethodSequence {
             Source = $sources.Winget
             AttemptKey = 'install.orchestrator.attempting_winget'
             AttemptParameters = { param($source) @{ PackageId = $source } }
-            Invoke = { param($source) @(Install-ViaWinget -PackageId $source) }
+            Invoke = {
+                param($source)
+                if ($Application.PSObject.Properties['SourceLock'] -and $Application.SourceLock) {
+                    @(Install-ViaWinget -PackageId $source -Version $Application.SourceLock.Version)
+                } else { @(Install-ViaWinget -PackageId $source) }
+            }
             ResultKey = 'orchestrator.result.winget'
             VerifiedResultKey = 'orchestrator.result.winget_verified'
             FailureKey = 'orchestrator.failure.winget'
@@ -459,7 +475,12 @@ function Invoke-InstallationMethodSequence {
             Source = $sources.Chocolatey
             AttemptKey = 'install.orchestrator.attempting_choco'
             AttemptParameters = { param($source) @{ PackageId = $source } }
-            Invoke = { param($source) @(Install-ViaChocolatey -PackageName $source) }
+            Invoke = {
+                param($source)
+                if ($Application.PSObject.Properties['SourceLock'] -and $Application.SourceLock) {
+                    @(Install-ViaChocolatey -PackageName $source -Version $Application.SourceLock.Version)
+                } else { @(Install-ViaChocolatey -PackageName $source) }
+            }
             ResultKey = 'orchestrator.result.chocolatey'
             VerifiedResultKey = 'orchestrator.result.chocolatey_verified'
             FailureKey = 'orchestrator.failure.chocolatey'
@@ -525,6 +546,14 @@ function Invoke-InstallationMethodSequence {
         }
     )
 
+    if ($Application.PSObject.Properties['SourceLock'] -and $Application.SourceLock) {
+        $sourceLock = $Application.SourceLock
+        if ($sourceLock.Method -notin @('Winget','Chocolatey') -or -not $sourceLock.Version -or
+            $sourceLock.Identifier -cne $sources.($sourceLock.Method)) {
+            throw 'Invalid source lock: method, identifier and version must match a supported catalog source.'
+        }
+        $installMethods = @($installMethods | Where-Object { $_.Name -eq $sourceLock.Method })
+    }
     foreach ($method in $installMethods) {
         if (-not $method.Source) {
             continue
@@ -632,6 +661,8 @@ function Invoke-ApplicationUpgrade {
             $arguments = @(
                 'upgrade',
                 '--id', $sources.Winget,
+                '--exact',
+                '--source', 'winget',
                 '--accept-package-agreements',
                 '--accept-source-agreements',
                 '--silent'
@@ -640,6 +671,8 @@ function Invoke-ApplicationUpgrade {
             $process = Invoke-NativeCommandUtf8 -FilePath 'winget' -ArgumentList $arguments -TimeoutSeconds $script:DefaultInstallTimeoutSeconds
 
             if ($process.ExitCode -eq 0) {
+                if (Get-Command Clear-WingetCache -ErrorAction SilentlyContinue) { Clear-WingetCache }
+                if (Get-Command Clear-RegistryAppsCache -ErrorAction SilentlyContinue) { Clear-RegistryAppsCache }
                 Write-Status -Message (Get-LogString -Key 'orchestrator.upgrade.success_winget' -Parameters @{ AppName = $Application.Name }) -Level 'Success'
                 $result.Success = $true
                 $result.Method = 'Winget'
@@ -707,6 +740,9 @@ function Install-Application {
     .PARAMETER ForceUpdate
         If the app is already installed, attempt to upgrade it instead of skipping.
 
+    .PARAMETER SkipRollbackJournal
+        The caller owns a separate durable deployment receipt.
+
     .OUTPUTS
         [hashtable] Installation result with Success, Method, Message properties.
     #>
@@ -720,7 +756,8 @@ function Install-Application {
         [switch]$Force,
 
         [Parameter()]
-        [switch]$ForceUpdate
+        [switch]$ForceUpdate,
+        [switch]$SkipRollbackJournal
     )
 
     $result = @{
@@ -731,6 +768,17 @@ function Install-Application {
         Message = ''
     }
 
+    if ($Application.PSObject.Properties['SourceLock'] -and $Application.SourceLock) {
+        $lock = $Application.SourceLock
+        if ($lock.Method -notin @('Winget','Chocolatey') -or
+            $lock.Version -notmatch '^[A-Za-z0-9][A-Za-z0-9._+-]*$' -or
+            ($Application.PSObject.Properties['InstallMethod'] -and $Application.InstallMethod) -or
+            -not $Application.Sources -or $lock.Identifier -cne $Application.Sources.($lock.Method)) {
+            $result.Message = 'Invalid source lock: use an exact supported package source and version without a custom installer.'
+            return $result
+        }
+    }
+
     # 1. Check environment restrictions
     $envCheck = Test-EnvironmentRestriction -Application $Application
     if ($envCheck.Restricted) {
@@ -739,13 +787,28 @@ function Install-Application {
     }
 
     # 2. Check if already installed
+    $isInstalled = Test-ApplicationInstalled -Application $Application
+    $result.WasInstalled = [bool]$isInstalled
+    if ($isInstalled -and $Application.PSObject.Properties['SourceLock'] -and $Application.SourceLock) {
+        # A pinned profile must not silently upgrade, downgrade or accept an unknown version.
+        $observed = Get-ApplicationsInstallationStatus -Applications @($Application)
+        $actualVersion = $observed[$Application.AppId].Version
+        if (-not $actualVersion -or $actualVersion -cne $Application.SourceLock.Version) {
+            $result.Message = 'Installed version does not match the source lock; reconcile it before retrying.'
+            return $result
+        }
+        $result.Success = $true
+        $result.AlreadyInstalled = $true
+        $result.Message = Get-LogString -Key 'orchestrator.already_installed_status'
+        return $result
+    }
     if (-not $Force) {
-        $isInstalled = Test-ApplicationInstalled -Application $Application
         if ($isInstalled) {
             if ($ForceUpdate) {
                 Write-Status -Message (Get-LogString -Key 'orchestrator.checking_updates' -Parameters @{ AppName = $Application.Name }) -Level 'Info'
                 $upgradeResult = Invoke-ApplicationUpgrade -Application $Application
                 if ($upgradeResult.Success) {
+                    $upgradeResult.WasInstalled = $true
                     return $upgradeResult
                 }
                 Write-Status -Message (Get-LogString -Key 'orchestrator.no_update_available' -Parameters @{ AppName = $Application.Name }) -Level 'Info'
@@ -768,749 +831,61 @@ function Install-Application {
     # 3. Handle custom install methods (WindowsFeature, WindowsCapability)
     $installMethod = if ($Application.PSObject.Properties['InstallMethod']) { $Application.InstallMethod } else { $null }
     if ($installMethod) {
-        return Invoke-CustomInstallMethod -Application $Application
+        $result = Invoke-CustomInstallMethod -Application $Application
+    } else {
+        $result = Invoke-InstallationMethodSequence -Application $Application
     }
-
-    # 4. Try standard installation methods in sequence
-    return Invoke-InstallationMethodSequence -Application $Application
+    $result.WasInstalled = [bool]$isInstalled
+    if (-not $SkipRollbackJournal) {
+        Add-InstallationRollbackEntry -Application $Application -Result $result -WasInstalled ([bool]$isInstalled)
+    }
+    return $result
 }
 
 function Install-ApplicationsParallel {
     <#
     .SYNOPSIS
-        Installs multiple applications in parallel using PowerShell 7+ ForEach-Object -Parallel.
-
+        Runs the common installation engine with bounded concurrency.
     .DESCRIPTION
-        Orchestrates parallel installation with:
-        - Environment restriction filtering
-        - Automatic fallback to sequential mode on PS 5.1
-        - Per-application logging to files
-        - Retry logic for transient errors
-
-    .PARAMETER Applications
-        Array of application objects to install.
-
-    .PARAMETER Force
-        Force installation even if already detected.
-
-    .PARAMETER MaxParallel
-        Maximum number of parallel installations (1-10, default 5).
-
-    .OUTPUTS
-        Array of installation result hashtables.
+        Workers import the same orchestrator used by sequential and GUI installs.
+        Source fallback, retries, timeout enforcement and rollback recording remain
+        in Install-Application and its leaf methods. PowerShell 5.1 runs sequentially.
     #>
     [CmdletBinding()]
     [OutputType([hashtable[]])]
     param(
         [Parameter(Mandatory)]
         [PSCustomObject[]]$Applications,
-
-        [Parameter()]
         [switch]$Force,
-
-        [Parameter()]
+        [switch]$ForceUpdate,
         [ValidateRange(1, 10)]
         [int]$MaxParallel = 5
     )
 
-    # Validate PowerShell 7+ with ForEach-Object -Parallel support
-    $hasParallelSupport = $false
-    if ($PSVersionTable.PSVersion.Major -ge 7) {
-        try {
-            $foreachCommand = Get-Command ForEach-Object -ErrorAction Stop
-            $hasParallelSupport = $foreachCommand.Parameters.ContainsKey('Parallel')
-        } catch {
-            $hasParallelSupport = $false
+    $orderedApps = @($Applications | Sort-Object -Property Priority)
+    if ($PSVersionTable.PSVersion.Major -lt 7 -or $MaxParallel -eq 1) {
+        foreach ($application in $orderedApps) {
+            try {
+                Install-Application -Application $application -Force:$Force -ForceUpdate:$ForceUpdate
+            } catch {
+                @{ ApplicationName=$application.Name; Success=$false; AlreadyInstalled=$false; Method=$null; Message=$_.Exception.Message }
+            }
         }
+        return
     }
 
-    if (-not $hasParallelSupport) {
-        Write-Host (Get-LogString -Key 'parallel.requires_ps7') -ForegroundColor Yellow
-        Write-Host (Get-LogString -Key 'parallel.current_version' -Parameters @{ Version = $PSVersionTable.PSVersion }) -ForegroundColor Yellow
-        Write-Host (Get-LogString -Key 'parallel.fallback_sequential') -ForegroundColor Yellow
-
-        $results = New-Object 'System.Collections.Generic.List[object]'
-        foreach ($app in $Applications) {
-            $results.Add((Install-Application -Application $app -Force:$Force)) | Out-Null
-        }
-        return $results.ToArray()
-    }
-
-    Write-Host ""
-    Write-Host (Get-LogString -Key 'parallel.title') -ForegroundColor Cyan
-    Write-Host (Get-LogString -Key 'parallel.max_threads' -Parameters @{ Count = $MaxParallel }) -ForegroundColor Cyan
-    Write-Host (Get-LogString -Key 'parallel.total_apps' -Parameters @{ Count = $Applications.Count }) -ForegroundColor Cyan
-    Write-Host ""
-
-    $startTime = Get-Date
-    $sortedApps = $Applications | Sort-Object -Property Priority
-
-    $moduleRoot = $script:ModuleRoot
-    $repoRoot = $script:RepositoryRoot
+    $orchestratorPath = Join-Path $script:RepositoryRoot 'Modules/InstallationOrchestrator.psm1'
     $forceInstall = $Force.IsPresent
-
-    # Export helper functions for parallel scope
-    $validateUrlFunction = ${function:Test-ValidDownloadUrl}.ToString()
-    $validateSignatureFunction = ${function:Test-InstallerSignature}.ToString()
-
-    # Self-contained detection function for parallel scope
-
-    $currentEnvironment = Get-SystemEnvironmentType
-
-    $appsToInstall = @()
-    $skippedApps = @()
-
-    foreach ($app in $sortedApps) {
-        if ($app.EnvironmentRestrictions -and $app.EnvironmentRestrictions.Count -gt 0) {
-            if ($app.EnvironmentRestrictions -contains $currentEnvironment) {
-                Write-Host (Get-LogString -Key 'install.skipping_environment' -Parameters @{ AppName = $app.Name; Environment = $currentEnvironment }) -ForegroundColor Yellow
-                $skippedApps += [PSCustomObject]@{
-                    ApplicationName = $app.Name
-                    Success = $false
-                    Skipped = $true
-                    AlreadyInstalled = $false
-                    Method = $null
-                    Message = (Get-LogString -Key 'install.skipping_environment' -Parameters @{ AppName = $app.Name; Environment = $currentEnvironment })
-                }
-                continue
-            }
-        }
-        $appsToInstall += $app
-    }
-
-    Write-Host (Get-LogString -Key 'parallel.apps_to_install' -Parameters @{ Count = $appsToInstall.Count }) -ForegroundColor Cyan
-    Write-Host (Get-LogString -Key 'parallel.skipped_environment' -Parameters @{ Count = $skippedApps.Count }) -ForegroundColor Yellow
-    Write-Host ""
-
-    # Create parallel logs directory
-    $parallelLogsDir = Join-Path $repoRoot $script:ParallelLogSubPath
-    $maxRetries = $script:ParallelInstallMaxRetries
-    $retryCount = 0
-
-    while ($retryCount -lt $maxRetries) {
+    $forceUpgrade = $ForceUpdate.IsPresent
+    $orderedApps | ForEach-Object -ThrottleLimit $MaxParallel -Parallel {
+        $application = $_
         try {
-            if (-not (Test-Path $parallelLogsDir)) {
-                New-Item -Path $parallelLogsDir -ItemType Directory -Force -ErrorAction Stop | Out-Null
-            }
-            break
+            Import-Module -Name $using:orchestratorPath -ErrorAction Stop
+            Install-Application -Application $application -Force:$using:forceInstall -ForceUpdate:$using:forceUpgrade
         } catch {
-            $retryCount++
-            if ($retryCount -ge $maxRetries) {
-                Write-Host (Get-LogString -Key 'parallel.logs_create_failed' -Parameters @{ Retries = $maxRetries; Error = $_ }) -ForegroundColor Red
-                throw
-            }
-            Start-Sleep -Milliseconds (100 * $retryCount)
+            @{ ApplicationName=$application.Name; Success=$false; AlreadyInstalled=$false; Method=$null; Message=$_.Exception.Message }
         }
     }
-
-    # Cleanup old logs (retention configured via $script:ParallelLogRetentionDays)
-    try {
-        $cutoffDate = (Get-Date).AddDays(-$script:ParallelLogRetentionDays)
-        Get-ChildItem -Path $parallelLogsDir -Filter "parallel_*.log" -ErrorAction SilentlyContinue |
-            Where-Object { $_.LastWriteTime -lt $cutoffDate } |
-            Remove-Item -Force -ErrorAction SilentlyContinue
-    } catch {
-        Write-Host (Get-LogString -Key 'parallel.logs_cleanup_failed' -Parameters @{ Error = $_ }) -ForegroundColor Yellow
-    }
-
-    $timestamp = Get-Date -Format 'yyyyMMdd_HHmmss'
-    $parallelTimeoutMs = $script:ParallelInstallTimeoutMs
-    $frameworkVersion = (Get-Content -Path (Join-Path $script:RepositoryRoot 'Config\version.json') -Raw -Encoding UTF8 | ConvertFrom-Json).Version
-    $wingetForceOnHashMismatch = Test-FeatureEnabled -FeatureName 'wingetForceOnHashMismatch'
-    $wingetAlreadyInstalledExitCode = $script:WingetAlreadyInstalledExitCode
-    $wingetHashMismatchExitCode = $script:WingetHashMismatchExitCode
-    $wingetNetworkErrorExitCodes = $script:WingetNetworkErrorExitCodes
-    $chocolateyRebootExitCodes = $script:ChocolateyRebootExitCodes
-    $directDownloadTimeoutSeconds = $script:DirectDownloadTimeoutSeconds
-
-    $installResults = $appsToInstall | ForEach-Object -ThrottleLimit $MaxParallel -Parallel {
-        $app = $_
-        $force = $using:forceInstall
-        $repRoot = $using:repoRoot
-        $parallelLogDir = $using:parallelLogsDir
-        $ts = $using:timestamp
-        $validateUrl = $using:validateUrlFunction
-        $validateSignature = $using:validateSignatureFunction
-        $installTimeoutMs = $using:parallelTimeoutMs
-        $fwVersion = $using:frameworkVersion
-        $forceOnHashMismatch = $using:wingetForceOnHashMismatch
-
-        ${function:Test-ValidDownloadUrl} = [ScriptBlock]::Create($validateUrl)
-        ${function:Test-InstallerSignature} = [ScriptBlock]::Create($validateSignature)
-
-        $appLogFile = Join-Path $parallelLogDir "parallel_${ts}_$($app.Name -replace '[^\w\-]', '_').log"
-
-        function Write-ParallelLog {
-            param([string]$Message, [string]$Level = 'Info')
-            $logTimestamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
-            $logMessage = "[$logTimestamp] [$Level] $Message"
-            $logMessage | Out-File -FilePath $appLogFile -Append -Encoding UTF8
-        }
-
-        function Write-ParallelException {
-            param(
-                [System.Management.Automation.ErrorRecord]$ErrorRecord,
-                [string]$Context = 'Unknown'
-            )
-            Write-ParallelLog "EXCEPTION in $Context" 'Error'
-            Write-ParallelLog "  Type: $($ErrorRecord.Exception.GetType().FullName)" 'Error'
-            Write-ParallelLog "  Message: $($ErrorRecord.Exception.Message)" 'Error'
-            if ($ErrorRecord.ScriptStackTrace) {
-                Write-ParallelLog "  Stack: $($ErrorRecord.ScriptStackTrace -replace "`n", ' -> ')" 'Error'
-            }
-            if ($ErrorRecord.Exception.InnerException) {
-                Write-ParallelLog "  Inner: $($ErrorRecord.Exception.InnerException.Message)" 'Error'
-            }
-            if ($ErrorRecord.InvocationInfo) {
-                $line = $ErrorRecord.InvocationInfo.ScriptLineNumber
-                $cmd = $ErrorRecord.InvocationInfo.Line.Trim()
-                if ($cmd.Length -gt 100) { $cmd = $cmd.Substring(0, 100) + '...' }
-                Write-ParallelLog "  At line $line`: $cmd" 'Error'
-            }
-        }
-
-        Write-ParallelLog "Starting installation of $($app.Name)" 'Info'
-
-        $coreModulePath = Join-Path $repRoot 'Core\Core.psm1'
-        if (Test-Path $coreModulePath) {
-            Import-Module $coreModulePath -Force -WarningAction SilentlyContinue
-        }
-
-        $localizationModulePath = Join-Path $repRoot 'Core\Localization.psm1'
-        if (Test-Path $localizationModulePath) {
-            Import-Module $localizationModulePath -Force -WarningAction SilentlyContinue
-        }
-
-        # Shared fail-closed validation resolver (same source as the sequential path)
-        $downloadValidationPath = Join-Path $repRoot 'Modules\DownloadValidation.psm1'
-        if (Test-Path $downloadValidationPath) {
-            Import-Module $downloadValidationPath -Force -WarningAction SilentlyContinue
-        }
-
-        # Hardened parallel detection module. Importing it brings the detection guards
-        # (allowlist, argument sanitizer, registry validation) transitively, and replaces
-        # the former in-runspace here-string copy of Test-AppInstalledParallel.
-        $parallelDetectionPath = Join-Path $repRoot 'Modules\ParallelDetection.psm1'
-        if (Test-Path $parallelDetectionPath) {
-            Import-Module $parallelDetectionPath -Force -WarningAction SilentlyContinue
-        }
-
-        $result = @{
-            ApplicationName = $app.Name
-            Success = $false
-            AlreadyInstalled = $false
-            Method = $null
-            Message = ''
-        }
-
-        try {
-            if (-not $force) {
-                $installed = Test-AppInstalledParallel -App $app
-                if ($installed) {
-                    Write-ParallelLog "Already installed - skipping" 'Success'
-                    $result.AlreadyInstalled = $true
-                    $result.Success = $true
-                    $result.Message = (Get-LogString -Key 'orchestrator.already_installed_status')
-                    return $result
-                }
-            }
-
-            Write-ParallelLog "Not installed - proceeding with installation" 'Info'
-
-            $appInstallMethod = if ($app.PSObject.Properties['InstallMethod']) { $app.InstallMethod } else { $null }
-            if ($appInstallMethod) {
-                Write-ParallelLog "Using custom install method: $appInstallMethod" 'Info'
-                switch ($appInstallMethod) {
-                    'WindowsFeature' {
-                        Write-ParallelLog "Installing as Windows Feature: $($app.Detection.Feature)" 'Info'
-                        $feature = Get-WindowsOptionalFeature -Online -FeatureName $app.Detection.Feature -ErrorAction Stop
-                        if ($feature.State -ne 'Enabled') {
-                            Enable-WindowsOptionalFeature -Online -FeatureName $app.Detection.Feature -NoRestart -ErrorAction Stop | Out-Null
-                        }
-                        Write-ParallelLog "Windows Feature installed successfully" 'Success'
-                        $result.Success = $true
-                        $result.Method = 'WindowsFeature'
-                        $result.Message = (Get-LogString -Key 'orchestrator.result.windows_feature')
-                        return $result
-                    }
-                    'WindowsCapability' {
-                        Write-ParallelLog "Installing as Windows Capability: $($app.Detection.Capability)" 'Info'
-                        $capabilities = Get-WindowsCapability -Online | Where-Object { $_.Name -like "*$($app.Detection.Capability)*" }
-                        if ($capabilities) {
-                            $capability = if ($capabilities -is [array]) { $capabilities[0] } else { $capabilities }
-                            if ($capability.State -ne 'Installed') {
-                                Add-WindowsCapability -Online -Name $capability.Name -ErrorAction Stop | Out-Null
-                            }
-                            Write-ParallelLog "Windows Capability installed successfully" 'Success'
-                            $result.Success = $true
-                            $result.Method = 'WindowsCapability'
-                            $result.Message = (Get-LogString -Key 'orchestrator.result.windows_capability')
-                            return $result
-                        }
-                    }
-                }
-            }
-
-            $sources = $app.Sources
-
-            # 1. Winget (with retry logic)
-            if ($sources.Winget -and (Get-Command -Name 'winget' -ErrorAction SilentlyContinue)) {
-                Write-ParallelLog "Attempting installation via Winget: $($sources.Winget)" 'Info'
-                $arguments = @(
-                    'install',
-                    '--id', $sources.Winget,
-                    '--accept-package-agreements',
-                    '--accept-source-agreements',
-                    '--silent'
-                )
-
-                $maxRetries = 3
-                $retryDelaySeconds = 2
-                $transientErrors = $using:wingetNetworkErrorExitCodes
-
-                for ($attempt = 1; $attempt -le $maxRetries; $attempt++) {
-                    if ($attempt -gt 1) {
-                        Write-ParallelLog "Retry $attempt/$maxRetries for Winget: $($sources.Winget)" 'Info'
-                    }
-
-                    $process = Start-Process -FilePath 'winget' -ArgumentList $arguments -WindowStyle Hidden -PassThru
-                    $timeoutMs = $installTimeoutMs
-
-                    if (-not $process.WaitForExit($timeoutMs)) {
-                        Write-ParallelLog "Process timed out after $([math]::Round($timeoutMs / 1000)) seconds - terminating" 'Warning'
-                        $process.Kill()
-                        Write-ParallelLog "Winget installation failed (timeout)" 'Warning'
-                        break
-                    } elseif ($process.ExitCode -eq 0) {
-                        $retryMsg = if ($attempt -gt 1) { " (attempt $attempt)" } else { "" }
-                        Write-ParallelLog "Installed successfully via Winget$retryMsg" 'Success'
-                        $result.Success = $true
-                        $result.Method = 'Winget'
-                        $result.Message = if ($attempt -gt 1) { Get-LogString -Key 'orchestrator.result.winget_retry' -Parameters @{ Attempt = $attempt } } else { Get-LogString -Key 'orchestrator.result.winget' }
-                        return $result
-                    } elseif ($process.ExitCode -eq $using:wingetAlreadyInstalledExitCode) {
-                        $retryMsg = if ($attempt -gt 1) { " (attempt $attempt)" } else { "" }
-                        Write-ParallelLog "Already installed (Winget)$retryMsg" 'Success'
-                        $result.Success = $true
-                        $result.Method = 'Winget'
-                        $result.AlreadyInstalled = $true
-                        $result.Message = if ($attempt -gt 1) { Get-LogString -Key 'orchestrator.result.already_installed_winget_retry' -Parameters @{ Attempt = $attempt } } else { Get-LogString -Key 'orchestrator.result.already_installed_winget' }
-                        return $result
-                    } elseif ($process.ExitCode -eq $using:wingetHashMismatchExitCode) {
-                        if ($forceOnHashMismatch) {
-                            Write-ParallelLog (Get-LogString -Key 'install.orchestrator.parallel.winget_hash_mismatch_retrying_force' -Parameters @{ PackageId = $sources.Winget }) 'Warning'
-                            $forceArguments = $arguments + @('--force')
-                            $forceProcess = Start-Process -FilePath 'winget' -ArgumentList $forceArguments -WindowStyle Hidden -PassThru
-                            if (-not $forceProcess.WaitForExit($installTimeoutMs)) {
-                                Write-ParallelLog "Force install timed out - terminating" 'Warning'
-                                $forceProcess.Kill()
-                            } elseif ($forceProcess.ExitCode -eq 0 -or $forceProcess.ExitCode -eq $using:wingetAlreadyInstalledExitCode) {
-                                $retryMsg = if ($attempt -gt 1) { " (attempt $attempt)" } else { "" }
-                                Write-ParallelLog "Installed successfully via Winget with --force$retryMsg" 'Success'
-                                $result.Success = $true
-                                $result.Method = 'Winget (force)'
-                                $result.Message = Get-LogString -Key 'orchestrator.result.winget_force'
-                                return $result
-                            } else {
-                                Write-ParallelLog "Winget --force also failed (exit code: $($forceProcess.ExitCode))" 'Warning'
-                            }
-                        } else {
-                            Write-ParallelLog (Get-LogString -Key 'orchestrator.parallel.winget_hash_mismatch' -Parameters @{ PackageId = $sources.Winget }) 'Warning'
-                        }
-                        break
-                    } elseif ($transientErrors -contains $process.ExitCode -and $attempt -lt $maxRetries) {
-                        $delay = $retryDelaySeconds * [Math]::Pow(2, $attempt - 1)
-                        Write-ParallelLog "Transient error (exit code: $($process.ExitCode)), retrying in $delay seconds..." 'Warning'
-                        Start-Sleep -Seconds $delay
-                        continue
-                    } else {
-                        Write-ParallelLog "Winget installation failed (exit code: $($process.ExitCode))" 'Warning'
-                        break
-                    }
-                }
-            }
-
-            # 2. Chocolatey (with retry logic)
-            if ($sources.Chocolatey -and (Get-Command -Name 'choco' -ErrorAction SilentlyContinue)) {
-                Write-ParallelLog "Attempting installation via Chocolatey: $($sources.Chocolatey)" 'Info'
-                $arguments = @(
-                    'install', $sources.Chocolatey,
-                    '-y',
-                    '--no-progress',
-                    '--ignore-checksums'
-                )
-
-                $maxRetries = 3
-                $retryDelaySeconds = 2
-                $transientErrors = $using:chocolateyRebootExitCodes
-
-                for ($attempt = 1; $attempt -le $maxRetries; $attempt++) {
-                    if ($attempt -gt 1) {
-                        Write-ParallelLog "Retry $attempt/$maxRetries for Chocolatey: $($sources.Chocolatey)" 'Info'
-                    }
-
-                    $process = Start-Process -FilePath 'choco' -ArgumentList $arguments -WindowStyle Hidden -PassThru
-                    $timeoutMs = $installTimeoutMs
-
-                    if (-not $process.WaitForExit($timeoutMs)) {
-                        Write-ParallelLog "Process timed out after $([math]::Round($timeoutMs / 1000)) seconds - terminating" 'Warning'
-                        $process.Kill()
-                        Write-ParallelLog "Chocolatey installation failed (timeout)" 'Warning'
-                        break
-                    } elseif ($process.ExitCode -eq 0) {
-                        $retryMsg = if ($attempt -gt 1) { " (attempt $attempt)" } else { "" }
-                        Write-ParallelLog "Installed successfully via Chocolatey$retryMsg" 'Success'
-                        $result.Success = $true
-                        $result.Method = 'Chocolatey'
-                        $result.Message = if ($attempt -gt 1) { Get-LogString -Key 'orchestrator.result.chocolatey_retry' -Parameters @{ Attempt = $attempt } } else { Get-LogString -Key 'orchestrator.result.chocolatey' }
-                        return $result
-                    } elseif ($transientErrors -contains $process.ExitCode -and $attempt -lt $maxRetries) {
-                        $delay = $retryDelaySeconds * [Math]::Pow(2, $attempt - 1)
-                        Write-ParallelLog "Transient error (exit code: $($process.ExitCode)), retrying in $delay seconds..." 'Warning'
-                        Start-Sleep -Seconds $delay
-                        continue
-                    } else {
-                        Write-ParallelLog "Chocolatey installation failed (exit code: $($process.ExitCode))" 'Warning'
-                        break
-                    }
-                }
-            }
-
-            # 3. Microsoft Store
-            if ($sources.Store -and (Get-Command -Name 'winget' -ErrorAction SilentlyContinue)) {
-                $isSandbox = ($env:USERNAME -eq 'WDAGUtilityAccount') -or
-                             ($env:COMPUTERNAME -match '^SANDBOX-') -or
-                             (Test-Path 'HKLM:\SYSTEM\CurrentControlSet\Control\ContainerManager' -ErrorAction SilentlyContinue)
-
-                if ($isSandbox) {
-                    Write-ParallelLog "Skipping Store install - Windows Store unavailable in Sandbox" 'Warning'
-                } else {
-                    Write-ParallelLog "Attempting installation via Microsoft Store: $($sources.Store)" 'Info'
-                    $arguments = @(
-                        'install',
-                        '--id', $sources.Store,
-                        '--source', 'msstore',
-                        '--accept-package-agreements',
-                        '--accept-source-agreements',
-                        '--silent'
-                    )
-
-                    $process = Start-Process -FilePath 'winget' -ArgumentList $arguments -WindowStyle Hidden -PassThru
-                    $timeoutMs = $installTimeoutMs
-
-                    if (-not $process.WaitForExit($timeoutMs)) {
-                        Write-ParallelLog "Process timed out after $([math]::Round($timeoutMs / 1000)) seconds - terminating" 'Warning'
-                        $process.Kill()
-                        Write-ParallelLog "Microsoft Store installation failed (timeout)" 'Warning'
-                    } elseif ($process.ExitCode -eq 0) {
-                        Write-ParallelLog "Installed successfully via Microsoft Store" 'Success'
-                        $result.Success = $true
-                        $result.Method = 'Store'
-                        $result.Message = (Get-LogString -Key 'orchestrator.result.store')
-                        return $result
-                    } else {
-                        Write-ParallelLog "Microsoft Store installation failed (exit code: $($process.ExitCode))" 'Warning'
-                    }
-                }
-            }
-
-            # 4. Direct Download
-            if ($sources.DirectUrl) {
-                if (-not (Test-ValidDownloadUrl -Url $sources.DirectUrl)) {
-                    Write-ParallelLog "Invalid or insecure URL: $($sources.DirectUrl)" 'Error'
-                    $result.Message = (Get-LogString -Key 'orchestrator.result.invalid_direct_url')
-                    return $result
-                }
-
-                Write-ParallelLog "Attempting direct download installation: $($sources.DirectUrl)" 'Info'
-
-                try {
-                    # Extract filename from URL, handling query parameters properly
-                    $filename = $null
-                    $dlUrl = $sources.DirectUrl
-                    try {
-                        $uri = [System.Uri]::new($dlUrl)
-                        # First try: parse query string for filename parameters
-                        if ($uri.Query) {
-                            $queryString = $uri.Query.TrimStart('?')
-                            $queryPairs = $queryString -split '&'
-                            foreach ($pair in $queryPairs) {
-                                $parts = $pair -split '=', 2
-                                if ($parts.Count -eq 2) {
-                                    $paramName = [System.Uri]::UnescapeDataString($parts[0]).ToLower()
-                                    $paramValue = [System.Uri]::UnescapeDataString($parts[1])
-                                    if ($paramName -in @('installer', 'file', 'filename', 'name', 'download')) {
-                                        if ($paramValue -match '\.(exe|msi|zip)$') {
-                                            $filename = [System.IO.Path]::GetFileName($paramValue)
-                                            break
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        # Second try: use the last path segment
-                        if (-not $filename) {
-                            $pathSegment = $uri.Segments[-1]
-                            if ($pathSegment -and $pathSegment -match '\.(exe|msi|zip)$') {
-                                $filename = $pathSegment
-                            }
-                        }
-                    } catch {
-                        $filename = ($dlUrl -split '\?')[0]
-                        $filename = $filename.Substring($filename.LastIndexOf('/') + 1)
-                    }
-                    # Final fallback
-                    if ([string]::IsNullOrWhiteSpace($filename) -or $filename -notmatch '\.(exe|msi|zip)$' -or $filename -match '[?&=<>:"|*]') {
-                        $filename = "installer_$([guid]::NewGuid().ToString('N')).exe"
-                    }
-                    Write-ParallelLog "Installer filename: $filename" 'Info'
-
-                    # Security: fail closed before creating any temp file or downloading.
-                    # The decision depends only on metadata, so refuse here rather than
-                    # fetch a binary we could not validate. Mirrors Install-ViaDirectDownload.
-                    # Canonical checksum accessor (shared with the sequential path).
-                    $parallelChecksum = Get-ExpectedChecksum -Sources $sources
-                    $parallelPublisher = if ($sources.PSObject.Properties['ExpectedPublisher']) { $sources.ExpectedPublisher } else { $null }
-                    $parallelValidationMode = Resolve-DirectDownloadValidationMode -ExpectedSHA256 $parallelChecksum -ExpectedPublisher $parallelPublisher
-                    if ($parallelValidationMode -eq 'None') {
-                        Write-ParallelLog "Validation required but not configured for $($sources.DirectUrl)" 'Error'
-                        $result.Message = (Get-LogString -Key 'download.validation.required')
-                        return $result
-                    }
-                    # Parallel runspace - intentional direct env usage
-                    $tempDir = Join-Path $env:TEMP "WinForge_$([guid]::NewGuid().ToString('N'))"
-                    New-Item -Path $tempDir -ItemType Directory -Force | Out-Null
-                    $tempFile = Join-Path $tempDir $filename
-
-                    Write-ParallelLog "Downloading to: $tempFile" 'Verbose'
-
-                    [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
-
-                    $downloadSuccess = $false
-
-                    # Method 1: Invoke-WebRequest (modern, secure, replaces deprecated WebClient)
-                    try {
-                        $ProgressPreference = 'SilentlyContinue'
-                        $headers = @{
-                            'User-Agent' = "WinForge/$fwVersion (Windows NT; PowerShell)"
-                        }
-                        Invoke-WebRequest -Uri $sources.DirectUrl -OutFile $tempFile -Headers $headers -UseBasicParsing -TimeoutSec $using:directDownloadTimeoutSeconds -ErrorAction Stop
-                        if ((Test-Path -Path $tempFile) -and (Get-Item -Path $tempFile).Length -gt 0) { $downloadSuccess = $true }
-                    } catch {
-                        Write-ParallelLog "Invoke-WebRequest failed: $($_.Exception.Message)" 'Verbose'
-                        if (Test-Path -Path $tempFile) { Remove-Item -Path $tempFile -Force -ErrorAction SilentlyContinue }
-                    }
-
-                    # Method 3: BITS transfer
-                    if (-not $downloadSuccess) {
-                        if (Test-Path -Path $tempFile) { Remove-Item -Path $tempFile -Force -ErrorAction SilentlyContinue }
-                        try {
-                            Start-BitsTransfer -Source $sources.DirectUrl -Destination $tempFile -ErrorAction Stop
-                            if ((Test-Path -Path $tempFile) -and (Get-Item -Path $tempFile).Length -gt 0) { $downloadSuccess = $true }
-                        } catch {
-                            Write-ParallelLog "BITS failed: $($_.Exception.Message)" 'Verbose'
-                        }
-                    }
-
-                    if (-not $downloadSuccess -or -not (Test-Path -Path $tempFile)) {
-                        throw (Get-LogString -Key 'orchestrator.result.download_exhausted')
-                    }
-                    Write-ParallelLog "Download completed" 'Info'
-
-                    # SHA256 checksum validation via the shared gate verdict, so
-                    # enforcement and diagnostics cannot drift from the sequential path.
-                    $parallelChecksumVerdict = Test-DirectDownloadChecksumGate -Path $tempFile -ExpectedSHA256 $parallelChecksum
-                    if ($parallelChecksumVerdict.Enforced) {
-                        Write-ParallelLog "Validating SHA256 checksum..." 'Info'
-                        if (-not $parallelChecksumVerdict.Proceed) {
-                            Write-ParallelLog "Checksum FAILED! Expected: $parallelChecksum, Got: $($parallelChecksumVerdict.ActualHash)" 'Error'
-                            Remove-Item -Path $tempDir -Recurse -Force -ErrorAction SilentlyContinue
-                            $result.Message = (Get-LogString -Key 'orchestrator.result.checksum_failed')
-                            return $result
-                        }
-                        Write-ParallelLog "Checksum validation passed" 'Success'
-                    }
-
-                    if ($sources.PSObject.Properties['ExpectedPublisher'] -and $sources.ExpectedPublisher) {
-                        if (-not (Test-InstallerSignature -FilePath $tempFile -ExpectedPublisher $sources.ExpectedPublisher)) {
-                            Write-ParallelLog "Signature validation failed for $($sources.DirectUrl)" 'Error'
-                            Remove-Item -Path $tempDir -Recurse -Force -ErrorAction SilentlyContinue
-                            $result.Message = (Get-LogString -Key 'download.signature.publisher_mismatch' -Parameters @{ Expected = $sources.ExpectedPublisher; Got = 'signature validation failed' })
-                            return $result
-                        }
-                    }
-
-                    $installerType = switch -Regex ($filename) {
-                        '\.msi$' { 'msi' }
-                        '\.zip$' { 'zip' }
-                        default  { 'exe' }
-                    }
-
-                    Write-ParallelLog "Detected installer type: $installerType" 'Info'
-
-                    $processExitCode = -1
-
-                    switch ($installerType) {
-                        'msi' {
-                            $msiArgs = @('/i', "`"$tempFile`"", '/qn', '/norestart')
-                            if ($app.PSObject.Properties['InstallArguments'] -and $app.InstallArguments) {
-                                # Security: Validate InstallArguments against whitelist pattern
-                                # Allow only safe MSI property patterns: PROPERTY=value, /flag, -flag
-                                $safeArgsPattern = '^[A-Za-z0-9_]+=[A-Za-z0-9_.:\\/"-]*$|^[/-][A-Za-z0-9_]+$'
-                                $argParts = $app.InstallArguments -split '\s+' | Where-Object { $_ -ne '' }
-                                $validatedArgs = @()
-                                foreach ($argPart in $argParts) {
-                                    if ($argPart -match $safeArgsPattern) {
-                                        $validatedArgs += $argPart
-                                    } else {
-                                        Write-ParallelLog "Security: Skipping unsafe MSI argument: $argPart" 'Warning'
-                                    }
-                                }
-                                if ($validatedArgs.Count -gt 0) {
-                                    $msiArgs += $validatedArgs
-                                }
-                            }
-                            $process = Start-Process -FilePath 'msiexec.exe' -ArgumentList $msiArgs -Wait -NoNewWindow -PassThru
-                            $processExitCode = $process.ExitCode
-                        }
-                        'zip' {
-                            Write-ParallelLog "Extracting ZIP archive" 'Info'
-                            $extractPath = Join-Path $tempDir "extracted"
-                            # Security: Use safe archive extraction with validation
-                            # AllowDangerousExtensions is required because installers may contain .exe files
-                            if (Get-Command -Name Expand-ArchiveSafe -ErrorAction SilentlyContinue) {
-                                $expandResult = Expand-ArchiveSafe -Path $tempFile -DestinationPath $extractPath -AllowDangerousExtensions
-                                if (-not $expandResult) {
-                                    Write-ParallelLog "Archive extraction blocked by security validation" 'Error'
-                                    throw (Get-LogString -Key 'orchestrator.result.archive_security_failed')
-                                }
-                            } else {
-                                Expand-Archive -Path $tempFile -DestinationPath $extractPath -Force
-                            }
-
-                            $setupExe = Get-ChildItem -Path $extractPath -Filter *.exe -Recurse |
-                                Where-Object { $_.Name -match 'setup|install' } |
-                                Select-Object -First 1
-
-                            if ($setupExe) {
-                                $zipArgs = '/S'
-                                if ($app.PSObject.Properties['InstallArguments'] -and $app.InstallArguments) {
-                                    # Security: Validate InstallArguments - allow common silent switches
-                                    $safeExeArgsPattern = '^[/-][A-Za-z0-9_=]+$|^--[A-Za-z0-9_-]+(=[A-Za-z0-9_.:\\/"-]*)?$'
-                                    if ($app.InstallArguments -match $safeExeArgsPattern -or
-                                        $app.InstallArguments -match '^[/-][Ss](ilent)?$') {
-                                        $zipArgs = $app.InstallArguments
-                                    } else {
-                                        Write-ParallelLog "Security: Using default /S - unsafe arguments blocked" 'Warning'
-                                    }
-                                }
-                                $process = Start-Process -FilePath $setupExe.FullName -ArgumentList $zipArgs -Wait -NoNewWindow -PassThru
-                                $processExitCode = $process.ExitCode
-                            } else {
-                                Write-ParallelLog "No installer found - deploying portable tools" 'Info'
-
-                                $destinationPath = $null
-                                if ($app.Detection -and $app.Detection.Path) {
-                                    $destinationPath = Split-Path $app.Detection.Path -Parent
-                                }
-
-                                if (-not $destinationPath) {
-                                    $destinationPath = Join-Path ${env:ProgramFiles} $app.Name
-                                }
-
-                                if (-not (Test-Path $destinationPath)) {
-                                    New-Item -Path $destinationPath -ItemType Directory -Force | Out-Null
-                                }
-
-                                Copy-Item -Path "$extractPath\*" -Destination $destinationPath -Recurse -Force
-                                $processExitCode = 0
-                            }
-                        }
-                        'exe' {
-                            $exeArgs = '/S'
-                            if ($app.PSObject.Properties['InstallArguments'] -and $app.InstallArguments) {
-                                # Security: Validate InstallArguments - allow common silent switches
-                                $safeExeArgsPattern = '^[/-][A-Za-z0-9_=]+$|^--[A-Za-z0-9_-]+(=[A-Za-z0-9_.:\\/"-]*)?$'
-                                if ($app.InstallArguments -match $safeExeArgsPattern -or
-                                    $app.InstallArguments -match '^[/-][Ss](ilent)?$') {
-                                    $exeArgs = $app.InstallArguments
-                                } else {
-                                    Write-ParallelLog "Security: Using default /S - unsafe arguments blocked" 'Warning'
-                                }
-                            }
-                            $process = Start-Process -FilePath $tempFile -ArgumentList $exeArgs -Wait -NoNewWindow -PassThru
-                            $processExitCode = $process.ExitCode
-                        }
-                    }
-
-                    Remove-Item -Path $tempDir -Recurse -Force -ErrorAction SilentlyContinue
-
-                    if ($processExitCode -eq 0) {
-                        Write-ParallelLog "Installed successfully via direct download" 'Success'
-                        $result.Success = $true
-                        $result.Method = 'DirectDownload'
-                        $result.Message = (Get-LogString -Key 'orchestrator.result.direct_download')
-                        return $result
-                    } else {
-                        Write-ParallelLog "Direct download installation failed (exit code: $processExitCode)" 'Warning'
-                    }
-                } catch {
-                    Write-ParallelException -ErrorRecord $_ -Context 'DirectDownload'
-                }
-            }
-
-            Write-ParallelLog "All installation methods failed" 'Error'
-            $result.Message = (Get-LogString -Key 'orchestrator.result.all_failed')
-
-        } catch {
-            Write-ParallelException -ErrorRecord $_ -Context 'MainInstallLoop'
-            $result.Message = (Get-LogString -Key 'orchestrator.result.error' -Parameters @{ Error = $_.Exception.Message })
-        }
-
-        if ($result.Success -or $result.AlreadyInstalled) {
-            $status = if ($result.AlreadyInstalled) { "Already Installed" } else { "Success" }
-            Write-ParallelLog "RESULT: $status - $($result.Message)" 'Success'
-        } else {
-            Write-ParallelLog "RESULT: Failed - $($result.Message)" 'Error'
-        }
-
-        return $result
-    }
-
-    $allResults = @($installResults) + @($skippedApps)
-
-    $endTime = Get-Date
-    $totalTime = $endTime - $startTime
-
-    Write-Host ""
-    Write-Host (Get-LogString -Key 'parallel.summary.title') -ForegroundColor Green
-    Write-Host (Get-LogString -Key 'parallel.summary.total_time' -Parameters @{ Time = $totalTime.ToString('mm\:ss') }) -ForegroundColor Cyan
-    Write-Host (Get-LogString -Key 'parallel.summary.apps_processed' -Parameters @{ Count = $Applications.Count }) -ForegroundColor Cyan
-    Write-Host ""
-    Write-Host (Get-LogString -Key 'parallel.logs_directory' -Parameters @{ Path = $parallelLogsDir }) -ForegroundColor Yellow
-    Write-Host (Get-LogString -Key 'parallel.logs_pattern' -Parameters @{ Timestamp = $timestamp }) -ForegroundColor Gray
-    Write-Host ""
-
-    Write-Host (Get-LogString -Key 'parallel.summary.results_title') -ForegroundColor Cyan
-    foreach ($result in $allResults) {
-        if ($result.PSObject.Properties['Skipped'] -and $result.Skipped) {
-            Write-Host (Get-LogString -Key 'parallel.summary.result_skip' -Parameters @{ AppName = $result.ApplicationName }) -ForegroundColor Yellow
-            Write-Host "    $(Get-LogString -Key 'parallel.summary.reason' -Parameters @{ Message = $result.Message })" -ForegroundColor Gray
-        } elseif ($result.Success -or $result.AlreadyInstalled) {
-            $status = if ($result.AlreadyInstalled) { (Get-LogString -Key 'install.already_installed' -Parameters @{ AppName = '' }) } else { (Get-LogString -Key 'common.success') }
-            Write-Host (Get-LogString -Key 'parallel.summary.result_ok' -Parameters @{ AppName = $result.ApplicationName; Status = $status }) -ForegroundColor Green
-            if ($result.Method) {
-                Write-Host "    $(Get-LogString -Key 'parallel.summary.method_used' -Parameters @{ Method = $result.Method })" -ForegroundColor Gray
-            }
-        } else {
-            Write-Host (Get-LogString -Key 'parallel.summary.result_failed' -Parameters @{ AppName = $result.ApplicationName }) -ForegroundColor Red
-            Write-Host "    $(Get-LogString -Key 'parallel.summary.reason' -Parameters @{ Message = $result.Message })" -ForegroundColor Gray
-        }
-    }
-
-    Write-Host ""
-
-    return $allResults
 }
 
 # === EXPORTS ===

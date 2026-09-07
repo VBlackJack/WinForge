@@ -742,7 +742,7 @@ function Test-ApplicationInstalled {
 function Get-InstalledApplicationsCache {
     [CmdletBinding()]
     [OutputType([PSCustomObject])]
-    param()
+    param([switch]$Refresh)
 
     Write-Verbose "Building installed applications cache..."
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
@@ -783,7 +783,7 @@ function Get-InstalledApplicationsCache {
     $wingetOutput = ""
     if (Get-Command -Name 'winget' -ErrorAction SilentlyContinue) {
         try {
-            $wingetOutput = Get-CachedWingetList
+            $wingetOutput = Get-CachedWingetList -Force:$Refresh
         } catch {
             Write-Verbose "Error running winget list: $_"
         }
@@ -999,15 +999,18 @@ function Test-ApplicationInstalledFast {
 
                         if ($output) {
                             # Use cached output
+                            $versionOutput = if ($expectedPattern) {
+                                (($output -join "`n") -split '\r?\n' | Where-Object { $_ -match [regex]::Escape($expectedPattern) }) -join "`n"
+                            } else { $output -join "`n" }
                             if ($expectedPattern) {
                                 $detected = $output -match [regex]::Escape($expectedPattern)
-                                if ($detected -and $output -match $versionRegex) {
+                                if ($detected -and $versionOutput -match $versionRegex) {
                                     $version = $matches[1]
                                 }
                             } else {
                                 $detected = $true
                                 # Extract version even without expected pattern
-                                if ($output -match $versionRegex) {
+                                if ($versionOutput -match $versionRegex) {
                                     $version = $matches[1]
                                 }
                             }
@@ -1017,13 +1020,16 @@ function Test-ApplicationInstalledFast {
                             $argArray = @(ConvertTo-DetectionArgumentArray -Arguments $arguments)
                             $commandResult = Invoke-NativeCommandUtf8 -FilePath $executable -ArgumentList $argArray
                             $output = $commandResult.Output
+                            $versionOutput = if ($expectedPattern) {
+                                (($output -join "`n") -split '\r?\n' | Where-Object { $_ -match [regex]::Escape($expectedPattern) }) -join "`n"
+                            } else { $output -join "`n" }
                             if ($expectedPattern) {
                                 $detected = $output -match [regex]::Escape($expectedPattern)
                             } else {
                                 $detected = $true
                             }
                             # Extract version using custom regex
-                            if ($detected -and $output -match $versionRegex) {
+                            if ($detected -and $versionOutput -match $versionRegex) {
                                 $version = $matches[1]
                             }
                         }
@@ -1046,18 +1052,15 @@ function Test-ApplicationInstalledFast {
     # Method 2: Check by Winget ID in cached output (also extract version)
     if (-not $detected -and $Application.Sources -and $Application.Sources.Winget -and $Cache.WingetOutput) {
         $wingetId = $Application.Sources.Winget
-        if ($Cache.WingetOutput -match [regex]::Escape($wingetId)) {
-            $detected = $true
-            # Try to extract version from winget output line
-            $lines = $Cache.WingetOutput -split "`n"
-            foreach ($line in $lines) {
-                if ($line -match [regex]::Escape($wingetId)) {
-                    # Parse version from the line (typically format: Name  Id  Version  Available  Source)
-                    if ($line -match '(\d+\.[\d.]+)') {
-                        $version = $matches[1]
-                    }
-                    break
-                }
+        # Match the complete ID column, then its version column. A number in the
+        # display name (for example a runtime family) is not the installed version.
+        $identityPattern = '(?:^|\s)' + [regex]::Escape($wingetId) + '\s+(\S+)'
+        foreach ($line in ($Cache.WingetOutput -split "`n")) {
+            if ($line -match $identityPattern) {
+                $detected = $true
+                $candidate = $matches[1]
+                if ($candidate -match '^\d[A-Za-z0-9._+-]*$') { $version = $candidate }
+                break
             }
         }
     }
@@ -1107,13 +1110,14 @@ function Get-ApplicationsInstallationStatus {
     [OutputType([hashtable])]
     param(
         [Parameter(Mandatory)]
-        [PSCustomObject[]]$Applications
+        [PSCustomObject[]]$Applications,
+        [switch]$Refresh
     )
 
     Write-Host (Get-LogString -Key 'install.detection.scan_starting' -Parameters @{ Count = $Applications.Count }) -ForegroundColor Cyan
 
     # Build cache once
-    $cache = Get-InstalledApplicationsCache
+    $cache = Get-InstalledApplicationsCache -Refresh:$Refresh
 
     # Check all apps using cache
     $results = @{}

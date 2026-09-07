@@ -28,6 +28,9 @@ namespace WinForge.GUI.Models;
 /// </summary>
 public partial class ApplicationModel : ObservableValidator
 {
+    /// <summary>Frozen definition used only while replaying an installation checkpoint.</summary>
+    public string? FrozenDefinitionJson { get; set; }
+
     /// <summary>Unique identifier for the application.</summary>
     [ObservableProperty]
     [Required(ErrorMessageResourceName = "Validation_AppId_Required", ErrorMessageResourceType = typeof(Resources.Resources))]

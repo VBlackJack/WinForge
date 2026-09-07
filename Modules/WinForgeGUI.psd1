@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'WinForgeGUI.psm1'
-    ModuleVersion = '1.0.0907.2'
+    ModuleVersion = '1.0.0907.3'
     GUID = '711bc72b-1310-4c07-8cb1-53c24ebaeccb'
     Author = 'Julien Bombled'
     CompanyName = 'WinForge'
@@ -35,7 +35,7 @@
             Tags = @('WinForge', 'GUI', 'WPF', 'Integration')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
-            ReleaseNotes = 'WinForge v2026090702'
+            ReleaseNotes = 'WinForge v2026090703'
         }
     }
 }

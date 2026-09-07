@@ -57,6 +57,38 @@ public sealed class BatchResumeServiceTests : IDisposable
     private static IReadOnlyList<string> Plan(params string[] ids) => ids;
 
     [Fact]
+    public async Task Recovery_ShouldRetainFrozenSourceAndObservedVersion()
+    {
+        BatchResumeService service = CreateService();
+        using JsonDocument definition = JsonDocument.Parse("{\"Name\":\"Fixture\",\"Sources\":{\"Winget\":\"Original.Id\"}}");
+        BatchOptions options = new(false)
+        {
+            Definitions = new Dictionary<string, JsonElement> { ["Fixture"] = definition.RootElement.Clone() }
+        };
+        Guid id = await service.BeginBatchAsync(BatchOperationKind.Install, Plan("Fixture"), options);
+        await service.AppendCompletedAsync(id, "Fixture", BatchItemOutcome.Installed);
+        await service.RecordObservationAsync(id, "Fixture", new BatchObservation("1.2.3", "Winget", "Completed"));
+        BatchCheckpoint loaded = Assert.IsType<BatchCheckpoint>(await service.LoadCheckpointAsync(id));
+        Assert.Equal("Original.Id", loaded.Options.Definitions!["Fixture"].GetProperty("Sources").GetProperty("Winget").GetString());
+        Assert.Equal("1.2.3", loaded.Observations!["Fixture"].InstalledVersion);
+        Assert.Empty(loaded.GetRetryAppIds());
+    }
+
+    [Fact]
+    public async Task Recovery_ShouldRetryOnlyLatestUnsuccessfulOutcomesAndPendingItems()
+    {
+        BatchResumeService service = CreateService();
+        Guid id = await service.BeginBatchAsync(BatchOperationKind.Install, Plan("Recovered", "Failed", "Skipped", "Pending"), new(false));
+        await service.AppendCompletedAsync(id, "Recovered", BatchItemOutcome.Failed);
+        await service.AppendCompletedAsync(id, "Recovered", BatchItemOutcome.Installed);
+        await service.AppendCompletedAsync(id, "Failed", BatchItemOutcome.Failed);
+        await service.AppendCompletedAsync(id, "Skipped", BatchItemOutcome.Skipped);
+        BatchCheckpoint loaded = Assert.IsType<BatchCheckpoint>(await service.LoadCheckpointAsync(id));
+        Assert.Equal(new[] { "Failed", "Skipped", "Pending" }, loaded.GetRetryAppIds());
+        await Assert.ThrowsAsync<InvalidDataException>(() => service.RecordObservationAsync(id, "Other", new(null, "", "")));
+    }
+
+    [Fact]
     public void ResolveProductDataDirectory_WhenLegacyDirectoryExists_ShouldMigrateIt()
     {
         string legacyRoot = Path.Combine(_tempDir, WinForgePathNames.LegacyProductDirectoryName);
@@ -254,7 +286,7 @@ public sealed class BatchResumeServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task PruneStaleAsync_ShouldRemoveOldCheckpoints()
+    public async Task PruneStaleAsync_ShouldPreserveOldInterruptedCheckpoints()
     {
         BatchResumeService service = CreateService(staleAfter: TimeSpan.FromDays(7));
 
@@ -265,12 +297,12 @@ public sealed class BatchResumeServiceTests : IDisposable
 
         await service.PruneStaleAsync();
 
-        Assert.Null(await service.LoadCheckpointAsync(stale));
+        Assert.NotNull(await service.LoadCheckpointAsync(stale));
         Assert.NotNull(await service.LoadCheckpointAsync(fresh));
     }
 
     [Fact]
-    public async Task PruneStaleAsync_ShouldRemoveCorruptedFiles()
+    public async Task PruneStaleAsync_ShouldPreserveCorruptedFilesForRecovery()
     {
         BatchResumeService service = CreateService();
         Guid corruptId = Guid.NewGuid();
@@ -279,7 +311,7 @@ public sealed class BatchResumeServiceTests : IDisposable
 
         await service.PruneStaleAsync();
 
-        Assert.False(File.Exists(path));
+        Assert.True(File.Exists(path));
     }
 
     [Fact]

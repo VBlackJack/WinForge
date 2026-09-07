@@ -16,6 +16,7 @@
 
 using System.Text.Json;
 using WinForge.GUI.Models;
+using WinForge.GUI.Services.PowerShell;
 
 namespace WinForge.GUI.Services;
 
@@ -27,10 +28,12 @@ public sealed class ScheduledDeploymentService : IScheduledDeploymentService
     };
 
     private readonly IPowerShellBridge _powerShellBridge;
+    private readonly IRepositoryPathService _pathService;
 
-    public ScheduledDeploymentService(IPowerShellBridge powerShellBridge)
+    public ScheduledDeploymentService(IPowerShellBridge powerShellBridge, IRepositoryPathService? pathService = null)
     {
         _powerShellBridge = powerShellBridge;
+        _pathService = pathService ?? new RepositoryPathService();
     }
 
     public async Task<ScheduledDeploymentAvailability> GetAvailabilityAsync(CancellationToken cancellationToken = default)
@@ -93,10 +96,12 @@ Get-ScheduledDeployment | ForEach-Object {{
         string escapedProfile = EscapePowerShellSingleQuotedString(profileName);
         string triggerTypeText = EscapePowerShellSingleQuotedString(triggerType.ToString());
         string scheduledTimeText = EscapePowerShellSingleQuotedString(scheduledTime.ToString("o"));
+        string userProfiles = EscapePowerShellSingleQuotedString(_pathService.UserProfilesDirectory);
+        string defaults = EscapePowerShellSingleQuotedString(_pathService.DefaultProfilesDirectory);
 
         string result = await _powerShellBridge.ExecuteCommandAsync($@"
 {GetModuleImportScript()}
-$deployment = New-ScheduledDeployment -ProfileName '{escapedProfile}' -ScheduledTime ([datetime]'{scheduledTimeText}') -TriggerType '{triggerTypeText}'
+$deployment = New-ScheduledDeployment -ProfileName '{escapedProfile}' -ProfileDirectories @('{userProfiles}', '{defaults}') -ScheduledTime ([datetime]'{scheduledTimeText}') -TriggerType '{triggerTypeText}'
 @{{
     Success = $true
     Id = $deployment.Id

@@ -21,7 +21,7 @@
     RootModule = 'DetectionArgumentGuard.psm1'
 
     # Version number of this module
-    ModuleVersion = '1.0.0907.2'
+    ModuleVersion = '1.0.0907.3'
 
     # ID used to uniquely identify this module
     GUID = '6724d198-838c-4917-bfdc-8f387b189bfd'

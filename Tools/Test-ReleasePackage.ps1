@@ -30,7 +30,9 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 $archive = [System.IO.Compression.ZipFile]::OpenRead((Resolve-Path -LiteralPath $ArchivePath).Path)
 try {
     $required = @('README.md', 'README.fr.md', 'CHANGELOG.md', 'CHANGELOG.fr.md',
-        'Deploy-Win11Environment.ps1', 'Modules/JsonSchemaValidation.psm1')
+        'Deploy-Win11Environment.ps1', 'Modules/JsonSchemaValidation.psm1',
+        'Modules/DeploymentPlanning.psm1', 'Docs/DEPLOYMENT_WORKBENCH.md', 'Docs/DEPLOYMENT_WORKBENCH.fr.md',
+        'Tools/Deployment-Workbench.ps1', 'Tools/Test-WinGetConfiguration.ps1', 'Tools/Test-GuestAcceptance.ps1')
     $required += @(Get-ChildItem -LiteralPath (Join-Path $SourceRoot 'Schemas') -Filter '*.schema.json' -File |
         ForEach-Object { 'Schemas/' + $_.Name })
     if (@($required | Where-Object { $_ -like 'Schemas/*' }).Count -eq 0) { throw 'Source schemas are missing.' }

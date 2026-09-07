@@ -173,6 +173,8 @@ public partial class App : Application
                 try
                 {
                     CultureInfo culture = new CultureInfo(settings.LanguageCode);
+                    CultureInfo.DefaultThreadCurrentUICulture = culture;
+                    CultureInfo.DefaultThreadCurrentCulture = culture;
                     Thread.CurrentThread.CurrentUICulture = culture;
                     Thread.CurrentThread.CurrentCulture = culture;
                     CultureInfo.CurrentUICulture = culture;

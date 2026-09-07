@@ -1,0 +1,10 @@
+properties:
+  resources:
+    - resource: Microsoft.Windows.Settings/WindowsSettings
+      directives:
+        description: Check that Developer Mode remains disabled
+        securityContext: elevated
+        allowPrerelease: true
+      settings:
+        DeveloperMode: false
+  configurationVersion: 0.2.0

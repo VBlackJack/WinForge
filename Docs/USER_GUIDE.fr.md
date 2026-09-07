@@ -2,7 +2,7 @@
 
 [English](USER_GUIDE.md)
 
-Version actuelle du framework : `2026090702`.
+Version actuelle du framework : `2026090703`.
 
 ## Démarrage rapide
 
@@ -45,6 +45,18 @@ Le fichier du profil est mis à jour avec les applications cochées. Si le profi
 4. Consulter les journaux si une étape échoue.
 5. Utiliser le rollback si nécessaire.
 
+## Déploiements planifiés
+
+Ouvrir l'onglet des déploiements planifiés dans les paramètres avec les droits administrateur. Choisir un profil, un déclencheur et une date/heure, puis créer le déploiement.
+
+La planification copie le profil utilisateur sélectionné et tous ses profils parents. Les profils utilisateur ont priorité sur les profils fournis. Les modifications ultérieures des profils ne changent pas une planification existante ; la recréer pour les prendre en compte. Conserver l'installation de WinForge à son emplacement initial pour que le lanceur planifié reste accessible.
+
+## Rollback et reprise
+
+Les nouvelles installations réussies sont enregistrées dès leur fin, y compris en parallèle. Les applications détectées avant l'installation sont exclues, même en cas de réinstallation forcée. Le journal persiste entre les processus et reste disponible jusqu'au rollback des entrées ou à son effacement explicite.
+
+Le rollback automatique prend en charge Winget et Chocolatey. Les autres méthodes restent listées pour une récupération manuelle. Un échec partiel conserve les entrées en échec pour une tentative ultérieure et indique le nombre réellement désinstallé. Un fichier de reprise illisible ou impossible à écrire provoque une erreur ; conserver le fichier et résoudre le problème de stockage avant de réessayer.
+
 ## Catalogue d'applications
 
 - Consulter et modifier la base d'applications depuis l'interface.
@@ -63,3 +75,7 @@ Le fichier du profil est mis à jour avec les applications cochées. Si le profi
 
 - [Documentation API (anglais)](API_DOCUMENTATION.md)
 - [README du projet](../README.fr.md)
+
+## Préparation et reprise des déploiements
+
+Voir [les aperçus, l'historique et l'atelier PowerShell](DEPLOYMENT_WORKBENCH.fr.md).

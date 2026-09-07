@@ -4,7 +4,27 @@
 
 Note: the framework version source of truth is `Config/version.json`. Launchers and GUI read this value dynamically.
 
-## [Unreleased]
+## [2026090703] - 2026-09-07
+
+### Added
+
+- Read-only deployment previews with source evidence, elevation, reboot and rollback limits.
+- Frozen application definitions, observed versions and targeted retries in GUI execution history.
+- A PowerShell deployment workbench with version locks, plan comparison, atomic receipts, recovery and per-plan rollback.
+- Disposable VMware guest acceptance harness and an opt-in WinGet configuration test prototype.
+- A process-interruption regression test and an accessible, selectable deployment report.
+
+
+### Fixed
+- Preserve native arguments and timeouts under Windows PowerShell 5.1; keep observed versions separate from version locks.
+- Refresh post-installation version evidence and use an absolute PowerShell 7 path for SYSTEM tasks.
+- Include the deployment workbench in distribution archives and isolate its rollback receipts from the legacy journal.
+- Pass valid native PowerShell arguments to scheduled deployments and snapshot user profiles with their inheritance under protected shared storage.
+- Record newly installed applications in a journal shared by sequential and parallel workers; exclude preexisting applications, including forced reinstalls.
+- Preserve failed rollback entries, use canonical identifiers, and report actual rollback outcomes.
+- Write PowerShell recovery state atomically and propagate persistence errors.
+- Keep XAML resources aligned with the selected language across asynchronous initialization.
+- Exclude Microsoft Store identifiers from community Winget freshness probes and correct five catalog source identifiers. Remove three unavailable Winget sources where another channel is already declared; LDPlayer remains unavailable in the queried package sources.
 
 ## [2026090702] - 2026-09-07
 
@@ -123,6 +143,7 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 ## [2026062201] - 2026-06-22
 
 ### Added
+
 - Existing profiles can now be updated directly from the Applications grid while preserving inherited applications from parent profiles.
 - Added a shared icon dropdown button style and applied it to the Apps column visibility menu.
 - Added a public architecture overview and refreshed user-facing profile editing documentation.
@@ -146,6 +167,7 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 ### Profile editing and public documentation cleanup - June 2026
 
 #### Added
+
 - **Existing profiles can now be updated from the Applications grid.** After applying a profile, users can check or uncheck apps and save that selection back to the active profile. Inherited applications remain owned by their parent profile and are restored with a warning when a child profile is updated.
 - **Added a public architecture overview.** `Docs/ARCHITECTURE.md` now summarizes the current runtime layout, GUI architecture, profile model, theming pipeline, API surface, and validation commands.
 
@@ -156,6 +178,7 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 ### Application catalog utilities refresh - June 2026
 
 #### Added
+
 - **Added six utility/runtime catalog entries.** `WindowsAppSDK21`, `BleachBit`,
   `FluentCleaner`, `MicrosoftPCManager`, `Textify`, and `Capture2Text` are now
   present in `Apps/Database/applications.json`. `WizTree` was already present,
@@ -1094,6 +1117,7 @@ The release recorded 66 applications, four profiles, seven modules, six tools, a
 - Quick Assist Store App detection
 
 ### Added
+
 - Parallel installation support (up to 5 concurrent apps)
 - PowerShell 7 detection and upgrade prompt
 
@@ -1110,6 +1134,7 @@ The release recorded 66 applications, four profiles, seven modules, six tools, a
 ## [2.1.0] - 2025-10-01
 
 ### Added
+
 - Parallel installation mode with `-Parallel` parameter
 - `MaxParallelJobs` parameter (default: 5)
 - Installation mode logging (Sequential vs Parallel)

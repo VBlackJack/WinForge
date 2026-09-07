@@ -107,6 +107,35 @@ public sealed class WinForgeUiaSmokeTests
         Assert.Null(remaining);
     }
 
+    [UiaFact]
+    public void DeploymentPreview_IsReadableAndKeyboardFocusable()
+    {
+        using WinForgeAppSession app = WinForgeAppSession.Launch();
+        ((WindowPattern)app.MainWindow.GetCurrentPattern(WindowPattern.Pattern)).SetWindowVisualState(WindowVisualState.Normal);
+        ((TransformPattern)app.MainWindow.GetCurrentPattern(TransformPattern.Pattern)).Resize(1100, 800);
+        app.NavigateByAutomationId("NavApplications");
+        app.WaitForElementByAutomationId("PageApplications", TimeSpan.FromSeconds(10));
+        AutomationElement clear = app.WaitForElementByName("Clear Selection", TimeSpan.FromSeconds(10));
+        ((InvokePattern)clear.GetCurrentPattern(InvokePattern.Pattern)).Invoke();
+        AutomationElement selection = app.MainWindow.FindFirst(TreeScope.Descendants,
+            new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.CheckBox));
+        Assert.NotNull(selection);
+        ((TogglePattern)selection.GetCurrentPattern(TogglePattern.Pattern)).Toggle();
+        AutomationElement preview = app.WaitForElementByAutomationId("PreviewSelected", TimeSpan.FromSeconds(10));
+        Assert.True(app.MainWindow.Current.BoundingRectangle.Contains(preview.Current.BoundingRectangle));
+        app.NavigateByAutomationId("PreviewSelected");
+        AutomationElement report = app.WaitForElementByAutomationId("DeploymentReportText", TimeSpan.FromSeconds(90));
+        Assert.False(report.Current.IsOffscreen);
+        Assert.True(report.Current.IsKeyboardFocusable);
+        ValuePattern value = (ValuePattern)report.GetCurrentPattern(ValuePattern.Pattern);
+        Assert.True(value.Current.IsReadOnly);
+        Assert.Contains("Read-only preview", value.Current.Value);
+        Assert.Contains("Installation tested", value.Current.Value);
+        Assert.Contains("Not measured", value.Current.Value);
+        report.SetFocus();
+        app.CaptureWindow("deployment-preview");
+    }
+
     private static string CaptureAfterNavigation(
         WinForgeAppSession app,
         string automationId,

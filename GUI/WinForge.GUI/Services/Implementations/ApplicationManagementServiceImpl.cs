@@ -419,6 +419,7 @@ try {{
         string dbModulePath = _pathService.GetPathForPowerShell("Modules", "ApplicationDatabase.psm1");
         string enginePath = _pathService.GetPathForPowerShell("Modules", "InstallationEngine.psm1");
         string orchestratorPath = _pathService.GetPathForPowerShell("Modules", "InstallationOrchestrator.psm1");
+        string detectionPath = _pathService.GetPathForPowerShell("Modules", "ApplicationDetection.psm1");
 
         return await Task.Run(async () =>
         {
@@ -430,6 +431,8 @@ try {{
                 progressCallback?.Invoke(LogFormat(nameof(Resources.Resources.AppManagement_PreparingInstall), app.Name));
 
                 string forceUpdateSwitch = forceUpdate ? " -ForceUpdate" : "";
+                string encodedDefinition = app.FrozenDefinitionJson is null ? string.Empty :
+                    Convert.ToBase64String(Encoding.UTF8.GetBytes(app.FrozenDefinitionJson));
                 string validatedAppId = PowerShellValidation.ValidateAppId(app.AppId);
                 string escapedAppId = PowerShellValidation.EscapeForPowerShell(validatedAppId);
 
@@ -446,6 +449,10 @@ try {{
     Import-Module '{orchestratorPath}' -Force -ErrorAction Stop
 
     $app = Get-ApplicationById -AppId '{escapedAppId}'
+    if ('{encodedDefinition}') {{
+        $app = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('{encodedDefinition}')) | ConvertFrom-Json
+        $app | Add-Member -NotePropertyName AppId -NotePropertyValue '{escapedAppId}' -Force
+    }}
     if (-not $app) {{
         Write-Output '[STATUS] Application not found in database'
         @{{ Success = $false; Message = 'Application not found in database'; Method = ''; AlreadyInstalled = $false }} | ConvertTo-Json -Compress
@@ -454,6 +461,15 @@ try {{
 
     Write-Output '[STATUS] Starting installation...'
     $result = Install-Application -Application $app{forceUpdateSwitch}
+    $result['InstalledVersion'] = $null
+    if ($result.Success) {{
+        try {{
+            Import-Module '{detectionPath}' -ErrorAction Stop
+            Clear-RegistryAppsCache
+            $observed = Get-ApplicationsInstallationStatus -Applications @($app) -Refresh
+            $result['InstalledVersion'] = $observed[$app.AppId].Version
+        }} catch {{ Write-Warning ""Version observation unavailable: $($_.Exception.Message)"" }}
+    }}
     $result | ConvertTo-Json -Compress
 }} catch {{
     Write-Output ""[ERROR] $($_.Exception.Message)""
@@ -587,7 +603,9 @@ try {{
                         if (success)
                         {
                             progressCallback?.Invoke(LogFormat(nameof(Resources.Resources.AppManagement_Completed), app.Name));
-                            return InstallResult.Successful(message, logBuilder.ToString(), method, alreadyInstalled);
+                            string? installedVersion = root.TryGetProperty("InstalledVersion", out JsonElement versionProp)
+                                ? versionProp.GetString() : null;
+                            return InstallResult.Successful(message, logBuilder.ToString(), method, alreadyInstalled, installedVersion);
                         }
                         else
                         {
@@ -601,15 +619,8 @@ try {{
                     }
                 }
 
-                string fullOutput = string.Join("\n", outputLines);
-                if (fullOutput.Contains("successfully", StringComparison.OrdinalIgnoreCase) ||
-                    fullOutput.Contains("installed", StringComparison.OrdinalIgnoreCase))
-                {
-                    return InstallResult.Successful(
-                        $"Installation completed for {app.Name}",
-                        logBuilder.ToString());
-                }
-
+                // Native text can contain "not installed" or unrelated successes.
+                // Only the structured orchestrator receipt can certify success.
                 return InstallResult.Failed(
                     "Installation completed but status unknown",
                     logBuilder.ToString());

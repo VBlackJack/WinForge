@@ -2121,7 +2121,7 @@ public class AppsViewModelTests
     }
 
     [Fact]
-    public async Task ResumeBatchAsync_WithUnknownAppIdsInCatalog_ShouldSkipMissingAndProceed()
+    public async Task ResumeBatchAsync_WithUnknownAppIdsInCatalog_ShouldPreserveUnresolvedWork()
     {
         MockPowerShellBridge bridge = CreateMockBridge();
         TestAppInstallationCoordinator installCoordinator = new TestAppInstallationCoordinator();
@@ -2139,11 +2139,8 @@ public class AppsViewModelTests
             Completed: [],
             Options: new BatchOptions(ForceUpdate: false));
 
-        await viewModel.ResumeBatchAsync(checkpoint);
-
-        Assert.Single(installCoordinator.Calls);
-        string[] resumed = installCoordinator.Calls[0].Select(a => a.AppId).ToArray();
-        Assert.Equal(new[] { "Git.Git", "Mozilla.Firefox" }, resumed);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => viewModel.ResumeBatchAsync(checkpoint));
+        Assert.Empty(installCoordinator.Calls);
     }
 
     [Fact]

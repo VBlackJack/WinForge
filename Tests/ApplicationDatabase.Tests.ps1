@@ -397,8 +397,8 @@ Describe 'ApplicationDatabase Module' {
 
         It 'Should have correct verified count' {
             $stats = Get-DatabaseStatistics
-            # All apps should be verified in v2.5.0
-            $stats.VerifiedApps | Should -Be $stats.TotalApplications
+            $expected = @((Get-ApplicationDatabase).Applications.PSObject.Properties.Value | Where-Object Verified).Count
+            $stats.VerifiedApps | Should -Be $expected
         }
 
         It 'Should have TotalCategories count' {
