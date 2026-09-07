@@ -403,6 +403,67 @@ function Test-ValidRollbackEntry {
 
 # === ROLLBACK STATE FUNCTIONS ===
 
+function Write-AtomicStateJson {
+    <# .SYNOPSIS Commits JSON without truncating the previous recoverable state. #>
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][string]$Path, [Parameter(Mandatory)][hashtable]$State)
+    $target = [System.IO.Path]::GetFullPath($Path)
+    $temporary = $target + '.' + [guid]::NewGuid().ToString('N') + '.tmp'
+    try {
+        $json = $State | ConvertTo-Json -Depth 10 -ErrorAction Stop
+        [System.IO.File]::WriteAllText($temporary, $json, [System.Text.UTF8Encoding]::new($false))
+        if ([System.IO.File]::Exists($target)) {
+            [System.IO.File]::Replace($temporary, $target, [NullString]::Value)
+        } else {
+            [System.IO.File]::Move($temporary, $target)
+        }
+    } finally {
+        if ([System.IO.File]::Exists($temporary)) { [System.IO.File]::Delete($temporary) }
+    }
+}
+
+function Invoke-WithRollbackLock {
+    <# .SYNOPSIS Serializes read-modify-write operations across installation workers. #>
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][scriptblock]$Action)
+    $hash = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        $pathBytes = [System.Text.Encoding]::UTF8.GetBytes([System.IO.Path]::GetFullPath($script:RollbackStateFile).ToUpperInvariant())
+        $key = [BitConverter]::ToString($hash.ComputeHash($pathBytes)).Replace('-', '')
+    } finally { $hash.Dispose() }
+    $mutex = [System.Threading.Mutex]::new($false, "Global\WinForge.Rollback.$key")
+    $acquired = $false
+    try {
+        try { $acquired = $mutex.WaitOne([TimeSpan]::FromSeconds(30)) }
+        catch [System.Threading.AbandonedMutexException] { $acquired = $true }
+        if (-not $acquired) { throw [System.TimeoutException]::new('Rollback state is busy.') }
+        & $Action
+    } finally {
+        if ($acquired) { $mutex.ReleaseMutex() }
+        $mutex.Dispose()
+    }
+}
+
+function Read-RollbackStateFile {
+    <# .SYNOPSIS Reads canonical state; refuses to overwrite corrupt recovery evidence. #>
+    [CmdletBinding()]
+    [OutputType([hashtable])]
+    param()
+    if (-not [System.IO.File]::Exists($script:RollbackStateFile)) {
+        return @{ SessionId = $null; InstalledApps = @(); StartTime = $null }
+    }
+    $json = [System.IO.File]::ReadAllText($script:RollbackStateFile) | ConvertFrom-Json -ErrorAction Stop
+    $state = @{ SessionId = $json.SessionId; InstalledApps = @(); StartTime = $json.StartTime }
+    foreach ($item in @($json.InstalledApps)) {
+        $identifier = if ($item.PSObject.Properties['Identifier']) { $item.Identifier } elseif ($item.PSObject.Properties['PackageId']) { $item.PackageId } else { $null }
+        $entry = @{ AppName=$item.AppName; Method=$item.Method; Identifier=$identifier; InstalledAt=$item.InstalledAt }
+        if (-not (Test-ValidRollbackEntry -Entry $entry)) { throw [System.IO.InvalidDataException]::new('Invalid rollback entry.') }
+        $state.InstalledApps += $entry
+    }
+    if (-not (Test-ValidStateData -StateData $state)) { throw [System.IO.InvalidDataException]::new('Invalid rollback state.') }
+    return $state
+}
+
 function Initialize-RollbackSession {
     <#
     .SYNOPSIS
@@ -418,13 +479,16 @@ function Initialize-RollbackSession {
     [OutputType([string])]
     param()
 
-    $script:RollbackState = @{
+    $newState = @{
         SessionId = [guid]::NewGuid().ToString()
         InstalledApps = @()
         StartTime = Get-Date -Format 'o'
     }
 
-    Save-RollbackState
+    Invoke-WithRollbackLock {
+        Write-AtomicStateJson -Path $script:RollbackStateFile -State $newState
+        $script:RollbackState = $newState
+    }
     Write-Status -Message (Get-LogString -Key 'state.rollback.session_initialized' -Parameters @{ SessionId = $script:RollbackState.SessionId }) -Level 'Verbose' -Category 'State'
 
     return $script:RollbackState.SessionId
@@ -442,10 +506,38 @@ function Save-RollbackState {
     param()
 
     try {
-        $script:RollbackState | ConvertTo-Json -Depth 5 | Set-Content -Path $script:RollbackStateFile -Encoding UTF8
+        Invoke-WithRollbackLock {
+            if ([System.IO.File]::Exists($script:RollbackStateFile)) {
+                $script:RollbackState = Read-RollbackStateFile
+            }
+            Write-AtomicStateJson -Path $script:RollbackStateFile -State $script:RollbackState
+        }
     } catch {
         Write-Status -Message (Get-LogString -Key 'state.rollback.save_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Warning' -Category 'State'
+        throw
     }
+}
+
+function Add-InstallationRollbackEntry {
+    <#
+    .SYNOPSIS
+        Records a newly installed application using its successful source.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][PSCustomObject]$Application,
+        [Parameter(Mandatory)][hashtable]$Result,
+        [Parameter(Mandatory)][bool]$WasInstalled
+    )
+
+    if ($WasInstalled -or -not $Result.Success -or $Result.AlreadyInstalled) { return }
+    $identifier = switch ($Result.Method) {
+        'Winget' { $Application.Sources.Winget }
+        'Chocolatey' { $Application.Sources.Chocolatey }
+        'Store' { $Application.Sources.Store }
+        default { $null }
+    }
+    Add-RollbackEntry -AppName $Application.Name -Method $Result.Method -Identifier $identifier
 }
 
 function Add-RollbackEntry {
@@ -492,8 +584,15 @@ function Add-RollbackEntry {
         return
     }
 
-    $script:RollbackState.InstalledApps += $entry
-    Save-RollbackState
+    Invoke-WithRollbackLock {
+        $state = Read-RollbackStateFile
+        if (-not $state.SessionId) { $state.SessionId = [guid]::NewGuid().ToString(); $state.StartTime = Get-Date -Format 'o' }
+        if (-not @($state.InstalledApps | Where-Object { $_.AppName -eq $AppName -and $_.Method -eq $Method -and $_.Identifier -eq $Identifier }).Count) {
+            $state.InstalledApps += $entry
+            Write-AtomicStateJson -Path $script:RollbackStateFile -State $state
+        }
+        $script:RollbackState = $state
+    }
     Write-Status -Message (Get-LogString -Key 'state.rollback.entry_added' -Parameters @{ AppName = $AppName; Method = $Method }) -Level 'Verbose' -Category 'State'
 }
 
@@ -502,7 +601,7 @@ function Get-RollbackState {
     .SYNOPSIS
         Returns the current rollback state.
     .DESCRIPTION
-        Returns a cloned copy of the current in-memory rollback state hashtable, including the
+        Returns a cloned copy of the current persisted rollback state hashtable, including the
         session ID, start time, and the list of installed applications tracked for potential rollback.
     .OUTPUTS
         Hashtable containing the current rollback state.
@@ -511,7 +610,10 @@ function Get-RollbackState {
     [OutputType([hashtable])]
     param()
 
-    return $script:RollbackState.Clone()
+    return (Invoke-WithRollbackLock {
+        $script:RollbackState = Read-RollbackStateFile
+        $script:RollbackState.Clone()
+    })
 }
 
 function Get-RollbackEntries {
@@ -528,7 +630,21 @@ function Get-RollbackEntries {
     [OutputType([array])]
     param()
 
-    return @($script:RollbackState.InstalledApps)
+    return @((Get-RollbackState).InstalledApps)
+}
+
+function Remove-RollbackEntry {
+    <# .SYNOPSIS Removes only a confirmed uninstalled entry, preserving concurrent additions. #>
+    [CmdletBinding()]
+    param([Parameter(Mandatory)]$Entry)
+    Invoke-WithRollbackLock {
+        $state = Read-RollbackStateFile
+        $state.InstalledApps = @($state.InstalledApps | Where-Object {
+            -not ($_.AppName -eq $Entry.AppName -and $_.Method -eq $Entry.Method -and $_.Identifier -eq $Entry.Identifier -and $_.InstalledAt -eq $Entry.InstalledAt)
+        })
+        Write-AtomicStateJson -Path $script:RollbackStateFile -State $state
+        $script:RollbackState = $state
+    }
 }
 
 function Clear-RollbackState {
@@ -543,14 +659,15 @@ function Clear-RollbackState {
     [CmdletBinding()]
     param()
 
-    $script:RollbackState = @{
+    $emptyState = @{
         SessionId = $null
         InstalledApps = @()
         StartTime = $null
     }
 
-    if (Test-Path $script:RollbackStateFile) {
-        Remove-Item $script:RollbackStateFile -Force -ErrorAction SilentlyContinue
+    Invoke-WithRollbackLock {
+        if ([System.IO.File]::Exists($script:RollbackStateFile)) { [System.IO.File]::Delete($script:RollbackStateFile) }
+        $script:RollbackState = $emptyState
     }
 
     Write-Status -Message (Get-LogString -Key 'state.rollback.cleared') -Level 'Verbose' -Category 'State'
@@ -573,18 +690,9 @@ function Restore-RollbackState {
 
     if (Test-Path $script:RollbackStateFile) {
         try {
-            $json = Get-Content $script:RollbackStateFile -Raw | ConvertFrom-Json
-            $stateData = @{
-                SessionId = $json.SessionId
-                InstalledApps = @($json.InstalledApps)
-                StartTime = $json.StartTime
-            }
-
-            if (Test-ValidStateData -StateData $stateData) {
-                $script:RollbackState = $stateData
-                Write-Status -Message (Get-LogString -Key 'state.rollback.restored') -Level 'Verbose' -Category 'State'
-                return $true
-            }
+            $null = Get-RollbackState
+            Write-Status -Message (Get-LogString -Key 'state.rollback.restored') -Level 'Verbose' -Category 'State'
+            return $true
         } catch {
             Write-Status -Message (Get-LogString -Key 'state.rollback.restore_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Warning' -Category 'State'
         }
@@ -654,9 +762,10 @@ function Save-DeploymentState {
 
     try {
         $script:DeploymentState.LastUpdated = Get-Date -Format 'o'
-        $script:DeploymentState | ConvertTo-Json -Depth 5 | Set-Content -Path $script:DeploymentStateFile -Encoding UTF8
+        Write-AtomicStateJson -Path $script:DeploymentStateFile -State $script:DeploymentState
     } catch {
         Write-Status -Message (Get-LogString -Key 'state.deployment.save_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Warning' -Category 'State'
+        throw
     }
 }
 
@@ -850,6 +959,8 @@ Export-ModuleMember -Function @(
     'Initialize-RollbackSession',
     'Save-RollbackState',
     'Add-RollbackEntry',
+    'Add-InstallationRollbackEntry',
+    'Remove-RollbackEntry',
     'Get-RollbackState',
     'Get-RollbackEntries',
     'Clear-RollbackState',

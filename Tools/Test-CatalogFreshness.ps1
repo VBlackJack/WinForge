@@ -188,12 +188,15 @@ function Get-FreshnessCheckPlan {
         }
 
         if ($winget -and (Test-CheckSelected -Selected $Selected -Source $Script:SourceWinget)) {
+            # Store product IDs sometimes also appear in Sources.Winget. They do not
+            # belong to the community source; skip before cache lookup, just like Store.
+            $isStoreProduct = ($store -and $winget -eq $store) -or $winget -match '^9[A-Z0-9]{11}$'
             [void]$plan.Add([PSCustomObject]@{
                 AppId      = $app.AppId
                 Source     = $Script:SourceWinget
                 Identifier = $winget
-                Action     = 'Probe'
-                Reason     = $null
+                Action     = if ($isStoreProduct) { 'Skip' } else { 'Probe' }
+                Reason     = if ($isStoreProduct) { 'store-not-validated-v1' } else { $null }
             })
         }
         if ($choco -and (Test-CheckSelected -Selected $Selected -Source $Script:SourceChocolatey)) {
@@ -467,7 +470,15 @@ function Test-DirectUrlReachable {
             Reason = $verdict.Reason
             Detail = "HEAD $Url → $($response.StatusCode)"
         }
-    } catch [System.Net.WebException], [Microsoft.PowerShell.Commands.HttpResponseException] {
+    } catch {
+        # HttpResponseException does not exist in Windows PowerShell 5.1.
+        if ($_.Exception -isnot [System.Net.WebException] -and $_.Exception.GetType().FullName -ne 'Microsoft.PowerShell.Commands.HttpResponseException') {
+            return [PSCustomObject]@{
+                Status = $Script:StatusSuspect
+                Reason = 'unexpected-error'
+                Detail = $_.Exception.Message
+            }
+        }
         $statusCode = 0
         try {
             $rawResponse = $_.Exception.Response
@@ -510,12 +521,6 @@ function Test-DirectUrlReachable {
         return [PSCustomObject]@{
             Status = $Script:StatusSuspect
             Reason = 'network-error'
-            Detail = $_.Exception.Message
-        }
-    } catch {
-        return [PSCustomObject]@{
-            Status = $Script:StatusSuspect
-            Reason = 'unexpected-error'
             Detail = $_.Exception.Message
         }
     }
@@ -901,7 +906,7 @@ function Invoke-CatalogFreshness {
     $probeEnv = Get-ProbeEnvironment
     Write-Host "Probe environment: winget=$($probeEnv.WingetAvailable), choco=$($probeEnv.ChocolateyAvailable)" -ForegroundColor DarkCyan
 
-    $plan = Get-FreshnessCheckPlan -Applications $apps -Selected $Checks
+    $plan = @(Get-FreshnessCheckPlan -Applications $apps -Selected $Checks)
     Write-Host "Check plan: $($plan.Count) entries" -ForegroundColor Cyan
 
     $cache = Read-FreshnessCache -Path $CachePath

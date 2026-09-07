@@ -18,6 +18,9 @@ using WinForge.GUI.Models;
 using WinForge.GUI.Resources;
 using WinForge.GUI.Services.Coordinators.Internal;
 using WinForge.GUI.Services.Resume;
+using WinForge.GUI.Services.PowerShell;
+using System.IO;
+using System.Text.Json;
 
 namespace WinForge.GUI.Services.Coordinators;
 
@@ -30,17 +33,20 @@ public sealed class AppInstallationCoordinator : IAppInstallationCoordinator
     private readonly IAppSettingsService _settingsService;
     private readonly IPauseGate _pauseGate;
     private readonly IBatchResumeService _resumeService;
+    private readonly IRepositoryPathService? _pathService;
 
     public AppInstallationCoordinator(
         IPowerShellBridge powerShellBridge,
         IAppSettingsService settingsService,
         IPauseGate pauseGate,
-        IBatchResumeService resumeService)
+        IBatchResumeService resumeService,
+        IRepositoryPathService? pathService = null)
     {
         _powerShellBridge = powerShellBridge ?? throw new ArgumentNullException(nameof(powerShellBridge));
         _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
         _pauseGate = pauseGate ?? throw new ArgumentNullException(nameof(pauseGate));
         _resumeService = resumeService ?? throw new ArgumentNullException(nameof(resumeService));
+        _pathService = pathService;
     }
 
     /// <inheritdoc/>
@@ -61,22 +67,42 @@ public sealed class AppInstallationCoordinator : IAppInstallationCoordinator
         List<ApplicationModel> apps = applications.ToList();
         AppOperationRunner runner = CreateRunner();
 
+        Dictionary<string, JsonElement> definitions = new(StringComparer.OrdinalIgnoreCase);
+        if (_pathService is not null)
+        {
+            string catalogText = await File.ReadAllTextAsync(
+                _pathService.GetPath("Apps", "Database", "applications.json"), cancellationToken).ConfigureAwait(false);
+            using JsonDocument catalog = JsonDocument.Parse(catalogText);
+            foreach (ApplicationModel app in apps)
+            {
+                using JsonDocument definition = JsonDocument.Parse(app.FrozenDefinitionJson ??
+                    catalog.RootElement.GetProperty("Applications").GetProperty(app.AppId).GetRawText());
+                definitions.Add(app.AppId, definition.RootElement.Clone());
+            }
+        }
+
         Guid batchId = await _resumeService.BeginBatchAsync(
             BatchOperationKind.Install,
             apps.Select(app => app.AppId).ToArray(),
-            new BatchOptions(options.ForceUpdate),
+            new BatchOptions(options.ForceUpdate) { Definitions = definitions },
             cancellationToken).ConfigureAwait(false);
 
         try
         {
             IReadOnlyList<AppInstallationItemResult> itemResults = await runner.RunAsync(
                 apps,
-                (app, token) => InstallApplicationAsync(app, options, token),
+                (app, token) => InstallFrozenApplicationAsync(app, options, definitions, token),
                 app => app,
                 progress,
                 cancellationToken,
-                onItemCompleted: (app, result, token) =>
-                    _resumeService.AppendCompletedAsync(batchId, app.AppId, ToOutcome(result.Status), token))
+                onItemCompleted: async (app, result, token) =>
+                {
+                    await _resumeService.AppendCompletedAsync(batchId, app.AppId, ToOutcome(result.Status), token).ConfigureAwait(false);
+                    if (result.Observation is not null)
+                    {
+                        await _resumeService.RecordObservationAsync(batchId, app.AppId, result.Observation, token).ConfigureAwait(false);
+                    }
+                })
                 .ConfigureAwait(false);
 
             if (itemResults.Any(result => result.Status == AppInstallationItemStatus.Installed))
@@ -109,6 +135,19 @@ public sealed class AppInstallationCoordinator : IAppInstallationCoordinator
         _ => throw new ArgumentOutOfRangeException(nameof(status), status, null)
     };
 
+    private async Task<AppInstallationItemResult> InstallFrozenApplicationAsync(
+        ApplicationModel app, AppInstallationOptions options,
+        IReadOnlyDictionary<string, JsonElement> definitions, CancellationToken cancellationToken)
+    {
+        string? previous = app.FrozenDefinitionJson;
+        if (definitions.TryGetValue(app.AppId, out JsonElement definition))
+        {
+            app.FrozenDefinitionJson = definition.GetRawText();
+        }
+        try { return await InstallApplicationAsync(app, options, cancellationToken).ConfigureAwait(false); }
+        finally { app.FrozenDefinitionJson = previous; }
+    }
+
     private async Task<AppInstallationItemResult> InstallApplicationAsync(
         ApplicationModel app,
         AppInstallationOptions options,
@@ -139,15 +178,18 @@ public sealed class AppInstallationCoordinator : IAppInstallationCoordinator
                     ? Resources.Resources.Status_AlreadyInstalled
                     : Resources.Resources.Status_Installed;
 
-                return result.AlreadyInstalled
-                    ? AppInstallationItemResult.AlreadyInstalled()
-                    : AppInstallationItemResult.Installed();
+                if (result.InstalledVersion is not null) { app.CurrentVersion = result.InstalledVersion; }
+                return new AppInstallationItemResult(result.AlreadyInstalled
+                    ? AppInstallationItemStatus.AlreadyInstalled : AppInstallationItemStatus.Installed)
+                {
+                    Observation = new BatchObservation(result.InstalledVersion, result.Method, result.Message)
+                };
             }
 
             app.Status = ApplicationStatus.Failed;
             app.StatusMessage = Resources.Resources.Status_Failed;
             app.ErrorMessage = result.Message;
-            return AppInstallationItemResult.Failed();
+            return AppInstallationItemResult.Failed() with { Observation = new BatchObservation(null, result.Method, result.Message) };
         }
         catch (OperationCanceledException)
         {
@@ -223,6 +265,7 @@ public sealed class AppInstallationCoordinator : IAppInstallationCoordinator
 
     private sealed record AppInstallationItemResult(AppInstallationItemStatus Status)
     {
+        public BatchObservation? Observation { get; init; }
         public static AppInstallationItemResult Installed() => new(AppInstallationItemStatus.Installed);
         public static AppInstallationItemResult AlreadyInstalled() => new(AppInstallationItemStatus.AlreadyInstalled);
         public static AppInstallationItemResult Failed() => new(AppInstallationItemStatus.Failed);

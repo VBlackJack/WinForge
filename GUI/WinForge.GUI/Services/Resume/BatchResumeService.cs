@@ -151,6 +151,26 @@ public sealed class BatchResumeService : IBatchResumeService
         }
     }
 
+    public async Task RecordObservationAsync(Guid batchId, string appId, BatchObservation observation, CancellationToken cancellationToken = default)
+    {
+        await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            BatchCheckpoint existing = await ReadCheckpointAsync(batchId, cancellationToken).ConfigureAwait(false)
+                ?? throw new IOException($"Cannot update missing checkpoint {batchId}.");
+            if (!existing.Plan.Contains(appId, StringComparer.OrdinalIgnoreCase))
+            {
+                throw new InvalidDataException($"Application {appId} does not belong to checkpoint {batchId}.");
+            }
+            Dictionary<string, BatchObservation> observations = existing.Observations is null
+                ? new(StringComparer.OrdinalIgnoreCase)
+                : new(existing.Observations, StringComparer.OrdinalIgnoreCase);
+            observations[appId] = observation;
+            await WriteCheckpointUnlockedAsync(existing with { Observations = observations, LastCheckpointAt = _now() }, cancellationToken).ConfigureAwait(false);
+        }
+        finally { _writeLock.Release(); }
+    }
+
     /// <inheritdoc/>
     public async Task MarkBatchCompletedAsync(Guid batchId, CancellationToken cancellationToken = default)
     {
@@ -250,7 +270,8 @@ public sealed class BatchResumeService : IBatchResumeService
             try
             {
                 BatchCheckpoint? checkpoint = await ReadCheckpointFromPathAsync(path, cancellationToken).ConfigureAwait(false);
-                bool shouldDelete = checkpoint == null || checkpoint.LastCheckpointAt < threshold;
+                // Preserve incomplete and unreadable receipts for recovery, regardless of age.
+                bool shouldDelete = checkpoint is { State: BatchState.Completed } && checkpoint.LastCheckpointAt < threshold;
                 if (shouldDelete)
                 {
                     File.Delete(path);

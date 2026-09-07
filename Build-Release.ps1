@@ -282,6 +282,13 @@ foreach ($folder in $foldersToCopy) {
     }
 }
 
+$releaseTools = @('Deployment-Workbench.ps1', 'Test-WinGetConfiguration.ps1', 'Test-GuestAcceptance.ps1')
+$toolsDestination = Join-Path $ReleasePath 'Tools'
+$null = New-Item -ItemType Directory -Path $toolsDestination -Force
+foreach ($toolName in $releaseTools) {
+    Copy-Item -LiteralPath (Join-Path $ScriptRoot "Tools/$toolName") -Destination $toolsDestination
+}
+
 # Copy essential root files
 $rootFiles = @(
     "Deploy-Win11Environment.ps1",

@@ -27,9 +27,8 @@ public partial class AppsViewModel
     /// </summary>
     /// <remarks>
     /// The catalog is loaded if it has not been initialised yet. Apps that no longer
-    /// exist in the catalog (because the user edited <c>applications.json</c> between
-    /// the crash and the resume) are silently skipped - the resumed batch only
-    /// replays items that are still resolvable.
+    /// exist in the catalog require a frozen installation definition. Missing
+    /// definitions stop recovery so no unresolved action is silently discarded.
     ///
     /// The new batch creates its own checkpoint via the coordinator; the caller is
     /// responsible for deleting the original checkpoint after the resumed operation
@@ -54,13 +53,24 @@ public partial class AppsViewModel
         List<ApplicationModel> apps = new List<ApplicationModel>(remainingIds.Count);
         foreach (string id in remainingIds)
         {
+            if (checkpoint.OperationKind == BatchOperationKind.Install &&
+                checkpoint.Options.Definitions?.TryGetValue(id, out System.Text.Json.JsonElement definition) == true)
+            {
+                apps.Add(new ApplicationModel
+                {
+                    AppId = id,
+                    Name = definition.GetProperty("Name").GetString() ?? id,
+                    FrozenDefinitionJson = definition.GetRawText()
+                });
+                continue;
+            }
             if (byId.TryGetValue(id, out ApplicationModel? app))
             {
                 apps.Add(app);
             }
             else
             {
-                _logger.LogDebug($"Resume skipping unknown app id '{id}' (not in catalog).");
+                throw new InvalidOperationException(PreflightText("MissingDefinition") + " " + id);
             }
         }
 

@@ -230,6 +230,22 @@
             </StackPanel>
         </StackPanel>
 
+        <WrapPanel Grid.Row="0" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="{StaticResource MarginNormalBottom}">
+                    <ui:Button Command="{Binding ReviewDeploymentCommand}"
+                               Style="{StaticResource SecondaryButton}"
+                               AutomationProperties.AutomationId="ReviewDeployment"
+                               Content="{loc:Loc Preflight_History}"
+                               AutomationProperties.Name="{loc:Loc Preflight_History}"
+                               Margin="{StaticResource InlineGapSmall}"/>
+                    <ui:Button Command="{Binding PreviewSelectedCommand}"
+                               Style="{StaticResource SecondaryButton}"
+                               AutomationProperties.AutomationId="PreviewSelected"
+                               Content="{loc:Loc Preflight_Title}"
+                               ToolTip="{loc:Loc Preflight_Explanation}"
+                               AutomationProperties.Name="{loc:Loc Preflight_Title}"
+                               Margin="{StaticResource InlineGapSmall}"/>
+        </WrapPanel>
+
         <!-- Profile Selector Card -->
         <Border Grid.Row="1"
                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
@@ -734,8 +750,11 @@
                             <TextBlock Text="{loc:Loc Apps_UninstallSelected}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </ui:Button>
+
                     <ui:Button Command="{Binding InstallSelectedCommand}"
                                Style="{StaticResource PrimaryButton}"
+                               ToolTipService.ShowOnDisabled="True"
+                               ToolTip="{loc:Loc Preflight_SelectFirst}"
                                AutomationProperties.Name="{Binding SelectedPrimaryActionText}">
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="ArrowDownload24" Width="18" Height="18" VerticalAlignment="Center" Margin="{StaticResource InlineGapSmall}"/>

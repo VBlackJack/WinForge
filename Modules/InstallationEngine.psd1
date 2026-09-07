@@ -21,7 +21,7 @@
     RootModule = 'InstallationEngine.psm1'
 
     # Version number of this module
-    ModuleVersion = '1.0.0907.2'
+    ModuleVersion = '1.0.0907.3'
 
     # ID used to uniquely identify this module
     GUID = 'e3a7b0c4-6d5f-4a1b-8c3e-4f5a6b7c8d9e'
@@ -58,6 +58,8 @@
         'Initialize-RollbackSession',
         'Save-RollbackState',
         'Add-RollbackEntry',
+        'Add-InstallationRollbackEntry',
+        'Remove-RollbackEntry',
         'Get-RollbackState',
         'Get-RollbackEntries',
         'Clear-RollbackState',

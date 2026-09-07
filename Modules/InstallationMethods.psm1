@@ -1035,6 +1035,9 @@ function Install-ViaWinget {
         [Parameter(Mandatory)]
         [string]$PackageId,
 
+        [ValidatePattern('^[A-Za-z0-9][A-Za-z0-9._+-]*$')]
+        [string]$Version,
+
         [Parameter()]
         [switch]$Silent,
 
@@ -1059,10 +1062,12 @@ function Install-ViaWinget {
     $arguments = @(
         'install',
         '--id', $PackageId,
+        '--source', 'winget',
         '--accept-package-agreements',
         '--accept-source-agreements'
     )
 
+    if ($Version) { $arguments += @('--exact', '--version', $Version) }
     if ($isSilent) {
         $arguments += '--silent'
     }
@@ -1089,8 +1094,8 @@ function Install-ViaWinget {
                 $wingetOutput -match 'No available upgrade' -or
                 $wingetOutput -match 'No newer package versions' -or
                 $wingetOutput -match 'Successfully installed') {
-                $version = Get-InstalledAppVersion -WingetId $PackageId
-                $versionInfo = if ($version) { " v$version" } else { "" }
+                $observedVersion = Get-InstalledAppVersion -WingetId $PackageId
+                $versionInfo = if ($observedVersion) { " v$observedVersion" } else { "" }
                 $attemptInfo = if ($attempt -gt 1) { " ($(Get-LogString -Key 'install.retry.attempt' -Parameters @{ Current = $attempt; Max = $MaxRetries }))" } else { "" }
                 $successMsg = Get-LogString -Key 'install.method.winget_success' -Parameters @{ PackageId = $PackageId; Version = $versionInfo; Attempt = $attemptInfo }
                 Write-Output "[SUCCESS] $successMsg"
@@ -1100,8 +1105,8 @@ function Install-ViaWinget {
 
             # Exit code 0 = success
             if ($exitCode -eq 0) {
-                $version = Get-InstalledAppVersion -WingetId $PackageId
-                $versionInfo = if ($version) { " v$version" } else { "" }
+                $observedVersion = Get-InstalledAppVersion -WingetId $PackageId
+                $versionInfo = if ($observedVersion) { " v$observedVersion" } else { "" }
                 $attemptInfo = if ($attempt -gt 1) { " ($(Get-LogString -Key 'install.retry.attempt' -Parameters @{ Current = $attempt; Max = $MaxRetries }))" } else { "" }
                 $successMsg = Get-LogString -Key 'install.method.winget_success' -Parameters @{ PackageId = $PackageId; Version = $versionInfo; Attempt = $attemptInfo }
                 Write-Output "[SUCCESS] $successMsg"
@@ -1111,8 +1116,8 @@ function Install-ViaWinget {
 
             # Exit code -1978334974 = APPINSTALLER_CLI_ERROR_INSTALL_PACKAGE_ALREADY_INSTALLED
             if ($exitCode -eq -1978334974) {
-                $version = Get-InstalledAppVersion -WingetId $PackageId
-                $versionInfo = if ($version) { " v$version" } else { "" }
+                $observedVersion = Get-InstalledAppVersion -WingetId $PackageId
+                $versionInfo = if ($observedVersion) { " v$observedVersion" } else { "" }
                 $attemptInfo = if ($attempt -gt 1) { " ($(Get-LogString -Key 'install.retry.attempt' -Parameters @{ Current = $attempt; Max = $MaxRetries }))" } else { "" }
                 $alreadyMsg = Get-LogString -Key 'install.method.winget_already_installed' -Parameters @{ PackageId = $PackageId; Version = $versionInfo; Attempt = $attemptInfo }
                 Write-Output "[SUCCESS] $alreadyMsg"
@@ -1136,8 +1141,8 @@ function Install-ViaWinget {
                     $forceExitCode = $forceResult.ExitCode
 
                     if ($forceExitCode -eq 0 -or $forceOutput -match 'Successfully installed' -or $forceOutput -match 'already installed') {
-                        $version = Get-InstalledAppVersion -WingetId $PackageId
-                        $versionInfo = if ($version) { " v$version" } else { "" }
+                        $observedVersion = Get-InstalledAppVersion -WingetId $PackageId
+                        $versionInfo = if ($observedVersion) { " v$observedVersion" } else { "" }
                         $forceSuccessMsg = Get-LogString -Key 'install.method.winget_force_success' -Parameters @{ PackageId = $PackageId; Version = $versionInfo }
                         Write-Output "[SUCCESS] $forceSuccessMsg"
                         Write-Status -Message $forceSuccessMsg -Level 'Success'
@@ -1178,11 +1183,11 @@ function Install-ViaWinget {
             # Post-install verification: Check if package is actually installed despite non-zero exit code
             # This handles cases where winget returns unexpected exit codes but installation succeeded
             Write-Output "[INFO] $(Get-LogString -Key 'install.method.verifying')"
-            $verifyCommand = Invoke-NativeCommandUtf8 -FilePath 'winget' -ArgumentList @('list', '--id', $PackageId, '--accept-source-agreements')
+            $verifyCommand = Invoke-NativeCommandUtf8 -FilePath 'winget' -ArgumentList @('list', '--id', $PackageId, '--exact', '--source', 'winget', '--accept-source-agreements')
             $verifyResult = $verifyCommand.Output
             if ($verifyResult -match [regex]::Escape($PackageId) -and $verifyResult -notmatch "No installed package") {
-                $version = Get-InstalledAppVersion -WingetId $PackageId
-                $versionInfo = if ($version) { " v$version" } else { "" }
+                $observedVersion = Get-InstalledAppVersion -WingetId $PackageId
+                $versionInfo = if ($observedVersion) { " v$observedVersion" } else { "" }
                 $attemptInfo = if ($attempt -gt 1) { " ($(Get-LogString -Key 'install.retry.attempt' -Parameters @{ Current = $attempt; Max = $MaxRetries }))" } else { "" }
                 $verifiedMsg = Get-LogString -Key 'install.method.winget_verified' -Parameters @{ PackageId = $PackageId; Version = $versionInfo; Attempt = $attemptInfo }
                 Write-Output "[SUCCESS] $verifiedMsg"
@@ -1222,6 +1227,9 @@ function Install-ViaChocolatey {
         [Parameter(Mandatory)]
         [string]$PackageName,
 
+        [ValidatePattern('^[A-Za-z0-9][A-Za-z0-9._+-]*$')]
+        [string]$Version,
+
         [Parameter()]
         [int]$MaxRetries = 3,
 
@@ -1239,6 +1247,7 @@ function Install-ViaChocolatey {
         '-y',
         '--no-progress'
     )
+    if ($Version) { $arguments += @('--version', $Version) }
 
     # Retry logic with exponential backoff
     for ($attempt = 1; $attempt -le $MaxRetries; $attempt++) {
@@ -1258,8 +1267,8 @@ function Install-ViaChocolatey {
 
             # Check for "already installed" pattern in output - treat as success
             if ($chocoOutput -match 'already installed' -or $chocoOutput -match 'has been installed') {
-                $version = Get-InstalledAppVersion -ChocolateyId $PackageName
-                $versionInfo = if ($version) { " v$version" } else { "" }
+                $observedVersion = Get-InstalledAppVersion -ChocolateyId $PackageName
+                $versionInfo = if ($observedVersion) { " v$observedVersion" } else { "" }
                 $attemptInfo = if ($attempt -gt 1) { " ($(Get-LogString -Key 'install.retry.attempt' -Parameters @{ Current = $attempt; Max = $MaxRetries }))" } else { "" }
                 $chocoSuccessMsg = Get-LogString -Key 'install.method.choco_success' -Parameters @{ PackageName = $PackageName; Version = $versionInfo; Attempt = $attemptInfo }
                 Write-Output "[SUCCESS] $chocoSuccessMsg"
@@ -1268,8 +1277,8 @@ function Install-ViaChocolatey {
             }
 
             if ($exitCode -eq 0) {
-                $version = Get-InstalledAppVersion -ChocolateyId $PackageName
-                $versionInfo = if ($version) { " v$version" } else { "" }
+                $observedVersion = Get-InstalledAppVersion -ChocolateyId $PackageName
+                $versionInfo = if ($observedVersion) { " v$observedVersion" } else { "" }
                 $attemptInfo = if ($attempt -gt 1) { " ($(Get-LogString -Key 'install.retry.attempt' -Parameters @{ Current = $attempt; Max = $MaxRetries }))" } else { "" }
                 $chocoSuccessMsg = Get-LogString -Key 'install.method.choco_success' -Parameters @{ PackageName = $PackageName; Version = $versionInfo; Attempt = $attemptInfo }
                 Write-Output "[SUCCESS] $chocoSuccessMsg"
@@ -1285,8 +1294,8 @@ function Install-ViaChocolatey {
                 $chocoListResult = Invoke-NativeCommandUtf8 -FilePath 'choco' -ArgumentList @('list', '--local-only', '--exact', $PackageName)
                 $chocoList = $chocoListResult.Output
                 if ($chocoList -match $PackageName -and $chocoList -notmatch "0 packages installed") {
-                    $version = Get-InstalledAppVersion -ChocolateyId $PackageName
-                    $versionInfo = if ($version) { " v$version" } else { "" }
+                    $observedVersion = Get-InstalledAppVersion -ChocolateyId $PackageName
+                    $versionInfo = if ($observedVersion) { " v$observedVersion" } else { "" }
                     $attemptInfo = if ($attempt -gt 1) { " ($(Get-LogString -Key 'install.retry.attempt' -Parameters @{ Current = $attempt; Max = $MaxRetries }))" } else { "" }
                     $chocoVerifiedMsg = Get-LogString -Key 'install.method.choco_verified' -Parameters @{ PackageName = $PackageName; Version = $versionInfo; Attempt = $attemptInfo }
                     Write-Output "[SUCCESS] $chocoVerifiedMsg"
@@ -1308,8 +1317,8 @@ function Install-ViaChocolatey {
             $chocoListResult = Invoke-NativeCommandUtf8 -FilePath 'choco' -ArgumentList @('list', '--local-only', '--exact', $PackageName)
             $chocoList = $chocoListResult.Output
             if ($chocoList -match $PackageName -and $chocoList -notmatch "0 packages installed") {
-                $version = Get-InstalledAppVersion -ChocolateyId $PackageName
-                $versionInfo = if ($version) { " v$version" } else { "" }
+                $observedVersion = Get-InstalledAppVersion -ChocolateyId $PackageName
+                $versionInfo = if ($observedVersion) { " v$observedVersion" } else { "" }
                 $attemptInfo = if ($attempt -gt 1) { " ($(Get-LogString -Key 'install.retry.attempt' -Parameters @{ Current = $attempt; Max = $MaxRetries }))" } else { "" }
                 $chocoVerifiedMsg = Get-LogString -Key 'install.method.choco_verified' -Parameters @{ PackageName = $PackageName; Version = $versionInfo; Attempt = $attemptInfo }
                 Write-Output "[SUCCESS] $chocoVerifiedMsg"
@@ -1705,6 +1714,7 @@ function Install-ViaDirectDownload {
             Write-Status -Message (Get-LogString 'install.method.direct_checksum_enabled') -Level 'Info'
         }
 
+        Write-Host ('[STATUS] ' + (Get-LogString 'install.method.direct_downloading' -Parameters @{ Url = $Url }))
         $downloadSuccess = Invoke-FileDownloadWithProgress @downloadParams
 
         if (-not $downloadSuccess -or -not (Test-Path -Path $installerPath)) {
@@ -1737,6 +1747,7 @@ function Install-ViaDirectDownload {
         Write-Status -Message (Get-LogString 'install.method.debug.direct_custom_args_status' -Parameters @{ Arguments = $CustomArguments }) -Level 'Verbose'
         Write-Status -Message (Get-LogString 'install.method.debug.direct_path_exists' -Parameters @{ Exists = "$(Test-Path $installerPath)" }) -Level 'Verbose'
 
+        Write-Host ('[STATUS] ' + (Get-LogString 'install.method.direct_running_installer' -Parameters @{ Type = $InstallerType; FileName = $filename }))
         # Install using appropriate method (delegated to helper functions)
         # Note: Helper functions output strings AND return boolean, so we must extract the boolean
         $installOutput = switch ($InstallerType) {

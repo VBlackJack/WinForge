@@ -483,8 +483,13 @@ function Invoke-RollbackWithConfirmation {
         }
 
         if (Get-Command -Name 'Invoke-Rollback' -ErrorAction SilentlyContinue) {
-            Invoke-Rollback
-            $result.AppsRolledBack = $summary.TotalApps
+            $receipt = Invoke-Rollback -Force:$Force
+            $result.Success = [bool]$receipt.Success
+            $result.AppsRolledBack = @($receipt.RolledBack).Count
+            $result.Errors = @($receipt.Failed)
+            if (-not $result.Success) {
+                $result.Message = Get-LogString -Key 'rollbackManager.failed' -Parameters @{ Error = ($result.Errors -join ', ') }
+            }
         } else {
             $result.Success = $false
             $result.Message = Get-LogString 'rollbackManager.functionNotAvailable'
@@ -539,7 +544,7 @@ function Get-RollbackSummary {
             $apps += [PSCustomObject]@{
                 AppName = $app.AppName
                 Method = $app.Method
-                PackageId = $app.PackageId
+                PackageId = if ($app -is [hashtable] -and $app.ContainsKey('Identifier')) { $app.Identifier } elseif ($app.PSObject.Properties['Identifier']) { $app.Identifier } else { $app.PackageId }
                 InstalledAt = $app.InstalledAt
                 CanRollback = Test-RollbackCapability -AppName $app.AppName -Method $app.Method
             }

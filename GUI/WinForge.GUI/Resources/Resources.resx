@@ -4264,4 +4264,43 @@ This action cannot be undone.</value>
     <value>Microsoft Store search results</value>
     <comment>Accessibility name for the Microsoft Store search results</comment>
   </data>
+<data name="Preflight_Title" xml:space="preserve"><value>Preview plan</value></data>
+<data name="Preflight_SelectFirst" xml:space="preserve"><value>Select applications to install or update. Wait for the current operation to finish.</value></data>
+<data name="Preflight_Explanation" xml:space="preserve"><value>Read-only preview. Sources are attempted in order; fallback may change the final source. Package versions are not pinned. This preview installs no software.</value></data>
+<data name="Preflight_PreparationFailed" xml:space="preserve"><value>Cannot prepare deployment. Refresh the catalog and retry.</value></data>
+<data name="Preflight_Install" xml:space="preserve"><value>Install</value></data>
+<data name="Preflight_Update" xml:space="preserve"><value>Update</value></data>
+<data name="Preflight_Skip" xml:space="preserve"><value>Already present</value></data>
+<data name="Preflight_Manual" xml:space="preserve"><value>Manual operation required</value></data>
+<data name="Preflight_Version" xml:space="preserve"><value>Detected version</value></data>
+<data name="Preflight_Unknown" xml:space="preserve"><value>Unknown</value></data>
+<data name="Preflight_Sources" xml:space="preserve"><value>Source order</value></data>
+<data name="Preflight_Elevation" xml:space="preserve"><value>Administrator rights</value></data>
+<data name="Preflight_Reboot" xml:space="preserve"><value>Reboot</value></data>
+<data name="Preflight_Rollback" xml:space="preserve"><value>Rollback</value></data>
+<data name="Preflight_None" xml:space="preserve"><value>Not required</value></data>
+<data name="Preflight_MayBeRequired" xml:space="preserve"><value>May be required</value></data>
+<data name="Preflight_Possible" xml:space="preserve"><value>Possible</value></data>
+<data name="Preflight_NotSupportedForExistingApplication" xml:space="preserve"><value>Existing software is preserved; downgrade is not supported.</value></data>
+<data name="Preflight_UninstallIfInstalledBySupportedSource" xml:space="preserve"><value>Uninstall only if newly installed through Winget or Chocolatey.</value></data>
+<data name="Preflight_SavedAt" xml:space="preserve"><value>Plan saved to</value></data>
+<data name="Preflight_MissingDefinition" xml:space="preserve"><value>Recovery stopped: application missing from the catalog and no frozen definition is available.</value></data>
+<data name="Preflight_History" xml:space="preserve"><value>Execution history</value></data>
+<data name="Preflight_InvalidReceipt" xml:space="preserve"><value>Unsupported or invalid execution record.</value></data>
+<data name="Preflight_Retry" xml:space="preserve"><value>Retry unsuccessful items</value></data>
+<data name="Preflight_RetryExplanation" xml:space="preserve"><value>Only the following failed, skipped or unattempted applications will run. The original record is preserved.</value></data>
+<data name="Preflight_Installed" xml:space="preserve"><value>Installed</value></data>
+<data name="Preflight_AlreadyInstalled" xml:space="preserve"><value>Already installed</value></data>
+<data name="Preflight_Updated" xml:space="preserve"><value>Updated</value></data>
+<data name="Preflight_Uninstalled" xml:space="preserve"><value>Uninstalled</value></data>
+<data name="Preflight_Failed" xml:space="preserve"><value>Failed</value></data>
+<data name="Preflight_Skipped" xml:space="preserve"><value>Skipped</value></data>
+<data name="Preflight_Pending" xml:space="preserve"><value>Not attempted</value></data>
+<data name="Preflight_Available" xml:space="preserve"><value>Available at last check</value></data>
+<data name="Preflight_PackageFoundAt" xml:space="preserve"><value>Package found</value></data>
+<data name="Preflight_DownloadVerifiedAt" xml:space="preserve"><value>Download verified</value></data>
+<data name="Preflight_InstallationTestedAt" xml:space="preserve"><value>Installation tested</value></data>
+<data name="Preflight_NotMeasured" xml:space="preserve"><value>Not measured</value></data>
+<data name="Preflight_Report" xml:space="preserve"><value>Deployment report. Read-only, scrollable and selectable.</value></data>
+<data name="Preflight_Unavailable" xml:space="preserve"><value>Unavailable</value></data>
 </root>

@@ -33,6 +33,9 @@ namespace WinForge.GUI.Services.Resume;
 /// </remarks>
 public interface IBatchResumeService
 {
+    /// <summary>Records observed version, source and error details without changing the operation outcome.</summary>
+    Task RecordObservationAsync(Guid batchId, string appId, BatchObservation observation, CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Creates a new checkpoint in <see cref="BatchState.InProgress"/> and returns its identifier.
     /// </summary>

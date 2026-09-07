@@ -747,6 +747,7 @@ function Merge-ProfileApplications {
                 Write-Status -Message "  Add: $appName" -Level 'Verbose'
             }
 
+            $app | Add-Member -NotePropertyName 'OriginProfile' -NotePropertyValue $profileItem.Name -Force
             $mergedApps[$appName] = $app
         }
     }
@@ -1346,4 +1347,3 @@ Export-ModuleMember -Function @(
     'ConvertTo-Hashtable',
     'Clear-ProfileCache'
 )
-

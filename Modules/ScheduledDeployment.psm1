@@ -58,6 +58,61 @@ $script:LegacyTaskNamePrefix = 'Win11Forge_Deployment_'
 $script:TaskFolder = '\WinForge\'
 $script:LegacyTaskFolder = '\Win11Forge\'
 $script:ScheduledDeploymentsPath = Join-Path $script:RepositoryRoot 'Config\scheduled-deployments.json'
+$script:ProfileSnapshotRoot = Join-Path ([Environment]::GetFolderPath('CommonApplicationData')) 'WinForge\ScheduledProfiles'
+
+function Get-ScheduledProfileBundle {
+    <# .SYNOPSIS Captures a profile and its inheritance closure using GUI directory precedence. #>
+    [CmdletBinding()]
+    [OutputType([hashtable])]
+    param(
+        [Parameter(Mandatory)][string]$ProfileName,
+        [Parameter(Mandatory)][string[]]$Directories,
+        [Parameter()][hashtable]$Bundle = @{},
+        [Parameter()][string[]]$Ancestors = @()
+    )
+    if ($ProfileName.Length -gt 100 -or $ProfileName -notmatch '^[\p{L}\p{N}_ -]+$' -or $ProfileName.Trim() -ne $ProfileName -or $Ancestors -contains $ProfileName -or $Ancestors.Count -ge 32) {
+        throw [System.IO.InvalidDataException]::new("Invalid or cyclic scheduled profile: $ProfileName")
+    }
+    if ($Bundle.ContainsKey($ProfileName)) { return $Bundle }
+    $source = $null
+    foreach ($directory in $Directories) {
+        $candidate = Join-Path $directory "$ProfileName.json"
+        if (Test-Path -LiteralPath $candidate -PathType Leaf) { $source = $candidate; break }
+    }
+    if (-not $source) { throw [System.IO.FileNotFoundException]::new("Profile not found: $ProfileName") }
+    $content = [System.IO.File]::ReadAllText($source)
+    $profileData = $content | ConvertFrom-Json -ErrorAction Stop
+    $Bundle[$ProfileName] = $content
+    if ($profileData.PSObject.Properties['Inherits']) {
+        foreach ($parent in @($profileData.Inherits)) {
+            if ([string]::IsNullOrWhiteSpace($parent)) { continue }
+            $null = Get-ScheduledProfileBundle -ProfileName $parent -Directories $Directories -Bundle $Bundle -Ancestors @($Ancestors + $ProfileName)
+        }
+    }
+    return $Bundle
+}
+
+function Protect-ScheduledProfileDirectory {
+    <# .SYNOPSIS Prevents unprivileged edits to profiles executed by SYSTEM. #>
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][string]$Path)
+    $directory = Get-Item -LiteralPath $Path -Force -ErrorAction Stop
+    while ($null -ne $directory) {
+        if ($directory.Attributes -band [System.IO.FileAttributes]::ReparsePoint) {
+            throw [System.IO.InvalidDataException]::new('Scheduled profile storage must not traverse reparse points.')
+        }
+        $directory = $directory.Parent
+    }
+    $acl = [System.Security.AccessControl.DirectorySecurity]::new()
+    $acl.SetAccessRuleProtection($true, $false)
+    $acl.SetOwner([System.Security.Principal.SecurityIdentifier]::new('S-1-5-32-544'))
+    foreach ($sidText in @('S-1-5-18', 'S-1-5-32-544')) {
+        $sid = [System.Security.Principal.SecurityIdentifier]::new($sidText)
+        $rule = [System.Security.AccessControl.FileSystemAccessRule]::new($sid, 'FullControl', 'ContainerInherit, ObjectInherit', 'None', 'Allow')
+        $acl.AddAccessRule($rule)
+    }
+    Set-Acl -LiteralPath $Path -AclObject $acl -ErrorAction Stop
+}
 
 # === SCHEDULED DEPLOYMENT CLASS ===
 
@@ -224,7 +279,8 @@ function New-ScheduledDeployment {
     param(
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
-        [ValidatePattern('^[a-zA-Z0-9_-]+$')]
+        [ValidateLength(1, 100)]
+        [ValidatePattern('^[\p{L}\p{N}_ -]+$')]
         [string]$ProfileName,
 
         [Parameter(Mandatory)]
@@ -245,7 +301,10 @@ function New-ScheduledDeployment {
         [switch]$TestMode,
 
         [Parameter()]
-        [string]$Description
+        [string]$Description,
+
+        [Parameter()]
+        [string[]]$ProfileDirectories
     )
 
     # Validate prerequisites
@@ -259,13 +318,12 @@ function New-ScheduledDeployment {
         throw [System.UnauthorizedAccessException]::new($msg)
     }
 
-    # Validate profile exists
-    $profilesDir = Join-Path $script:RepositoryRoot 'Profiles'
-    $profilePath = Join-Path $profilesDir "$ProfileName.json"
-    if (-not (Test-Path $profilePath)) {
-        $msg = Get-LogString -Key 'profile.not_found' -DefaultValue 'Profile not found: {Name}' -Parameters @{ Name = $ProfileName }
-        throw [System.IO.FileNotFoundException]::new($msg)
+    if (-not $ProfileDirectories) {
+        $defaults = Join-Path $script:RepositoryRoot 'Profiles\Defaults'
+        if (-not (Test-Path -LiteralPath $defaults -PathType Container)) { $defaults = Join-Path $script:RepositoryRoot 'Profiles' }
+        $ProfileDirectories = @((Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'WinForge\Profiles'), $defaults)
     }
+    $bundle = Get-ScheduledProfileBundle -ProfileName $ProfileName -Directories $ProfileDirectories
 
     # Create deployment info
     $deployment = [ScheduledDeploymentInfo]::new()
@@ -281,7 +339,9 @@ function New-ScheduledDeployment {
 
     # Build the action command
     $launcherPath = Join-Path $script:RepositoryRoot 'Deploy-Win11Environment.ps1'
-    $arguments = "-ProfileName '$ProfileName' -NonInteractive"
+    $snapshotDirectory = Join-Path $script:ProfileSnapshotRoot $deployment.Id
+    $profilePath = Join-Path $snapshotDirectory "$ProfileName.json"
+    $arguments = "-ProfileName `"$profilePath`""
 
     if ($Parallel) {
         $arguments += ' -Parallel'
@@ -293,8 +353,19 @@ function New-ScheduledDeployment {
     # Create the scheduled task
     if ($PSCmdlet.ShouldProcess($deployment.TaskName, 'Create scheduled deployment task')) {
         try {
+            # Protect the shared parent before adding child files. ACL failures stop registration.
+            $null = New-Item -Path $script:ProfileSnapshotRoot -ItemType Directory -Force -ErrorAction Stop
+            Protect-ScheduledProfileDirectory -Path $script:ProfileSnapshotRoot
+            $null = New-Item -Path $snapshotDirectory -ItemType Directory -ErrorAction Stop
+            foreach ($name in $bundle.Keys) {
+                [System.IO.File]::WriteAllText((Join-Path $snapshotDirectory "$name.json"), $bundle[$name], [System.Text.UTF8Encoding]::new($false))
+            }
             # Create the action
-            $action = New-ScheduledTaskAction -Execute 'pwsh.exe' -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$launcherPath`" $arguments" -WorkingDirectory $script:RepositoryRoot
+            $powerShellPath = Join-Path $env:ProgramFiles 'PowerShell\7\pwsh.exe'
+            if (-not (Test-Path -LiteralPath $powerShellPath -PathType Leaf)) {
+                throw 'Scheduled SYSTEM deployments require a machine-wide PowerShell 7 installation.'
+            }
+            $action = New-ScheduledTaskAction -Execute $powerShellPath -Argument "-NoProfile -NonInteractive -ExecutionPolicy Bypass -File `"$launcherPath`" $arguments" -WorkingDirectory $script:RepositoryRoot
 
             # Create the trigger based on type
             $trigger = switch ($TriggerType) {

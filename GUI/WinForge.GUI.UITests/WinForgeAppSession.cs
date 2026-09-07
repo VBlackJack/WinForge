@@ -238,6 +238,12 @@ internal sealed class WinForgeAppSession : IDisposable
 
     private static void InvokeOrClick(AutomationElement element)
     {
+        if (element.TryGetCurrentPattern(InvokePattern.Pattern, out object? directInvoke))
+        {
+            ((InvokePattern)directInvoke).Invoke();
+            return;
+        }
+
         Rect rect = element.Current.BoundingRectangle;
         if (!rect.IsEmpty)
         {

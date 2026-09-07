@@ -56,7 +56,10 @@ public enum BatchItemOutcome
 /// Persisted with the checkpoint so a resumed batch reuses the original parameters.
 /// </summary>
 /// <param name="ForceUpdate">Whether the original batch requested forced updates.</param>
-public sealed record BatchOptions(bool ForceUpdate);
+public sealed record BatchOptions(bool ForceUpdate)
+{
+    public IReadOnlyDictionary<string, System.Text.Json.JsonElement>? Definitions { get; init; }
+}
 
 /// <summary>
 /// One application entry already processed during the batch.
@@ -68,6 +71,8 @@ public sealed record BatchCompletedItem(
     string AppId,
     BatchItemOutcome Outcome,
     DateTimeOffset CompletedAt);
+
+public sealed record BatchObservation(string? InstalledVersion, string Method, string Message);
 
 /// <summary>
 /// Per-batch checkpoint persisted under
@@ -100,6 +105,17 @@ public sealed record BatchCheckpoint(
     /// Current schema version emitted by this build. Bump on breaking changes.
     /// </summary>
     public const int CurrentSchemaVersion = 1;
+    public IReadOnlyDictionary<string, BatchObservation>? Observations { get; init; }
+
+    /// <summary>Returns failed, skipped and unattempted applications in plan order.</summary>
+    public IReadOnlyList<string> GetRetryAppIds()
+    {
+        Dictionary<string, BatchItemOutcome> latest = Completed
+            .GroupBy(item => item.AppId, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.Last().Outcome, StringComparer.OrdinalIgnoreCase);
+        return Plan.Where(id => !latest.TryGetValue(id, out BatchItemOutcome outcome) ||
+            outcome is BatchItemOutcome.Failed or BatchItemOutcome.Skipped).ToList();
+    }
 
     /// <summary>
     /// Returns the AppIds in <see cref="Plan"/> that have not been recorded as completed yet.

@@ -432,6 +432,30 @@ Describe 'InstallationMethods Mock-Based Tests' {
         Mock Write-Host { }
     }
 
+    Context 'Winget community source isolation' {
+        It 'accepts native success with a locked version and unavailable observed version' {
+            Mock Test-CommandExists { $true } -ModuleName InstallationMethods
+            Mock Get-InstalledAppVersion { $null } -ModuleName InstallationMethods
+            Mock Invoke-NativeCommandUtf8 { @{ ExitCode=0; Output='Successfully installed' } } -ModuleName InstallationMethods
+            $result = @(Install-ViaWinget -PackageId 'Fixture.Id' -Version '24.09' -MaxRetries 1)
+            $result[-1] | Should -BeTrue
+            Should -Invoke Invoke-NativeCommandUtf8 -ModuleName InstallationMethods -Times 1 -Exactly -ParameterFilter {
+                $ArgumentList -contains '--version' -and $ArgumentList -contains '24.09'
+            }
+        }
+
+        It 'does not query Store during installation or failure verification' {
+            Mock Test-CommandExists { $true } -ModuleName InstallationMethods
+            Mock Invoke-NativeCommandUtf8 { @{ ExitCode=-1978335138; Output='' } } -ModuleName InstallationMethods
+            $result = @(Install-ViaWinget -PackageId 'Fixture.Id' -MaxRetries 1)
+            $result[-1] | Should -BeFalse
+            Should -Invoke Invoke-NativeCommandUtf8 -ModuleName InstallationMethods -Times 2 -Exactly -ParameterFilter {
+                $FilePath -eq 'winget' -and $ArgumentList -contains '--source' -and
+                $ArgumentList[([array]::IndexOf($ArgumentList, '--source') + 1)] -eq 'winget'
+            }
+        }
+    }
+
     Context 'Install-ViaWinget - Winget Unavailable' {
         BeforeEach {
             Mock Test-CommandExists { return $false } -ParameterFilter { $Name -eq 'winget' } -ModuleName InstallationMethods

@@ -1,0 +1,12 @@
+<UserControl x:Class="WinForge.GUI.Views.DeploymentReportView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="clr-namespace:WinForge.GUI.Resources"
+             MinWidth="360" MaxWidth="900" MaxHeight="540">
+    <TextBox Text="{Binding Mode=OneWay}" IsReadOnly="True"
+             TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
+             HorizontalScrollBarVisibility="Disabled" AcceptsReturn="True"
+             AutomationProperties.AutomationId="DeploymentReportText"
+             AutomationProperties.Name="{loc:Loc Preflight_Report}"
+             Padding="{StaticResource SectionPadding}"/>
+</UserControl>

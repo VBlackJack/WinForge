@@ -49,6 +49,13 @@ BeforeAll {
 }
 
 Describe 'Get-FreshnessCheckPlan' {
+    It 'does not probe Store product identifiers against the community source' {
+        $apps = @([pscustomobject]@{ AppId='QuickAssist'; Name='Quick Assist'; Sources=[pscustomobject]@{ Winget='9P7BP5VNWKX5'; Store='9P7BP5VNWKX5'; Chocolatey=$null; DirectUrl=$null } })
+        $plan = @(Get-FreshnessCheckPlan -Applications $apps -Selected @('Winget'))
+        $entry = $plan | Where-Object Source -eq Winget
+        $entry.Action | Should -Be Skip
+        $entry.Reason | Should -Be store-not-validated-v1
+    }
     BeforeAll {
         $script:Apps = script:Get-FixtureApplications
     }
@@ -300,8 +307,8 @@ Describe 'Get-CoverageGap' {
         )
         $gaps = Get-CoverageGap -Results $results
         $gaps.Count | Should -Be 2
-        ($gaps | Where-Object { $_.Source -eq 'Winget' }).Count     | Should -Be 1
-        ($gaps | Where-Object { $_.Source -eq 'Chocolatey' }).Count | Should -Be 1
+        @($gaps | Where-Object { $_.Source -eq 'Winget' }).Count     | Should -Be 1
+        @($gaps | Where-Object { $_.Source -eq 'Chocolatey' }).Count | Should -Be 1
     }
 
     It 'returns empty array when Skipped reasons are by-design (not CLI-missing)' {
@@ -362,6 +369,23 @@ Describe 'Invoke-CatalogFreshness -AppIdFilter end-to-end' {
         $report.AppIdFilter | Should -Be @('WingetOnly')
         $appIds = @($report.Results | ForEach-Object { $_.AppId } | Sort-Object -Unique)
         $appIds | Should -Be @('WingetOnly')
+    }
+
+    It 'ignores a cached community-source failure for a Store product' {
+        $database = Get-Content $script:FixturePath -Raw | ConvertFrom-Json
+        $database.Applications.WingetOnly.Sources.Winget = '9P7BP5VNWKX5'
+        $database.Applications.WingetOnly.Sources.Store = '9P7BP5VNWKX5'
+        $databasePath = Join-Path $TestDrive 'store.json'
+        $database | ConvertTo-Json -Depth 20 | Set-Content $databasePath
+        $cachePath = Join-Path $TestDrive 'store-cache.json'
+        $entry = [pscustomobject]@{ Source='Winget'; Identifier='9P7BP5VNWKX5'; Status='Broken'; Reason='not-found'; Detail='old'; CheckedAt=Get-IsoTimestamp }
+        Save-FreshnessCache -Path $cachePath -Entries @{ 'Winget|9P7BP5VNWKX5'=$entry }
+        $reportPath = Join-Path $TestDrive 'store-report.json'
+        $outcome = Invoke-CatalogFreshness -DatabasePath $databasePath -Checks Winget -AppIdFilter WingetOnly -CachePath $cachePath -JsonReportPath $reportPath -ThrottleMs 0
+        $outcome.ExitCode | Should -Be 0
+        $report = Get-Content $reportPath -Raw | ConvertFrom-Json
+        @($report.Results | Where-Object Status -eq Broken).Count | Should -Be 0
+        Should -Invoke Test-WingetIdentifier -Times 0 -Exactly
     }
 
     It 'warns and continues when filter contains unknown AppId' {
