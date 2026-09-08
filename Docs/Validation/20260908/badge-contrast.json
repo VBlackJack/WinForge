@@ -1,0 +1,99 @@
+{
+  "Reference": "https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html",
+  "Threshold": 4.5,
+  "Method": "Relative luminance of source-defined colors; alpha backgrounds composited over the normal card surface. Corrected light source backgrounds are opaque, including selected or hovered rows. No rounding used for pass/fail.",
+  "Rows": [
+    {
+      "Theme": "Folio",
+      "Source": "Winget",
+      "BeforeForeground": "#FF93C5FD",
+      "BeforeCompositedBackground": "#FFC4D1E7",
+      "BeforeRatio": 1.1696592211796484,
+      "AfterForeground": "#FF1D4ED8",
+      "AfterBackground": "#FFDBEAFE",
+      "AfterRatio": 5.4928674915472,
+      "Passed": true
+    },
+    {
+      "Theme": "Folio",
+      "Source": "Chocolatey",
+      "BeforeForeground": "#FF86EFAC",
+      "BeforeCompositedBackground": "#FFBED6CD",
+      "BeforeRatio": 1.0925056403511928,
+      "AfterForeground": "#FF166534",
+      "AfterBackground": "#FFDCFCE7",
+      "AfterRatio": 6.492383151689474,
+      "Passed": true
+    },
+    {
+      "Theme": "Folio",
+      "Source": "Store",
+      "BeforeForeground": "#FF5EEAD4",
+      "BeforeCompositedBackground": "#FFBED9DB",
+      "BeforeRatio": 1.0041231672249906,
+      "AfterForeground": "#FF0F766E",
+      "AfterBackground": "#FFCCFBF1",
+      "AfterRatio": 4.857254204872252,
+      "Passed": true
+    },
+    {
+      "Theme": "Folio",
+      "Source": "Direct",
+      "BeforeForeground": "#FFFDBA74",
+      "BeforeCompositedBackground": "#FFE1CDC2",
+      "BeforeRatio": 1.1012476959916082,
+      "AfterForeground": "#FFC2410C",
+      "AfterBackground": "#FFFFEDD5",
+      "AfterRatio": 4.519152579424782,
+      "Passed": true
+    },
+    {
+      "Theme": "Parchment",
+      "Source": "Winget",
+      "BeforeForeground": "#FF93C5FD",
+      "BeforeCompositedBackground": "#FFCBD4E0",
+      "BeforeRatio": 1.2050220028868643,
+      "AfterForeground": "#FF1D4ED8",
+      "AfterBackground": "#FFDBEAFE",
+      "AfterRatio": 5.4928674915472,
+      "Passed": true
+    },
+    {
+      "Theme": "Parchment",
+      "Source": "Chocolatey",
+      "BeforeForeground": "#FF86EFAC",
+      "BeforeCompositedBackground": "#FFC5D9C6",
+      "BeforeRatio": 1.0596068955586015,
+      "AfterForeground": "#FF166534",
+      "AfterBackground": "#FFDCFCE7",
+      "AfterRatio": 6.492383151689474,
+      "Passed": true
+    },
+    {
+      "Theme": "Parchment",
+      "Source": "Store",
+      "BeforeForeground": "#FF5EEAD4",
+      "BeforeCompositedBackground": "#FFC5DCD4",
+      "BeforeRatio": 1.0258020086485575,
+      "AfterForeground": "#FF0F766E",
+      "AfterBackground": "#FFCCFBF1",
+      "AfterRatio": 4.857254204872252,
+      "Passed": true
+    },
+    {
+      "Theme": "Parchment",
+      "Source": "Direct",
+      "BeforeForeground": "#FFFDBA74",
+      "BeforeCompositedBackground": "#FFE7D0BB",
+      "BeforeRatio": 1.1353505871671703,
+      "AfterForeground": "#FFC2410C",
+      "AfterBackground": "#FFFFEDD5",
+      "AfterRatio": 4.519152579424782,
+      "Passed": true
+    }
+  ],
+  "OtherBadgeCoverage": "The real ThemeService test loads both light themes and the shipped bridge. Primary search, secondary category/profile-tier, manual/prerequisite warning and neutral category/status pairs each pass 4.5:1, including a light-dark-light round trip and removal of a stale source foreground override.",
+  "BeforeTest": "badges-before.trx: both theme cases failed; Direct ratio 1.101:1 in Folio.",
+  "AfterTests": "badges-after.trx: 790 .NET tests passed, including both light-theme contrast cases.",
+  "BridgeSha256": "65DA7AB2580324C782495C0A4380E9C0BAB064616BC6DDF917C307C17DA75432"
+}

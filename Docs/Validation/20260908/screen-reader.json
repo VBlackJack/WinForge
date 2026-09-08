@@ -1,0 +1,1001 @@
+{
+  "ScreenReader": "NVDA 2026.2 AMD64",
+  "Synthesizer": "eSpeak NG 1.52.0, English voice",
+  "Method": "Real WASAPI loopback capture in the disposable VM, offline faster-whisper small.en transcription, and separate UIA name/role/focus measurements. Automated transcription can contain phonetic errors; it is not a human verbatim transcript.",
+  "Qualification": "Validation is limited to the recorded workflows and NVDA configuration. It does not certify every control, language or screen reader. Original R5 progression segment was excluded because NVDA logged an audio error. R8/R9 contain no such audio error; short watchdog recoveries are retained in the local logs.",
+  "Cases": [
+    {
+      "Id": "R8",
+      "At": "2026-09-08T09:16:24.8113653Z",
+      "OS": "Windows 11 Pro 25H2",
+      "OSBuild": "26200.9168",
+      "EffectiveDisplay": {
+        "Dpi": 120,
+        "Scale": 125,
+        "Awareness": 2,
+        "Width": 1366,
+        "Height": 768
+      },
+      "RequestedDisplayMatched": false,
+      "Error": null,
+      "RawHarnessPassed": false,
+      "RawResultSha256": "D8B0316FC4418B2590C5D78E9292DC892F2528152B0E84E185B7BD20A63A39B3",
+      "Keyboard": [
+        {
+          "At": "2026-09-08T09:16:49.3097002Z",
+          "Name": "Theme picker",
+          "Id": "ThemePicker",
+          "Stage": "Settings theme",
+          "Type": "ControlType.ComboBox",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:16:56.4885024Z",
+          "Name": "Accent picker",
+          "Id": "AccentTintPicker",
+          "Stage": "Settings accent",
+          "Type": "ControlType.ComboBox",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:16:59.5814755Z",
+          "Name": "Toggle reduced motion",
+          "Id": "",
+          "Stage": "Settings keyboard",
+          "Type": "ControlType.Button",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:17:02.6159798Z",
+          "Name": "Toggle high contrast mode",
+          "Id": "",
+          "Stage": "Settings keyboard",
+          "Type": "ControlType.Button",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:17:05.6525325Z",
+          "Name": "Select language",
+          "Id": "",
+          "Stage": "Settings keyboard",
+          "Type": "ControlType.ComboBox",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:17:08.6861969Z",
+          "Name": "Apply",
+          "Id": "",
+          "Stage": "Settings keyboard",
+          "Type": "ControlType.Button",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:17:20.9236039Z",
+          "Name": "Add",
+          "Id": "",
+          "Stage": "Catalog add",
+          "Type": "ControlType.Button",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:17:31.7019231Z",
+          "Name": "Application ID",
+          "Id": "",
+          "Stage": "Editor general",
+          "Type": "ControlType.Edit",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:17:34.7393193Z",
+          "Name": "Name",
+          "Id": "",
+          "Stage": "Editor general keyboard",
+          "Type": "ControlType.Edit",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:17:37.7805433Z",
+          "Name": "Category",
+          "Id": "",
+          "Stage": "Editor general keyboard",
+          "Type": "ControlType.ComboBox",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:17:40.8284134Z",
+          "Name": "Description",
+          "Id": "",
+          "Stage": "Editor general keyboard",
+          "Type": "ControlType.Edit",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:17:43.8745875Z",
+          "Name": "Homepage URL",
+          "Id": "",
+          "Stage": "Editor general keyboard",
+          "Type": "ControlType.Edit",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:17:53.4730895Z",
+          "Name": "Store App ID (12 characters)",
+          "Id": "",
+          "Stage": "Source Store App ID (12 characters)",
+          "Type": "ControlType.Edit",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:18:00.6600094Z",
+          "Name": "Download URL",
+          "Id": "",
+          "Stage": "Source Download URL",
+          "Type": "ControlType.Edit",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:18:07.8317335Z",
+          "Name": "Installer Type",
+          "Id": "",
+          "Stage": "Source Installer Type",
+          "Type": "ControlType.ComboBox",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:18:14.9956099Z",
+          "Name": "Silent Arguments",
+          "Id": "",
+          "Stage": "Source Silent Arguments",
+          "Type": "ControlType.Edit",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:18:22.2070445Z",
+          "Name": "Checksum (optional)",
+          "Id": "",
+          "Stage": "Source Checksum (optional)",
+          "Type": "ControlType.Edit",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:18:29.3971475Z",
+          "Name": "Expected publisher (optional)",
+          "Id": "",
+          "Stage": "Source Expected publisher (optional)",
+          "Type": "ControlType.Edit",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:18:38.7403698Z",
+          "Name": "Detection Method",
+          "Id": "MethodComboBox",
+          "Stage": "Detection method",
+          "Type": "ControlType.ComboBox",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:18:41.7736131Z",
+          "Name": "Registry Path (e.g., HKLM\\SOFTWARE\\App)",
+          "Id": "",
+          "Stage": "Detection keyboard",
+          "Type": "ControlType.Edit",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:18:44.8189258Z",
+          "Name": "Version Key (registry value name)",
+          "Id": "",
+          "Stage": "Detection keyboard",
+          "Type": "ControlType.Edit",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:18:47.8597643Z",
+          "Name": "Minimum Version",
+          "Id": "",
+          "Stage": "Detection keyboard",
+          "Type": "ControlType.Edit",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:18:50.8940734Z",
+          "Name": "Verify Sources",
+          "Id": "VerifyButton",
+          "Stage": "Detection keyboard",
+          "Type": "ControlType.Button",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:19:21.6674813Z",
+          "Name": "Preview plan",
+          "Id": "PreviewSelected",
+          "Stage": "Preview action",
+          "Type": "ControlType.Button",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:19:49.0870799Z",
+          "Name": "Deployment report. Read-only, scrollable and selectable.",
+          "Id": "DeploymentReportText",
+          "Stage": "Preview report",
+          "Type": "ControlType.Edit",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:20:09.7732093Z",
+          "Name": "Execution history",
+          "Id": "ReviewDeployment",
+          "Stage": "History action",
+          "Type": "ControlType.Button",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:20:14.0831318Z",
+          "Name": "",
+          "Id": "1148",
+          "Stage": "Native history filename",
+          "Type": "ControlType.Pane",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:20:54.9978007Z",
+          "Name": "Deployment report. Read-only, scrollable and selectable.",
+          "Id": "DeploymentReportText",
+          "Stage": "History report fixture",
+          "Type": "ControlType.Edit",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:21:14.7276465Z",
+          "Name": "Execution history",
+          "Id": "ReviewDeployment",
+          "Stage": "Invalid history action",
+          "Type": "ControlType.Button",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:21:19.2141036Z",
+          "Name": "",
+          "Id": "1148",
+          "Stage": "Native history filename",
+          "Type": "ControlType.Pane",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:22:23.1087945Z",
+          "Name": "Dismiss",
+          "Id": "",
+          "Stage": "Error dismiss",
+          "Type": "ControlType.Button",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:22:26.1279265Z",
+          "Name": "WinForge v2026090703",
+          "Id": "",
+          "Stage": "Error keyboard",
+          "Type": "ControlType.Window",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:22:29.1694995Z",
+          "Name": "",
+          "Id": "NavigationToggleButton",
+          "Stage": "Error keyboard",
+          "Type": "ControlType.Button",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:22:42.2684660Z",
+          "Name": "7-Zip",
+          "Id": "",
+          "Stage": "Application selection name",
+          "Type": "ControlType.CheckBox",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:22:49.4941577Z",
+          "Name": "Install Selected",
+          "Id": "InstallSelectedButton",
+          "Stage": "Real 7-Zip installation",
+          "Type": "ControlType.Button",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:23:21.5695033Z",
+          "Name": "Close",
+          "Id": "",
+          "Stage": "Installation summary close",
+          "Type": "ControlType.Button",
+          "Enabled": true
+        }
+      ],
+      "EditorFitsWorkArea": true,
+      "AudioLocalPath": "G:\\VM\\WinForge-Recette\\results\\speech-final-audio-r8\\loopback.wav",
+      "AudioSha256": "351F48094AB3D9B9105F8B456BC707BE16AB26D76141AA3166B7C081CFC2091A",
+      "AudioSeconds": 470.7,
+      "Transcript": [
+        {
+          "start": 0.0,
+          "end": 2.64,
+          "text": " 7P.USH.EXE window terminal blank"
+        },
+        {
+          "start": 2.64,
+          "end": 27.14,
+          "text": " C. Windows System 32 Windows PowerShell v1.0 PowerShell.EXE window terminal blank"
+        },
+        {
+          "start": 27.14,
+          "end": 37.74,
+          "text": " WinForge v2 in 26,090,703 window list settings"
+        },
+        {
+          "start": 37.74,
+          "end": 40.74,
+          "text": " Bator item navigate to settings view, control plus five,"
+        },
+        {
+          "start": 40.74,
+          "end": 43.34,
+          "text": " tab control appearance tab selected one of five,"
+        },
+        {
+          "start": 43.34,
+          "end": 44.74,
+          "text": " theme picker combo box,"
+        },
+        {
+          "start": 44.74,
+          "end": 47.94,
+          "text": " circle collapsed."
+        },
+        {
+          "start": 47.94,
+          "end": 54.98,
+          "text": " Accent picker combo box default collapsed."
+        },
+        {
+          "start": 54.98,
+          "end": 55.94,
+          "text": " Todal reduced motion,"
+        },
+        {
+          "start": 55.94,
+          "end": 59.14,
+          "text": " Todal button not pressed minimize animations for Todal High contrast mode"
+        },
+        {
+          "start": 59.14,
+          "end": 61.06,
+          "text": " Todal button not pressed increase contrast"
+        },
+        {
+          "start": 61.06,
+          "end": 63.38,
+          "text": " Select language, combo box English collapsed"
+        },
+        {
+          "start": 64.02,
+          "end": 64.82,
+          "text": " Apply button"
+        },
+        {
+          "start": 67.82,
+          "end": 71.26,
+          "text": " List app catalog data item navigate to application database view"
+        },
+        {
+          "start": 71.26,
+          "end": 73.74,
+          "text": " Control plus 6, add button add a new application"
+        },
+        {
+          "start": 96.69,
+          "end": 98.69,
+          "text": " Edit Blank."
+        },
+        {
+          "start": 98.69,
+          "end": 100.69,
+          "text": " Home page URL Edit Blank."
+        },
+        {
+          "start": 102.69,
+          "end": 104.69,
+          "text": " Sources tab selected 2 of 3 tab controls."
+        },
+        {
+          "start": 104.69,
+          "end": 106.69,
+          "text": " Tor app ID 12 characters."
+        },
+        {
+          "start": 106.69,
+          "end": 111.88,
+          "text": " Edit Blank."
+        },
+        {
+          "start": 111.88,
+          "end": 118.9,
+          "text": " Download URL Edit Blank."
+        },
+        {
+          "start": 118.9,
+          "end": 119.9,
+          "text": " Installer type."
+        },
+        {
+          "start": 119.9,
+          "end": 120.9,
+          "text": " Combo box."
+        },
+        {
+          "start": 120.9,
+          "end": 126.19,
+          "text": " CXE collapsed."
+        },
+        {
+          "start": 126.19,
+          "end": 128.19,
+          "text": " Silent argument, edit blank."
+        },
+        {
+          "start": 128.19,
+          "end": 135.18,
+          "text": " Check some optional edit blank."
+        },
+        {
+          "start": 135.18,
+          "end": 143.02,
+          "text": " Expected publisher, optional edit blank."
+        },
+        {
+          "start": 143.02,
+          "end": 149.4,
+          "text": " Detection tab selected, 3 of 3."
+        },
+        {
+          "start": 149.4,
+          "end": 152.4,
+          "text": " Detection method, combo box, registry collapsed."
+        },
+        {
+          "start": 152.4,
+          "end": 159.56,
+          "text": " Registry path, e.g.hklm software app,"
+        },
+        {
+          "start": 159.56,
+          "end": 162.64,
+          "text": " Web app, Edit, Version, Key, Registry, Value, Name, Edit, Blank."
+        },
+        {
+          "start": 163.24,
+          "end": 164.64,
+          "text": " Minimum version, Edit, Blank."
+        },
+        {
+          "start": 166.24,
+          "end": 167.48,
+          "text": " Verify sources button."
+        },
+        {
+          "start": 172.82,
+          "end": 177.54,
+          "text": " List applications, Data item, Navigate to applications, View, Control plus 3, 3 or 8."
+        },
+        {
+          "start": 177.54,
+          "end": 196.49,
+          "text": " Preview plan button read only preview sources are attempted in order."
+        },
+        {
+          "start": 196.49,
+          "end": 198.49,
+          "text": " Fallback may change the final source."
+        },
+        {
+          "start": 198.49,
+          "end": 200.49,
+          "text": " Package versions are not pinned."
+        },
+        {
+          "start": 200.49,
+          "end": 204.43,
+          "text": " Pain."
+        },
+        {
+          "start": 204.43,
+          "end": 206.43,
+          "text": " Preview plan dialog preview plan deployment report."
+        },
+        {
+          "start": 206.43,
+          "end": 207.43,
+          "text": " Read only."
+        },
+        {
+          "start": 207.43,
+          "end": 208.43,
+          "text": " Scrollable and selectable."
+        },
+        {
+          "start": 208.43,
+          "end": 211.23,
+          "text": " Read-only preview. Sources are attempted in order."
+        },
+        {
+          "start": 211.23,
+          "end": 213.23,
+          "text": " Fallback may change the final source."
+        },
+        {
+          "start": 213.23,
+          "end": 214.73,
+          "text": " Packaged versions are not pinned."
+        },
+        {
+          "start": 214.73,
+          "end": 216.53,
+          "text": " This preview installs no software."
+        },
+        {
+          "start": 216.53,
+          "end": 218.73,
+          "text": " 7-zip. Install detected version."
+        },
+        {
+          "start": 218.73,
+          "end": 219.79,
+          "text": " Unknown source order."
+        },
+        {
+          "start": 219.79,
+          "end": 225.79,
+          "text": " WinJit 7-zip.7-zip greater-chocolated 7-zip WinJit slash available at last check package found"
+        },
+        {
+          "start": 225.79,
+          "end": 230.03,
+          "text": " 2026 slash the read-only preview sources are attempted in order"
+        },
+        {
+          "start": 230.03,
+          "end": 232.03,
+          "text": " Fallback may change the final source."
+        },
+        {
+          "start": 232.03,
+          "end": 233.53,
+          "text": " Package the read-only preview."
+        },
+        {
+          "start": 233.53,
+          "end": 235.03,
+          "text": " Sources are attempted in order."
+        },
+        {
+          "start": 235.03,
+          "end": 237.03,
+          "text": " Fallback may change the final source."
+        },
+        {
+          "start": 237.03,
+          "end": 238.53,
+          "text": " Package versions are not pinned."
+        },
+        {
+          "start": 238.53,
+          "end": 240.53,
+          "text": " This preview selected pane."
+        },
+        {
+          "start": 241.03,
+          "end": 252.38,
+          "text": " Execution History button."
+        },
+        {
+          "start": 252.38,
+          "end": 255.92,
+          "text": " backslash V-T-I-A-E-N-E-T-I-N"
+        },
+        {
+          "start": 255.92,
+          "end": 288.17,
+          "text": " Winforge v2 billion 26 million 90 thousand 7 hundred and 3 window execution history dialogue execution history deployment report"
+        },
+        {
+          "start": 288.17,
+          "end": 290.33,
+          "text": " read only scrollable and selectable"
+        },
+        {
+          "start": 290.33,
+          "end": 293.39,
+          "text": " 08 slash 09 slash 2026 nine"
+        },
+        {
+          "start": 293.39,
+          "end": 297.19,
+          "text": " 08 slash 09 slash 2026 nine 29"
+        },
+        {
+          "start": 298.43,
+          "end": 302.63,
+          "text": " 08 slash 09 slash 2026 nine 29 selected"
+        },
+        {
+          "start": 304.03,
+          "end": 305.63,
+          "text": " Execution History button"
+        },
+        {
+          "start": 317.87,
+          "end": 321.11,
+          "text": " back slash M-E-N-O-G-N"
+        },
+        {
+          "start": 321.11,
+          "end": 358.94,
+          "text": " Winforge the 2,026,090,703 window and supported Winvalid execution record execution history button"
+        },
+        {
+          "start": 358.94,
+          "end": 375.69,
+          "text": " dismiss button"
+        },
+        {
+          "start": 375.69,
+          "end": 385.23,
+          "text": " button"
+        },
+        {
+          "start": 385.23,
+          "end": 388.63,
+          "text": " pane"
+        },
+        {
+          "start": 388.63,
+          "end": 392.91,
+          "text": " search applications edit type to filter applications"
+        },
+        {
+          "start": 392.91,
+          "end": 398.91,
+          "text": " use arrow application list 8007 zip data item 1 of 2 7 zip checkbox checked total selection"
+        },
+        {
+          "start": 398.91,
+          "end": 404.19,
+          "text": " Install selected button, select applications to install or update."
+        },
+        {
+          "start": 404.19,
+          "end": 406.19,
+          "text": " Wait for the current operation to finish."
+        },
+        {
+          "start": 408.19,
+          "end": 409.19,
+          "text": " 0 of 1 pane."
+        },
+        {
+          "start": 409.19,
+          "end": 423.15,
+          "text": " 7 zip 1 of 1, 100% all operations completed successfully."
+        },
+        {
+          "start": 423.15,
+          "end": 433.46,
+          "text": " Close button."
+        },
+        {
+          "start": 433.46,
+          "end": 442.25,
+          "text": " Mozilla Firefox Uninstalled dialog."
+        },
+        {
+          "start": 442.25,
+          "end": 444.33,
+          "text": " Welcome to the Mozilla Firefox Uninstalled Wizard."
+        },
+        {
+          "start": 444.33,
+          "end": 447.13,
+          "text": " This wizard will guide you through the uninstallation of Mozilla Firefox."
+        },
+        {
+          "start": 447.13,
+          "end": 450.73,
+          "text": " Before starting the uninstallation, make sure Mozilla Firefox is not running."
+        },
+        {
+          "start": 450.73,
+          "end": 452.01,
+          "text": " Click Next to continue."
+        },
+        {
+          "start": 452.01,
+          "end": 454.01,
+          "text": " next rate about an Alt plus N."
+        }
+      ],
+      "GuiSha256": "6AB3F70CD095DEC6FAD4E1F5919C8FC95DC95FBE620C21AE7A46094BC2CA2A56",
+      "Scope": "Actual speech at measured 125%, not the requested 150%. Editor fields, preview, history, invalid-record announcement and real install progression/completion. The R8 harness never assigns its aggregate Passed flag; qualification uses the recorded per-stage results and actual audio, and does not turn its requested-display mismatch into a pass.",
+      "VisualErrorPanel": "Partially clipped; corrected and retested in R9.",
+      "RealInstallationCompleted": true,
+      "ProgressSamples": [
+        {
+          "Name": "0 of 1",
+          "Value": 0,
+          "At": "2026-09-08T09:22:51.9325752Z"
+        },
+        {
+          "Name": "0 of 1",
+          "Value": 0,
+          "At": "2026-09-08T09:22:54.4111270Z"
+        },
+        {
+          "Name": "0 of 1",
+          "Value": 0,
+          "At": "2026-09-08T09:22:57.0278220Z"
+        },
+        {
+          "Name": "0 of 1",
+          "Value": 0,
+          "At": "2026-09-08T09:22:59.4929234Z"
+        }
+      ],
+      "PreviewText": "Read-only preview. Sources are attempted in order; fallback may change the final source. Package versions are not pinned. This preview installs no software.\r\n\r\n7-Zip: Install\r\nDetected version: Unknown\r\nSource order: Winget: 7zip.7zip > Chocolatey: 7zip\r\nWinget / Available at last check\r\nPackage found: 2026-09-07T18:31:21Z\r\nDownload verified: Not measured\r\nInstallation tested: 2026-09-07T18:31:21Z\r\nChocolatey / Unknown\r\nPackage found: Not measured\r\nDownload verified: Not measured\r\nInstallation tested: Not measured\r\nAdministrator rights: May be required\r\nReboot: Unknown\r\nRollback: Uninstall only if newly installed through Winget or Chocolatey.\r\n\r\nPlan saved to: C:\\Users\\WinForge\\AppData\\Local\\WinForge\\plans\\1774e872-d791-4cfc-8a28-e50723ee5731.json",
+      "HistoryText": "08/09/2026 09:29\r\n9a3a5ea0-5d88-406b-b03c-db9ca05bbe82\r\nUI-ONLY-FIXTURE: Already installed\r\nUI validation fixture / not measured\r\nSynthetic receipt used only to test spoken history. No package was installed by this fixture.",
+      "InstallationReceipt": {
+        "schemaVersion": 1,
+        "batchId": "35b3f1df-40a3-4466-8152-002541ea8e25",
+        "operationKind": "Install",
+        "state": "Completed",
+        "startedAt": "2026-09-08T09:22:49.5299289+00:00",
+        "lastCheckpointAt": "2026-09-08T09:23:01.414799+00:00",
+        "plan": [
+          "7Zip"
+        ],
+        "completed": [
+          {
+            "appId": "7Zip",
+            "outcome": "Installed",
+            "completedAt": "2026-09-08T09:23:00.2866892+00:00"
+          }
+        ],
+        "options": {
+          "forceUpdate": false,
+          "definitions": {
+            "7Zip": {
+              "Name": "7-Zip",
+              "Category": "Compression",
+              "Description": "Free and open-source file archiver",
+              "Sources": {
+                "Winget": "7zip.7zip",
+                "Chocolatey": "7zip",
+                "Store": null,
+                "DirectUrl": null
+              },
+              "Detection": {
+                "Method": "Registry",
+                "Path": "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\7-Zip",
+                "VersionKey": "DisplayVersion"
+              },
+              "DefaultPriority": 8,
+              "DefaultRequired": true,
+              "EnvironmentRestrictions": [],
+              "Tags": [
+                "utility",
+                "compression",
+                "essential",
+                "open-source"
+              ],
+              "LastVerified": "2025-10-03",
+              "Verified": true,
+              "Homepage": "https://www.7-zip.org/",
+              "SourceEvidence": {
+                "Winget": {
+                  "Identifier": "7zip.7zip",
+                  "Availability": "Available",
+                  "CheckedAt": "2026-09-07T18:31:21Z",
+                  "PackageFoundAt": "2026-09-07T18:31:21Z",
+                  "DownloadVerifiedAt": null,
+                  "InstallationTestedAt": "2026-09-07T18:31:21Z",
+                  "Environment": {
+                    "OS": "Windows 11 Pro 25H2",
+                    "Virtualization": "VMware Workstation",
+                    "Scope": "Install 24.09, update to 26.02.00.0, uninstall"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "observations": {
+          "7Zip": {
+            "installedVersion": "26.02.00.0",
+            "method": "Winget",
+            "message": "Installed via Winget"
+          }
+        }
+      },
+      "IndependentCleanup": {
+        "Before": {
+          "Version": "26.02.00.0",
+          "IsInstalled": true
+        },
+        "After": {
+          "Version": null,
+          "IsInstalled": false
+        },
+        "At": "2026-09-08T09:24:09.8094634Z",
+        "Method": "Separate exact WinGet uninstall after GUI batch",
+        "ExitCode": 0
+      }
+    },
+    {
+      "Id": "R9",
+      "At": "2026-09-08T09:27:56.9838502Z",
+      "OS": "Windows 11 Pro 25H2",
+      "OSBuild": "26200.9168",
+      "EffectiveDisplay": {
+        "Dpi": 144,
+        "Scale": 150,
+        "Awareness": 2,
+        "Width": 1366,
+        "Height": 768
+      },
+      "RequestedDisplayMatched": true,
+      "Error": null,
+      "RawHarnessPassed": true,
+      "RawResultSha256": "0264753140D2FA14A5CECBF186039A8BCE281DCA7B3C45AF35094A1DD7C4CD83",
+      "Keyboard": [
+        {
+          "At": "2026-09-08T09:28:22.1385746Z",
+          "Name": "Add",
+          "Id": "",
+          "Stage": "Catalog add",
+          "Type": "ControlType.Button",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:28:32.5277358Z",
+          "Name": "Application ID",
+          "Id": "",
+          "Stage": "Editor general",
+          "Type": "ControlType.Edit",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:29:01.8319838Z",
+          "Name": "Execution history",
+          "Id": "ReviewDeployment",
+          "Stage": "Invalid history action",
+          "Type": "ControlType.Button",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:29:05.8825100Z",
+          "Name": "",
+          "Id": "1148",
+          "Stage": "Native history filename",
+          "Type": "ControlType.Pane",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:30:09.0554683Z",
+          "Name": "Dismiss",
+          "Id": "",
+          "Stage": "Error dismiss",
+          "Type": "ControlType.Button",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:30:12.1055068Z",
+          "Name": "WinForge v2026090703",
+          "Id": "",
+          "Stage": "Error keyboard",
+          "Type": "ControlType.Window",
+          "Enabled": true
+        },
+        {
+          "At": "2026-09-08T09:30:15.1526202Z",
+          "Name": "",
+          "Id": "NavigationToggleButton",
+          "Stage": "Error keyboard",
+          "Type": "ControlType.Button",
+          "Enabled": true
+        }
+      ],
+      "EditorFitsWorkArea": true,
+      "AudioLocalPath": "G:\\VM\\WinForge-Recette\\results\\speech-final-audio-r9\\loopback.wav",
+      "AudioSha256": "9B176182E6F9739A5B92C98149C5C9D026C0AC7E26F6B76C55D3026CFE316C4C",
+      "AudioSeconds": 148.67,
+      "Transcript": [
+        {
+          "start": 0.0,
+          "end": 10.03,
+          "text": " Windows system 32 Windows PowerShell v1.0 PowerShell.exe Window Terminal Blank"
+        },
+        {
+          "start": 10.03,
+          "end": 23.3,
+          "text": " Winforge v2,026,090,703 Window List app catalog data item navigate to application database view"
+        },
+        {
+          "start": 23.3,
+          "end": 27.3,
+          "text": " Control button add a new application, control plus n"
+        },
+        {
+          "start": 27.3,
+          "end": 30.3,
+          "text": " Add application dialog add application"
+        },
+        {
+          "start": 30.3,
+          "end": 39.92,
+          "text": " application dialog application tab control general tab selected one of"
+        },
+        {
+          "start": 39.92,
+          "end": 49.56,
+          "text": " three application ID edit blank list applications data item navigate to"
+        },
+        {
+          "start": 49.56,
+          "end": 79.62,
+          "text": " applications view control plus three three of eight execution history button"
+        },
+        {
+          "start": 79.62,
+          "end": 112.31,
+          "text": " back to the end of the event"
+        },
+        {
+          "start": 112.31,
+          "end": 116.19,
+          "text": " Winforge v2 billion twenty six million ninety thousand seven hundred and three"
+        },
+        {
+          "start": 116.19,
+          "end": 119.87,
+          "text": " window and supported or invalid execution record execution history button."
+        },
+        {
+          "start": 126.54,
+          "end": 127.34,
+          "text": " Dismiss button."
+        },
+        {
+          "start": 136.67,
+          "end": 137.07,
+          "text": " Button."
+        },
+        {
+          "start": 140.21,
+          "end": 142.61,
+          "text": " Viewer list may not selected one of three."
+        }
+      ],
+      "GuiSha256": "09120BAABFA6A5076FEE6F40B94CF59C76C6DBD9A8CF6496A5939DC00E24FD83",
+      "Scope": "Editor initial placement, invalid-record speech and fully visible recovery controls at measured 150%.",
+      "Passed": true,
+      "RecoveryControls": [
+        {
+          "Fits": true,
+          "Name": "Try Again",
+          "Offscreen": false
+        },
+        {
+          "Fits": true,
+          "Name": "Dismiss",
+          "Offscreen": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "PesterPassed": 2006,
+  "RollbackModuleSha256": "7DAFD2280D63A4C0F43E639BF9F1DEB6F63D258B65B97EC1C8DFAE2E05A59D82",
+  "At": "2026-09-08T10:59:33.8916195Z",
+  "BaseRelease": "v2026090703",
+  "DotNetPassed": 790,
+  "PesterSkipped": 6,
+  "GuestHashMatches": true,
+  "GuiSha256": "2F0EAED18D9C80C0C412DB78D911A5C8168046ED856BC19B92D7D74B627C9404",
+  "PesterFailed": 0,
+  "BaseSha": "84cbc5d1d78698a750132499afd3c1033d49940d",
+  "Published": false
+}

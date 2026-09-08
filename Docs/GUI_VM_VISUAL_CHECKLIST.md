@@ -3,7 +3,15 @@
 [Français](GUI_VM_VISUAL_CHECKLIST.fr.md)
 
 ## Scope
-Manual visual/accessibility validation for the current WinForge GUI after the May 2026 backlog closure:
+
+Manual visual/accessibility validation for the current WinForge GUI.
+The [local 2026-09-08 acceptance](Validation/20260908/README.md) passed the 40
+combinations below against the unpublished local candidates identified per case. Recorded NVDA
+speech workflows are qualified separately, without certifying every control or
+assistive technology.
+
+This checklist covers:
+
 - theme persistence and consistency
 - light/dark/high-contrast readability
 - reduced-motion behavior
@@ -20,9 +28,9 @@ Run the checklist on these combinations:
 5. Resolution `1920x1080` at `125%` scaling
 
 For each combo, validate:
-- Theme `Light`
-- Theme `Dark`
-- High contrast `On` (from Settings)
+- Theme `Folio` (light)
+- Theme `Drakul` (dark)
+- High contrast `On/Off` (from Settings)
 - Reduced motion `On/Off` (from Settings)
 
 ## Startup Checks
@@ -55,13 +63,13 @@ For each page:
 Expected:
 - No truncated critical actions.
 - No control overlap.
-- Any horizontal scroll only where intentionally enabled (filter bars in narrow widths).
+- Any horizontal scroll only where intentionally enabled; Apps filters and actions wrap at narrow widths.
 
 ## Page-Specific Checks
 
 ### Apps
 1. Open filter bar at narrow width.
-2. Confirm horizontal scroll appears when needed.
+2. Confirm filters wrap and vertical scrolling keeps their actions reachable.
 3. Confirm scan/update actions remain accessible.
 4. Start an install batch and check progress row controls (pause/resume/cancel).
 5. Start a selected update batch and confirm Pause/Resume are hidden while Update runs.

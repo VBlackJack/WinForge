@@ -1,0 +1,987 @@
+{
+  "Candidate": "candidate-badges.json",
+  "ExpectedCases": 10,
+  "Counts": {
+    "Passed": 10,
+    "Failed": 0,
+    "Pending": 0
+  },
+  "Complete": true,
+  "Method": "Both light themes at all five display pairs on the final candidate. Apps and App Catalog restored/maximized, four critical keyboard actions, settings persistence and actual per-page/final display gates. Badge color ratios are separately measured in badge-contrast.json.",
+  "Cases": [
+    {
+      "Id": "badges-1366-768-100-Folio-HC0-RM0-v1",
+      "Status": "Passed",
+      "At": "2026-09-08T11:04:43.8284085Z",
+      "Error": null,
+      "CandidateSha256": "2F0EAED18D9C80C0C412DB78D911A5C8168046ED856BC19B92D7D74B627C9404",
+      "Effective": {
+        "Dpi": 96,
+        "Scale": 100,
+        "Awareness": 2,
+        "Width": 1366,
+        "Height": 768
+      },
+      "StartupFitsWorkArea": true,
+      "DisplayMatches": true,
+      "FinalDisplayMatches": true,
+      "Persistence": true,
+      "CriticalControls": [
+        {
+          "Fits": true,
+          "Id": "ScanInstalledButton",
+          "KeyboardReturn": true
+        },
+        {
+          "Fits": true,
+          "Id": "InstallSelectedButton",
+          "KeyboardReturn": true
+        },
+        {
+          "Fits": true,
+          "Id": "PreviewSelected",
+          "KeyboardReturn": true
+        },
+        {
+          "Fits": true,
+          "Id": "ReviewDeployment",
+          "KeyboardReturn": true
+        }
+      ],
+      "Pages": [
+        {
+          "Page": "NavApplications",
+          "Window": {
+            "Y": 24,
+            "Width": 1318,
+            "Height": 672,
+            "X": 24
+          }
+        },
+        {
+          "Page": "NavAppCatalog",
+          "Window": {
+            "Y": 24,
+            "Width": 1318,
+            "Height": 672,
+            "X": 24
+          }
+        }
+      ],
+      "RawResultSha256": "56B2FDC99D64AB255999B33EE1C0E814A114EF9E08DF43BEA6CF75EE7B348069",
+      "Screenshots": [
+        {
+          "File": "ApplicationsBottom.png",
+          "Sha256": "25CFBA79F8AA6C70F3CC2DE73EFE8B4A1426092273533CC1CED96F1FB0BCDD99"
+        },
+        {
+          "File": "InstallSelectedButton.png",
+          "Sha256": "10C3CD9AE9F6FB3A41B817BD1642A6DF2F348A3F28CA9BD14B4AC30AFBB30B47"
+        },
+        {
+          "File": "NavAppCatalog-maximized.png",
+          "Sha256": "75F107DC6C2E8460C4824BD237422A1006AF4FA90E8F921CD4C14CE698EBD47F"
+        },
+        {
+          "File": "NavAppCatalog.png",
+          "Sha256": "916E9A30AA9125A3B320511DA99AD5C67EABE6AF266869F2648AB7F1353BFA6E"
+        },
+        {
+          "File": "NavApplications-maximized.png",
+          "Sha256": "676B0D2DF6507CC824631193EEE825A4C61CCB039CF83A4312B22BB4C04C7C1C"
+        },
+        {
+          "File": "NavApplications.png",
+          "Sha256": "77ADC0353A4244E527E1428BC30B52DBAF31FF04CB70E91D1D6BCCA608330FB1"
+        },
+        {
+          "File": "PreviewSelected.png",
+          "Sha256": "8808C580B06F59B0E8228867385891066D9D64CEA6E66B5AA6B7DED3AAC75E69"
+        },
+        {
+          "File": "ReviewDeployment.png",
+          "Sha256": "7AA05021BD9728DC29E07B5B98344C36C6421348CE020D4359B3A56588CBFD74"
+        },
+        {
+          "File": "ScanInstalledButton.png",
+          "Sha256": "6628DE70FAFA14B5644702620218334DB010E3BBD7315297F5E77D436601B14E"
+        }
+      ]
+    },
+    {
+      "Id": "badges-1366-768-100-Parchment-HC0-RM0-v1",
+      "Status": "Passed",
+      "At": "2026-09-08T11:05:18.0988579Z",
+      "Error": null,
+      "CandidateSha256": "2F0EAED18D9C80C0C412DB78D911A5C8168046ED856BC19B92D7D74B627C9404",
+      "Effective": {
+        "Dpi": 96,
+        "Scale": 100,
+        "Awareness": 2,
+        "Width": 1366,
+        "Height": 768
+      },
+      "StartupFitsWorkArea": true,
+      "DisplayMatches": true,
+      "FinalDisplayMatches": true,
+      "Persistence": true,
+      "CriticalControls": [
+        {
+          "Fits": true,
+          "Id": "ScanInstalledButton",
+          "KeyboardReturn": true
+        },
+        {
+          "Fits": true,
+          "Id": "InstallSelectedButton",
+          "KeyboardReturn": true
+        },
+        {
+          "Fits": true,
+          "Id": "PreviewSelected",
+          "KeyboardReturn": true
+        },
+        {
+          "Fits": true,
+          "Id": "ReviewDeployment",
+          "KeyboardReturn": true
+        }
+      ],
+      "Pages": [
+        {
+          "Page": "NavApplications",
+          "Window": {
+            "Y": 24,
+            "Width": 1318,
+            "Height": 672,
+            "X": 24
+          }
+        },
+        {
+          "Page": "NavAppCatalog",
+          "Window": {
+            "Y": 24,
+            "Width": 1318,
+            "Height": 672,
+            "X": 24
+          }
+        }
+      ],
+      "RawResultSha256": "27292D4B0C9597333D44333F2E4FD77184E256DC0703CB603BC6F16EFFF2591D",
+      "Screenshots": [
+        {
+          "File": "ApplicationsBottom.png",
+          "Sha256": "51AADE04843D696E5C31FABFCAF8DC07F0679001651350E9BB367FE9C5ED3440"
+        },
+        {
+          "File": "InstallSelectedButton.png",
+          "Sha256": "D4950EF779026DC4BA02841CE8E250D9D7BCC671CC2EFB27125F3F83052A9BB9"
+        },
+        {
+          "File": "NavAppCatalog-maximized.png",
+          "Sha256": "29966573DF19AE4E9F5934A213A570F07C691CD975C47A3515B02C677EF7FFA9"
+        },
+        {
+          "File": "NavAppCatalog.png",
+          "Sha256": "46C3C9C4C4B50BE103F8ACA3F7C33EC91C5678C9F89256B32B366541AD2DA635"
+        },
+        {
+          "File": "NavApplications-maximized.png",
+          "Sha256": "F6380543AF6705F37E62B097CBB143750D354309FB4682752AF1AFB37020B460"
+        },
+        {
+          "File": "NavApplications.png",
+          "Sha256": "09E8010C301B39861F32E0887F92A2DA7AEFCB79327658913A786962157D2845"
+        },
+        {
+          "File": "PreviewSelected.png",
+          "Sha256": "59C461933D7431F3057ABEB4BE2294A89994C855FF5E8EEF31AA68F89F964F9F"
+        },
+        {
+          "File": "ReviewDeployment.png",
+          "Sha256": "8A8A09ED4CBCC7CC2D3AF55FEC2B0EBF22722A8825EB1B9CA74BFF92AA75FFC7"
+        },
+        {
+          "File": "ScanInstalledButton.png",
+          "Sha256": "2B808C3D9AD5BB89F18C0C49C76F06C9CF6045916DFCE140C3565831F8C801CF"
+        }
+      ]
+    },
+    {
+      "Id": "badges-1366-768-125-Folio-HC0-RM0-v1",
+      "Status": "Passed",
+      "At": "2026-09-08T11:06:29.4963562Z",
+      "Error": null,
+      "CandidateSha256": "2F0EAED18D9C80C0C412DB78D911A5C8168046ED856BC19B92D7D74B627C9404",
+      "Effective": {
+        "Dpi": 120,
+        "Scale": 125,
+        "Awareness": 2,
+        "Width": 1366,
+        "Height": 768
+      },
+      "StartupFitsWorkArea": true,
+      "DisplayMatches": true,
+      "FinalDisplayMatches": true,
+      "Persistence": true,
+      "CriticalControls": [
+        {
+          "Fits": true,
+          "Id": "ScanInstalledButton",
+          "KeyboardReturn": true
+        },
+        {
+          "Fits": true,
+          "Id": "InstallSelectedButton",
+          "KeyboardReturn": true
+        },
+        {
+          "Fits": true,
+          "Id": "PreviewSelected",
+          "KeyboardReturn": true
+        },
+        {
+          "Fits": true,
+          "Id": "ReviewDeployment",
+          "KeyboardReturn": true
+        }
+      ],
+      "Pages": [
+        {
+          "Page": "NavApplications",
+          "Window": {
+            "Y": 30,
+            "Width": 1306,
+            "Height": 648,
+            "X": 30
+          }
+        },
+        {
+          "Page": "NavAppCatalog",
+          "Window": {
+            "Y": 30,
+            "Width": 1306,
+            "Height": 648,
+            "X": 30
+          }
+        }
+      ],
+      "RawResultSha256": "7BEEC4BC2D13D49E1325FCA16FE02E5D1C5444C4AB9BAAAC38411822D5B912F5",
+      "Screenshots": [
+        {
+          "File": "ApplicationsBottom.png",
+          "Sha256": "1891A5F59B7523979EEACEEF9A26406626B58B75B6C109B02B459A91F748BDDF"
+        },
+        {
+          "File": "InstallSelectedButton.png",
+          "Sha256": "7EB878573E445545D403DA9471B8782ECC82DA00C0F7C1FD22533E08724B71BD"
+        },
+        {
+          "File": "NavAppCatalog-maximized.png",
+          "Sha256": "2FA816F2152557519B57720993E24834406061457C6B08120F607057E6786C18"
+        },
+        {
+          "File": "NavAppCatalog.png",
+          "Sha256": "8F437F4C662BAB4D730B16A8330AD3DA7F604F56E1AD59743E6B090E9682EA11"
+        },
+        {
+          "File": "NavApplications-maximized.png",
+          "Sha256": "66CC4927DFEA9AE9D7A04A93AFD689CA25D525DE59AB02C796E901D39310B01A"
+        },
+        {
+          "File": "NavApplications.png",
+          "Sha256": "4ABDF46207FFCDC17E5E48F3CD0210EE0EDAA4B11AD06085AA69A9A50425F00F"
+        },
+        {
+          "File": "PreviewSelected.png",
+          "Sha256": "EC2B73A59A48B093A6FDD4493BF6F626D6CE58DCD85A3615E134DA0DA8CAE0FC"
+        },
+        {
+          "File": "ReviewDeployment.png",
+          "Sha256": "F898BEC546DF8B879CE90354D4DD8E72A3C208814D8D2605DD679CBF0A1D76A2"
+        },
+        {
+          "File": "ScanInstalledButton.png",
+          "Sha256": "51933AD46E09921A5740D29582B7595C8948331042361C690CD448DA624E5EED"
+        }
+      ]
+    },
+    {
+      "Id": "badges-1366-768-125-Parchment-HC0-RM0-v1",
+      "Status": "Passed",
+      "At": "2026-09-08T11:07:03.6637805Z",
+      "Error": null,
+      "CandidateSha256": "2F0EAED18D9C80C0C412DB78D911A5C8168046ED856BC19B92D7D74B627C9404",
+      "Effective": {
+        "Dpi": 120,
+        "Scale": 125,
+        "Awareness": 2,
+        "Width": 1366,
+        "Height": 768
+      },
+      "StartupFitsWorkArea": true,
+      "DisplayMatches": true,
+      "FinalDisplayMatches": true,
+      "Persistence": true,
+      "CriticalControls": [
+        {
+          "Fits": true,
+          "Id": "ScanInstalledButton",
+          "KeyboardReturn": true
+        },
+        {
+          "Fits": true,
+          "Id": "InstallSelectedButton",
+          "KeyboardReturn": true
+        },
+        {
+          "Fits": true,
+          "Id": "PreviewSelected",
+          "KeyboardReturn": true
+        },
+        {
+          "Fits": true,
+          "Id": "ReviewDeployment",
+          "KeyboardReturn": true
+        }
+      ],
+      "Pages": [
+        {
+          "Page": "NavApplications",
+          "Window": {
+            "Y": 30,
+            "Width": 1306,
+            "Height": 648,
+            "X": 30
+          }
+        },
+        {
+          "Page": "NavAppCatalog",
+          "Window": {
+            "Y": 30,
+            "Width": 1306,
+            "Height": 648,
+            "X": 30
+          }
+        }
+      ],
+      "RawResultSha256": "85A0A2D1AB586C40B383040BA25CCBC988DF62C22595D54165560514B66DECD6",
+      "Screenshots": [
+        {
+          "File": "ApplicationsBottom.png",
+          "Sha256": "3EA85BD52939481B5076A329136769C62958F32FB3B8111A2698D0F6CE59DA2D"
+        },
+        {
+          "File": "InstallSelectedButton.png",
+          "Sha256": "B96AFB1F038C79328D5EC4940F5BBB1C27838D4198274857B2DD26CCA78C414D"
+        },
+        {
+          "File": "NavAppCatalog-maximized.png",
+          "Sha256": "B583ADF8E1FF2C50E6CE871271C99DAB44BA727538D8BA21CAC5F5A709524660"
+        },
+        {
+          "File": "NavAppCatalog.png",
+          "Sha256": "6F1A505E8AE5BED6F94C316159637775B1D96348D612CF07C84B363895444818"
+        },
+        {
+          "File": "NavApplications-maximized.png",
+          "Sha256": "F162EE27238824B281DFA6F8ECD973EA724073023A196AC25458507A8886CA0F"
+        },
+        {
+          "File": "NavApplications.png",
+          "Sha256": "375987DDF4CB85FC19878F8ACBFC6545074A23B2914FC95B2CB8804254F4482A"
+        },
+        {
+          "File": "PreviewSelected.png",
+          "Sha256": "D70F32DBD661762AE33A0DFF3676A2B3A54DBB8DC077447DAF15CD5EAB8076DB"
+        },
+        {
+          "File": "ReviewDeployment.png",
+          "Sha256": "295D713EAF2FFAB1E49FD4C4AA21B7F1CA35CC3586827F26955BD5CC2B6EC281"
+        },
+        {
+          "File": "ScanInstalledButton.png",
+          "Sha256": "9D867BA343E262368E09E4765C8370DA1787A984C4AE55C17796C784D0E74BCA"
+        }
+      ]
+    },
+    {
+      "Id": "badges-1366-768-150-Folio-HC0-RM0-v1",
+      "Status": "Passed",
+      "At": "2026-09-08T11:08:15.0980315Z",
+      "Error": null,
+      "CandidateSha256": "2F0EAED18D9C80C0C412DB78D911A5C8168046ED856BC19B92D7D74B627C9404",
+      "Effective": {
+        "Dpi": 144,
+        "Scale": 150,
+        "Awareness": 2,
+        "Width": 1366,
+        "Height": 768
+      },
+      "StartupFitsWorkArea": true,
+      "DisplayMatches": true,
+      "FinalDisplayMatches": true,
+      "Persistence": true,
+      "CriticalControls": [
+        {
+          "Fits": true,
+          "Id": "ScanInstalledButton",
+          "KeyboardReturn": true
+        },
+        {
+          "Fits": true,
+          "Id": "InstallSelectedButton",
+          "KeyboardReturn": true
+        },
+        {
+          "Fits": true,
+          "Id": "PreviewSelected",
+          "KeyboardReturn": true
+        },
+        {
+          "Fits": true,
+          "Id": "ReviewDeployment",
+          "KeyboardReturn": true
+        }
+      ],
+      "Pages": [
+        {
+          "Page": "NavApplications",
+          "Window": {
+            "Y": 36,
+            "Width": 1294,
+            "Height": 624,
+            "X": 36
+          }
+        },
+        {
+          "Page": "NavAppCatalog",
+          "Window": {
+            "Y": 36,
+            "Width": 1294,
+            "Height": 624,
+            "X": 36
+          }
+        }
+      ],
+      "RawResultSha256": "26BF0095A539DEFEC9CE288E256B0F0C55FE9E4A2E3D5E307035ACA6ABA9B490",
+      "Screenshots": [
+        {
+          "File": "ApplicationsBottom.png",
+          "Sha256": "4A6092C63F8E04B5123D948F5F5C5AB3F5FE27C2C5AC558D0E8B52721051D259"
+        },
+        {
+          "File": "InstallSelectedButton.png",
+          "Sha256": "A2C062890F254B7295AC9F8BE9B902D6E9FA362C152A11EE3925E7CF242285B9"
+        },
+        {
+          "File": "NavAppCatalog-maximized.png",
+          "Sha256": "5C26C26C6D8FF6E833A946384CCF731536872D106AEFEC890FCBBF9E35CE4CDD"
+        },
+        {
+          "File": "NavAppCatalog.png",
+          "Sha256": "AAF8F8F0E2ABE87F9573395F06AB57AA052D7031A28EF314A8184B0917172BCE"
+        },
+        {
+          "File": "NavApplications-maximized.png",
+          "Sha256": "9B7308C9513EEB052715528F7EDBA6FA639ADC7FEA59DBC0B24E8D00FE1C9F0E"
+        },
+        {
+          "File": "NavApplications.png",
+          "Sha256": "DAEA25AB8CDB52842D968E611D1CF46566DA80477739C219252017843D64E26C"
+        },
+        {
+          "File": "PreviewSelected.png",
+          "Sha256": "DC71897EABB0CCEFD100FA11035D9D87078A81CFA214EE4BE299803148771604"
+        },
+        {
+          "File": "ReviewDeployment.png",
+          "Sha256": "714BB6B88CB0AE1651515D3DC9973D28644D69588BF024884ED2EE8B29D6685F"
+        },
+        {
+          "File": "ScanInstalledButton.png",
+          "Sha256": "9C09F8602148C3B038988821507582B355E87CC030BCFC2AC292564D54A12A9D"
+        }
+      ]
+    },
+    {
+      "Id": "badges-1366-768-150-Parchment-HC0-RM0-v1",
+      "Status": "Passed",
+      "At": "2026-09-08T11:08:48.7464607Z",
+      "Error": null,
+      "CandidateSha256": "2F0EAED18D9C80C0C412DB78D911A5C8168046ED856BC19B92D7D74B627C9404",
+      "Effective": {
+        "Dpi": 144,
+        "Scale": 150,
+        "Awareness": 2,
+        "Width": 1366,
+        "Height": 768
+      },
+      "StartupFitsWorkArea": true,
+      "DisplayMatches": true,
+      "FinalDisplayMatches": true,
+      "Persistence": true,
+      "CriticalControls": [
+        {
+          "Fits": true,
+          "Id": "ScanInstalledButton",
+          "KeyboardReturn": true
+        },
+        {
+          "Fits": true,
+          "Id": "InstallSelectedButton",
+          "KeyboardReturn": true
+        },
+        {
+          "Fits": true,
+          "Id": "PreviewSelected",
+          "KeyboardReturn": true
+        },
+        {
+          "Fits": true,
+          "Id": "ReviewDeployment",
+          "KeyboardReturn": true
+        }
+      ],
+      "Pages": [
+        {
+          "Page": "NavApplications",
+          "Window": {
+            "Y": 36,
+            "Width": 1294,
+            "Height": 624,
+            "X": 36
+          }
+        },
+        {
+          "Page": "NavAppCatalog",
+          "Window": {
+            "Y": 36,
+            "Width": 1294,
+            "Height": 624,
+            "X": 36
+          }
+        }
+      ],
+      "RawResultSha256": "3FF09BAA396E4E96602B9B6898E9515C610A0CEE30304D0B4C0F3807BF9B16FD",
+      "Screenshots": [
+        {
+          "File": "ApplicationsBottom.png",
+          "Sha256": "74FB6F9753F72EC7F4D34EF7C7DE3E55E2EE72617B428CFBFF180F1A07765612"
+        },
+        {
+          "File": "InstallSelectedButton.png",
+          "Sha256": "FC7B7F81F325101577A2E9E2D26916C07A79AAEAEE5BDD93E8FBF3D361200E73"
+        },
+        {
+          "File": "NavAppCatalog-maximized.png",
+          "Sha256": "96AB0A83E5FEB81A424C6C2491FFAA62FB57E9A2153CDD196E8D3A30FEB57154"
+        },
+        {
+          "File": "NavAppCatalog.png",
+          "Sha256": "F0B908A473E9D5688C2ED7B849013BEC64995766311225070BE5CF2D34C5D1FE"
+        },
+        {
+          "File": "NavApplications-maximized.png",
+          "Sha256": "207E063D1587670F73FCEE4593EDF021CD650EE0A4CDAC49A7B90952E2E0D063"
+        },
+        {
+          "File": "NavApplications.png",
+          "Sha256": "1FF8C7EFD1DCFFB21E6B920DCAE3C4E38C56B9DB855B00C322FF7D6DC2AD0171"
+        },
+        {
+          "File": "PreviewSelected.png",
+          "Sha256": "9340732B426C85DCB34BFE5600E6D08C644575DF56C277E950717C34233BEA3C"
+        },
+        {
+          "File": "ReviewDeployment.png",
+          "Sha256": "3A6BCD84218C40FCDC3274DB4C2FC18AC4FB58B65799FFAF6BDEB6C0D6C981C8"
+        },
+        {
+          "File": "ScanInstalledButton.png",
+          "Sha256": "2DE8926845FAA5A69BEE67725B04C83FD1EC7843365A0D58B0FDA98095AB3020"
+        }
+      ]
+    },
+    {
+      "Id": "badges-1920-1080-100-Folio-HC0-RM0-v1",
+      "Status": "Passed",
+      "At": "2026-09-08T11:01:00.3741549Z",
+      "Error": null,
+      "CandidateSha256": "2F0EAED18D9C80C0C412DB78D911A5C8168046ED856BC19B92D7D74B627C9404",
+      "Effective": {
+        "Dpi": 96,
+        "Scale": 100,
+        "Awareness": 2,
+        "Width": 1920,
+        "Height": 1080
+      },
+      "StartupFitsWorkArea": true,
+      "DisplayMatches": true,
+      "FinalDisplayMatches": true,
+      "Persistence": true,
+      "CriticalControls": [
+        {
+          "Fits": true,
+          "Id": "ScanInstalledButton",
+          "KeyboardReturn": true
+        },
+        {
+          "Fits": true,
+          "Id": "InstallSelectedButton",
+          "KeyboardReturn": true
+        },
+        {
+          "Fits": true,
+          "Id": "PreviewSelected",
+          "KeyboardReturn": true
+        },
+        {
+          "Fits": true,
+          "Id": "ReviewDeployment",
+          "KeyboardReturn": true
+        }
+      ],
+      "Pages": [
+        {
+          "Page": "NavApplications",
+          "Window": {
+            "Y": 36,
+            "Width": 1680,
+            "Height": 960,
+            "X": 120
+          }
+        },
+        {
+          "Page": "NavAppCatalog",
+          "Window": {
+            "Y": 36,
+            "Width": 1680,
+            "Height": 960,
+            "X": 120
+          }
+        }
+      ],
+      "RawResultSha256": "240071CF5EA5DB05F29D4E298EBF50790CD650729D31A4818B3A3DB1009E3AAE",
+      "Screenshots": [
+        {
+          "File": "InstallSelectedButton.png",
+          "Sha256": "843683B7665BEC1BF1C3BB4DEB92A50F0BF6B3DEDD30EEB34551AB6DEE9B338D"
+        },
+        {
+          "File": "NavAppCatalog-maximized.png",
+          "Sha256": "7D5B34ECC5CB81217DABE5D94C751E6B2F79AC5230F31019F1A86FCA688EC5F1"
+        },
+        {
+          "File": "NavAppCatalog.png",
+          "Sha256": "F00A844EDBA886E6E23A203B48E4011D856892FEBB8E5BCFEBC3F8C95A22D6F0"
+        },
+        {
+          "File": "NavApplications-maximized.png",
+          "Sha256": "95CF6C4D69C66BB07356066A11A4D8F6EEF33D2DDE713A4586021F22A993219C"
+        },
+        {
+          "File": "NavApplications.png",
+          "Sha256": "81C6C39BBC0C70CE0C030D1834C644090EE4057D0DCFEE6E28F636BFA231C3E4"
+        },
+        {
+          "File": "PreviewSelected.png",
+          "Sha256": "12563FFCC7502EAD0E14585B6154235981623CC455D467F42C11A4B3DF6761F2"
+        },
+        {
+          "File": "ReviewDeployment.png",
+          "Sha256": "AF2409B5C27041F47360C3B302D62EC7417A98F0624BEA1B4BE0C278FAE4C359"
+        },
+        {
+          "File": "ScanInstalledButton.png",
+          "Sha256": "FE16FC90DFDCF98EB98FBE7E29715F0E13373770F05C0BCC62082C6E01FF44DD"
+        }
+      ]
+    },
+    {
+      "Id": "badges-1920-1080-100-Parchment-HC0-RM0-v1",
+      "Status": "Passed",
+      "At": "2026-09-08T11:01:42.1036158Z",
+      "Error": null,
+      "CandidateSha256": "2F0EAED18D9C80C0C412DB78D911A5C8168046ED856BC19B92D7D74B627C9404",
+      "Effective": {
+        "Dpi": 96,
+        "Scale": 100,
+        "Awareness": 2,
+        "Width": 1920,
+        "Height": 1080
+      },
+      "StartupFitsWorkArea": true,
+      "DisplayMatches": true,
+      "FinalDisplayMatches": true,
+      "Persistence": true,
+      "CriticalControls": [
+        {
+          "Fits": true,
+          "Id": "ScanInstalledButton",
+          "KeyboardReturn": true
+        },
+        {
+          "Fits": true,
+          "Id": "InstallSelectedButton",
+          "KeyboardReturn": true
+        },
+        {
+          "Fits": true,
+          "Id": "PreviewSelected",
+          "KeyboardReturn": true
+        },
+        {
+          "Fits": true,
+          "Id": "ReviewDeployment",
+          "KeyboardReturn": true
+        }
+      ],
+      "Pages": [
+        {
+          "Page": "NavApplications",
+          "Window": {
+            "Y": 36,
+            "Width": 1680,
+            "Height": 960,
+            "X": 120
+          }
+        },
+        {
+          "Page": "NavAppCatalog",
+          "Window": {
+            "Y": 36,
+            "Width": 1680,
+            "Height": 960,
+            "X": 120
+          }
+        }
+      ],
+      "RawResultSha256": "0F40B1F578455A5F8F158931BCC2B2F458BFC9DA5D1DB865E4348D9176A11436",
+      "Screenshots": [
+        {
+          "File": "InstallSelectedButton.png",
+          "Sha256": "35A73D599506DE6E15B93673988F9F6E2B914A774648FA5721B2DFE4A70A4547"
+        },
+        {
+          "File": "NavAppCatalog-maximized.png",
+          "Sha256": "9093A8B6FD2E104546D16C776F678B04EBFAEFCB6914137FCD24C4AEC693BAB9"
+        },
+        {
+          "File": "NavAppCatalog.png",
+          "Sha256": "CC97834785E678D38B4AFF3F602B952DD417FA4A716AB14888DADC6332E5EBF8"
+        },
+        {
+          "File": "NavApplications-maximized.png",
+          "Sha256": "17E0CC3A6E2C5F4ED053B90949D41B13872B890763FB566E36987760BDB60FE0"
+        },
+        {
+          "File": "NavApplications.png",
+          "Sha256": "72635A68061D306426D9FEECCC2DC9A2F0DDF4E7E657BB62892521AC9BC66BAA"
+        },
+        {
+          "File": "PreviewSelected.png",
+          "Sha256": "6C47B0BD5833D4C289B4CAA19CB2C0452EE5ED438E43C77E0118902AF8770EBE"
+        },
+        {
+          "File": "ReviewDeployment.png",
+          "Sha256": "BAC11FA74D386133080748F681E0D7A02E3314A0EB80254337CC9C21CD8E33B4"
+        },
+        {
+          "File": "ScanInstalledButton.png",
+          "Sha256": "AEF485A324C0D32E5B5242E92134C7D9571A72A34C5706A37F3FCF143140D511"
+        }
+      ]
+    },
+    {
+      "Id": "badges-1920-1080-125-Folio-HC0-RM0-v1",
+      "Status": "Passed",
+      "At": "2026-09-08T11:02:56.3039551Z",
+      "Error": null,
+      "CandidateSha256": "2F0EAED18D9C80C0C412DB78D911A5C8168046ED856BC19B92D7D74B627C9404",
+      "Effective": {
+        "Dpi": 120,
+        "Scale": 125,
+        "Awareness": 2,
+        "Width": 1920,
+        "Height": 1080
+      },
+      "StartupFitsWorkArea": true,
+      "DisplayMatches": true,
+      "FinalDisplayMatches": true,
+      "Persistence": true,
+      "CriticalControls": [
+        {
+          "Fits": true,
+          "Id": "ScanInstalledButton",
+          "KeyboardReturn": true
+        },
+        {
+          "Fits": true,
+          "Id": "InstallSelectedButton",
+          "KeyboardReturn": true
+        },
+        {
+          "Fits": true,
+          "Id": "PreviewSelected",
+          "KeyboardReturn": true
+        },
+        {
+          "Fits": true,
+          "Id": "ReviewDeployment",
+          "KeyboardReturn": true
+        }
+      ],
+      "Pages": [
+        {
+          "Page": "NavApplications",
+          "Window": {
+            "Y": 30,
+            "Width": 1860,
+            "Height": 960,
+            "X": 30
+          }
+        },
+        {
+          "Page": "NavAppCatalog",
+          "Window": {
+            "Y": 30,
+            "Width": 1860,
+            "Height": 960,
+            "X": 30
+          }
+        }
+      ],
+      "RawResultSha256": "29DF0430627EECF66346146FCD7420174CC9C7A5D6EA2C2854B773B36990C1FD",
+      "Screenshots": [
+        {
+          "File": "InstallSelectedButton.png",
+          "Sha256": "AD0A1E67BE380C597C2377BCC331D9A00814E6B846AF5C9EB5EB8F35EEC413E7"
+        },
+        {
+          "File": "NavAppCatalog-maximized.png",
+          "Sha256": "277680854E5E0D3D767AF23B38C032D9F150B6163A36FE7323FF9D3B1C4C2AD8"
+        },
+        {
+          "File": "NavAppCatalog.png",
+          "Sha256": "712D329F6D760EBE79D45C93EAFF10257E5AA9A965D87C1CE6BE80D6AAD5DE3A"
+        },
+        {
+          "File": "NavApplications-maximized.png",
+          "Sha256": "6B22D991935C20545AE9FEDA30C7C79F3D08659F36487FA4DC707E15E2D14D42"
+        },
+        {
+          "File": "NavApplications.png",
+          "Sha256": "9722DB248F5BAFC38C16C8D9FF2655E1E0B42C76B6FE456493B5F122D6917BCC"
+        },
+        {
+          "File": "PreviewSelected.png",
+          "Sha256": "28330F2C8C5479A077456DAAA4B318FE1F003B83BD0E5AFA15AAD1DF74B49D35"
+        },
+        {
+          "File": "ReviewDeployment.png",
+          "Sha256": "812590F18CAB6BBF825E4C3DF9BEA5FB27320B4EDD9B0508E15AC3EB6D5BCF3B"
+        },
+        {
+          "File": "ScanInstalledButton.png",
+          "Sha256": "43ACEC1EDC14FE4FCA59C29D464E603A83790626AB66579EE13ACAF79ACE4687"
+        }
+      ]
+    },
+    {
+      "Id": "badges-1920-1080-125-Parchment-HC0-RM0-v1",
+      "Status": "Passed",
+      "At": "2026-09-08T11:03:29.6455400Z",
+      "Error": null,
+      "CandidateSha256": "2F0EAED18D9C80C0C412DB78D911A5C8168046ED856BC19B92D7D74B627C9404",
+      "Effective": {
+        "Dpi": 120,
+        "Scale": 125,
+        "Awareness": 2,
+        "Width": 1920,
+        "Height": 1080
+      },
+      "StartupFitsWorkArea": true,
+      "DisplayMatches": true,
+      "FinalDisplayMatches": true,
+      "Persistence": true,
+      "CriticalControls": [
+        {
+          "Fits": true,
+          "Id": "ScanInstalledButton",
+          "KeyboardReturn": true
+        },
+        {
+          "Fits": true,
+          "Id": "InstallSelectedButton",
+          "KeyboardReturn": true
+        },
+        {
+          "Fits": true,
+          "Id": "PreviewSelected",
+          "KeyboardReturn": true
+        },
+        {
+          "Fits": true,
+          "Id": "ReviewDeployment",
+          "KeyboardReturn": true
+        }
+      ],
+      "Pages": [
+        {
+          "Page": "NavApplications",
+          "Window": {
+            "Y": 30,
+            "Width": 1860,
+            "Height": 960,
+            "X": 30
+          }
+        },
+        {
+          "Page": "NavAppCatalog",
+          "Window": {
+            "Y": 30,
+            "Width": 1860,
+            "Height": 960,
+            "X": 30
+          }
+        }
+      ],
+      "RawResultSha256": "89B20E43690CB92B743C3F343C7D6326CD63C862888E65574C2F0FC1387F5F63",
+      "Screenshots": [
+        {
+          "File": "InstallSelectedButton.png",
+          "Sha256": "1820C45AEBA236DDE82C91614925294FB96C443DD4DDC61F9FAC903680923BBB"
+        },
+        {
+          "File": "NavAppCatalog-maximized.png",
+          "Sha256": "A0BCB7B3067AB42FEA9F61EF9E088E4E2B373CE0155F70AFF9C6F87F4F6D4F75"
+        },
+        {
+          "File": "NavAppCatalog.png",
+          "Sha256": "2E0C5CC1917908CB6C9E105D8DCF948DFA8AF63EB51CDE92D90B01C871BF81AE"
+        },
+        {
+          "File": "NavApplications-maximized.png",
+          "Sha256": "D71DACBB8E46E6BDF72B655953FC5C6F011137551B238B0904538B34D94F75A5"
+        },
+        {
+          "File": "NavApplications.png",
+          "Sha256": "3C208BAD730C0EB13797646004A82E7625EF80B23F793F90213F4626F2CC1C55"
+        },
+        {
+          "File": "PreviewSelected.png",
+          "Sha256": "C58CD8B0C13A638E542DAE42487579CFB7779C8A117858DAE243426AC55722CD"
+        },
+        {
+          "File": "ReviewDeployment.png",
+          "Sha256": "A5213DAFB6C24872C851D2A56745772E5348AE23054DC6848CB7583303BE05F0"
+        },
+        {
+          "File": "ScanInstalledButton.png",
+          "Sha256": "AED99DC6722BEBA840DB4587D8C73C84551D24B38EC67A2B86002DF36BCF6B2B"
+        }
+      ]
+    }
+  ]
+}

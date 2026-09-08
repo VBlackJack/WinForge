@@ -15,8 +15,11 @@
  */
 
 using System.Windows;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Threading;
 using WinForge.GUI.Models;
 using WinForge.GUI.ViewModels;
 
@@ -27,6 +30,43 @@ public partial class AppsView : UserControl
     public AppsView()
     {
         InitializeComponent();
+    }
+
+    private void ErrorText_TargetUpdated(object sender, DataTransferEventArgs e)
+    {
+        if (sender is TextBlock text && !string.IsNullOrWhiteSpace(text.Text))
+        {
+            QueueLiveRegion(text, bringIntoView: true);
+        }
+    }
+
+    private void LiveRegion_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        if (e.NewValue is true && sender is FrameworkElement element)
+        {
+            QueueLiveRegion(element, bringIntoView: false);
+        }
+    }
+
+    private void BatchProgress_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (sender is ProgressBar progress && e.NewValue != e.OldValue)
+        {
+            QueueLiveRegion(progress, bringIntoView: false);
+        }
+    }
+
+    private static void QueueLiveRegion(FrameworkElement element, bool bringIntoView)
+    {
+        // Wait for bindings and visibility to settle before exposing the announcement.
+        element.Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
+        {
+            if (!element.IsVisible) return;
+            if (bringIntoView) element.BringIntoView();
+            AutomationPeer? peer = UIElementAutomationPeer.FromElement(element)
+                ?? UIElementAutomationPeer.CreatePeerForElement(element);
+            peer?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
+        }));
     }
 
     private void SelectionCheckBox_Changed(object sender, RoutedEventArgs e)

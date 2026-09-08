@@ -32,6 +32,11 @@ public class BreadcrumbItem
     public bool IsClickable { get; set; } = true;
     public string FontWeight => IsClickable ? "Normal" : "Bold";
     public ICommand? NavigateCommand { get; set; }
+
+    /// <summary>
+    /// Exposes the localized label to item automation peers and text consumers.
+    /// </summary>
+    public override string ToString() => Label;
 }
 
 /// <summary>

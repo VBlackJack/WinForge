@@ -1,0 +1,4889 @@
+{
+  "Release": "v2026090703",
+  "SourceSha": "84cbc5d1d78698a750132499afd3c1033d49940d",
+  "DatabaseHash": "D17C503C505A8A2CF9D6296C67CAB0D19F909CEEAC1E924999670203DB26BC7F",
+  "CapturedAt": "2026-09-08T11:13:29.338431+00:00",
+  "Applications": [
+    {
+      "AppId": "GoogleChrome",
+      "Name": "Google Chrome",
+      "Priority": 1,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Google.Chrome",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "googlechrome",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "DirectUrl",
+          "Identifier": "https://dl.google.com/chrome/install/GoogleChromeStandaloneEnterprise64.msi",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "MozillaFirefox",
+      "Name": "Mozilla Firefox",
+      "Priority": 30,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Mozilla.Firefox",
+          "InstallStatus": "InstalledAndDetected",
+          "InstalledVersion": "155.0.1 (x64 en-US)",
+          "EventDate": "2026-09-08T09:14:36.1956382Z",
+          "Evidence": "catalog-receipts.json#Firefox-verified",
+          "OS": "Microsoft Windows 11 Professionnel",
+          "OSBuild": "26200.9168",
+          "CleanupVerified": false,
+          "SeparateCleanup": {
+            "ExitCode": 0,
+            "RegistryPresent": false,
+            "Method": "Separate signed vendor cleanup /S",
+            "At": "2026-09-08T09:15:31.8967256Z",
+            "ExecutablePresent": false
+          }
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "firefox",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "InstalledAndDetected"
+    },
+    {
+      "AppId": "BraveBrowser",
+      "Name": "Brave Browser",
+      "Priority": 32,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Brave.Brave",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "brave",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "VLC",
+      "Name": "VLC Media Player",
+      "Priority": 5,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "VideoLAN.VLC",
+          "InstallStatus": "DetectionIncomplete",
+          "InstalledVersion": null,
+          "EventDate": "2026-09-08T08:52:01.8555300Z",
+          "Evidence": "catalog-receipts.json#VLC",
+          "OS": "Microsoft Windows 11 Professionnel",
+          "OSBuild": "26200.8875",
+          "CleanupVerified": true,
+          "SeparateCleanup": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "vlc",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Store",
+          "Identifier": "9NBLGGH4VVNH",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "DetectionIncomplete"
+    },
+    {
+      "AppId": "MPCHC",
+      "Name": "Media Player Classic",
+      "Priority": 35,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "clsid2.mpc-hc",
+          "InstallStatus": "InstalledAndDetected",
+          "InstalledVersion": "2.8.1",
+          "EventDate": "2026-09-08T09:11:38.1205319Z",
+          "Evidence": "catalog-receipts.json#MPCHC",
+          "OS": "Microsoft Windows 11 Professionnel",
+          "OSBuild": "26200.9168",
+          "CleanupVerified": true,
+          "SeparateCleanup": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "mpc-hc",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "InstalledAndDetected"
+    },
+    {
+      "AppId": "FastStoneViewer",
+      "Name": "FastStone Image Viewer",
+      "Priority": 37,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "FastStone.Viewer",
+          "InstallStatus": "InstalledAndDetected",
+          "InstalledVersion": "8.5.0.0",
+          "EventDate": "2026-09-08T09:12:22.7744372Z",
+          "Evidence": "catalog-receipts.json#FastStoneViewer",
+          "OS": "Microsoft Windows 11 Professionnel",
+          "OSBuild": "26200.9168",
+          "CleanupVerified": false,
+          "SeparateCleanup": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "fsviewer",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "InstalledAndDetected"
+    },
+    {
+      "AppId": "PaintNET",
+      "Name": "Paint.NET",
+      "Priority": 39,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "dotPDN.PaintDotNet",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "paint.net",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Store",
+          "Identifier": "9NBHCS1LX4R0",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "ShareX",
+      "Name": "ShareX",
+      "Priority": 7,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "ShareX.ShareX",
+          "InstallStatus": "InstalledAndDetected",
+          "InstalledVersion": "21.0.0.0",
+          "EventDate": "2026-09-08T09:10:46.6518654Z",
+          "Evidence": "catalog-receipts.json#ShareX",
+          "OS": "Microsoft Windows 11 Professionnel",
+          "OSBuild": "26200.9168",
+          "CleanupVerified": true,
+          "SeparateCleanup": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "sharex",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Store",
+          "Identifier": "9NBLGGH4Z1SP",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "InstalledAndDetected"
+    },
+    {
+      "AppId": "7Zip",
+      "Name": "7-Zip",
+      "Priority": 8,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "7zip.7zip",
+          "InstallStatus": "InstalledAndDetected",
+          "InstalledVersion": "26.02.00.0",
+          "EventDate": "2026-09-08T07:04:22.9273762Z",
+          "Evidence": "catalog-receipts.json#7Zip",
+          "Cleanup": {
+            "InstalledAfterRollback": false,
+            "Results": [
+              {
+                "AppId": "7Zip",
+                "Name": "7-Zip",
+                "Status": "RolledBack",
+                "Retry": false,
+                "CanRollback": false,
+                "Method": "Winget",
+                "Identifier": "7zip.7zip",
+                "InstalledVersion": "26.02.00.0",
+                "Message": "Installed via Winget"
+              }
+            ]
+          },
+          "OS": "Microsoft Windows 11 Professionnel",
+          "OSBuild": "26200.8875",
+          "CleanupVerified": true,
+          "SeparateCleanup": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "7zip",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "InstalledAndDetected"
+    },
+    {
+      "AppId": "NotepadPlusPlus",
+      "Name": "Notepad++",
+      "Priority": 9,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Notepad++.Notepad++",
+          "InstallStatus": "InstalledAndDetected",
+          "InstalledVersion": "8.9.8.0",
+          "EventDate": "2026-09-08T07:00:18.7691123Z",
+          "Evidence": "catalog-receipts.json#NotepadPlusPlus-v2",
+          "Cleanup": {
+            "Results": [
+              {
+                "AppId": "NotepadPlusPlus",
+                "Name": "Notepad++",
+                "Status": "RolledBack",
+                "Retry": false,
+                "CanRollback": false,
+                "Method": "Winget",
+                "Identifier": "Notepad++.Notepad++",
+                "InstalledVersion": "8.9.8.0",
+                "Message": "Installed via Winget"
+              }
+            ],
+            "InstalledAfterRollback": false
+          },
+          "OS": "Microsoft Windows 11 Professionnel",
+          "OSBuild": "26200.8875",
+          "CleanupVerified": true,
+          "SeparateCleanup": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "notepadplusplus",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "InstalledAndDetected"
+    },
+    {
+      "AppId": "PowerToys",
+      "Name": "Microsoft PowerToys",
+      "Priority": 10,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Microsoft.PowerToys",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Store",
+          "Identifier": "XP89DCGQ3K6VLD",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Everything",
+      "Name": "Everything",
+      "Priority": 11,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "voidtools.Everything",
+          "InstallStatus": "InstalledAndDetected",
+          "InstalledVersion": "1.4.1.1032",
+          "EventDate": "2026-09-08T07:04:51.6780101Z",
+          "Evidence": "catalog-receipts.json#Everything",
+          "Cleanup": {
+            "InstalledAfterRollback": false,
+            "Results": [
+              {
+                "AppId": "Everything",
+                "Name": "Everything",
+                "Status": "RolledBack",
+                "Retry": false,
+                "CanRollback": false,
+                "Method": "Winget",
+                "Identifier": "voidtools.Everything",
+                "InstalledVersion": "1.4.1.1032",
+                "Message": "Installed via Winget"
+              }
+            ]
+          },
+          "OS": "Microsoft Windows 11 Professionnel",
+          "OSBuild": "26200.8875",
+          "CleanupVerified": true,
+          "SeparateCleanup": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "everything",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "InstalledAndDetected"
+    },
+    {
+      "AppId": "WizTree",
+      "Name": "WizTree",
+      "Priority": 12,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "AntibodySoftware.WizTree",
+          "InstallStatus": "InstalledAndDetected",
+          "InstalledVersion": "4.32.0.0",
+          "EventDate": "2026-09-08T07:05:22.1752016Z",
+          "Evidence": "catalog-receipts.json#WizTree",
+          "Cleanup": {
+            "InstalledAfterRollback": false,
+            "Results": [
+              {
+                "AppId": "WizTree",
+                "Name": "WizTree",
+                "Status": "RolledBack",
+                "Retry": false,
+                "CanRollback": false,
+                "Method": "Winget",
+                "Identifier": "AntibodySoftware.WizTree",
+                "InstalledVersion": "4.32.0.0",
+                "Message": "Installed via Winget"
+              }
+            ]
+          },
+          "OS": "Microsoft Windows 11 Professionnel",
+          "OSBuild": "26200.8875",
+          "CleanupVerified": true,
+          "SeparateCleanup": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "wiztree",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "InstalledAndDetected"
+    },
+    {
+      "AppId": "LockHunter",
+      "Name": "LockHunter",
+      "Priority": 41,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "CrystalRich.LockHunter",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "lockhunter",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "QuickAssist",
+      "Name": "Microsoft Quick Assist",
+      "Priority": 42,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "9P7BP5VNWKX5",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Store",
+          "Identifier": "9P7BP5VNWKX5",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "WindowsSandbox",
+      "Name": "Windows Sandbox",
+      "Priority": 13,
+      "Sources": [],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "WindowsTerminal",
+      "Name": "Windows Terminal",
+      "Priority": 14,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Microsoft.WindowsTerminal",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Store",
+          "Identifier": "9N0DX20HK701",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "WindowsTerminalPreview",
+      "Name": "Windows Terminal Preview",
+      "Priority": 43,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Microsoft.WindowsTerminal.Preview",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Store",
+          "Identifier": "9N8G5RFZ9XK3",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "HWiNFO64",
+      "Name": "HWiNFO64",
+      "Priority": 15,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "REALiX.HWiNFO",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "hwinfo",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "DirectUrl",
+          "Identifier": "https://sourceforge.net/projects/hwinfo/files/Windows_Installer/hwi64_834.exe/download",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "CrystalDiskInfo",
+      "Name": "CrystalDiskInfo",
+      "Priority": 16,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "CrystalDewWorld.CrystalDiskInfo",
+          "InstallStatus": "InstalledAndDetected",
+          "InstalledVersion": "9.9.2.0",
+          "EventDate": "2026-09-08T08:59:22.6900899Z",
+          "Evidence": "catalog-receipts.json#CrystalDiskInfo",
+          "OS": "Microsoft Windows 11 Professionnel",
+          "OSBuild": "26200.8875",
+          "CleanupVerified": true,
+          "SeparateCleanup": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "crystaldiskinfo",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Store",
+          "Identifier": "9PG0Q2K2T88G",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "InstalledAndDetected"
+    },
+    {
+      "AppId": "ProcessHacker",
+      "Name": "Process Hacker",
+      "Priority": 17,
+      "Sources": [
+        {
+          "Method": "Chocolatey",
+          "Identifier": "processhacker",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Autoruns",
+      "Name": "Autoruns",
+      "Priority": 18,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Microsoft.Sysinternals.Autoruns",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "autoruns",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "BlueScreenView",
+      "Name": "BlueScreenView",
+      "Priority": 19,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "NirSoft.BlueScreenView",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "bluescreenview",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "WindowsFirewallControl",
+      "Name": "Windows Firewall Control",
+      "Priority": 49,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "BiniSoft.WindowsFirewallControl",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "windowsfirewallcontrol",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "KeePassXC",
+      "Name": "KeePassXC",
+      "Priority": 20,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "KeePassXCTeam.KeePassXC",
+          "InstallStatus": "InstalledAndDetected",
+          "InstalledVersion": "2.7.12",
+          "EventDate": "2026-09-08T08:38:48.2988087Z",
+          "Evidence": "catalog-receipts.json#KeePassXC",
+          "OS": "Microsoft Windows 11 Professionnel",
+          "OSBuild": "26200.8875",
+          "CleanupVerified": true,
+          "SeparateCleanup": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "keepassxc",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "InstalledAndDetected"
+    },
+    {
+      "AppId": "Malwarebytes",
+      "Name": "Malwarebytes",
+      "Priority": 21,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Malwarebytes.Malwarebytes",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "malwarebytes",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "WiFiAnalyzer",
+      "Name": "WiFi Analyzer",
+      "Priority": 53,
+      "Sources": [
+        {
+          "Method": "Store",
+          "Identifier": "9NBLGGH33N0N",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "AdvancedIPScanner",
+      "Name": "Advanced IP Scanner",
+      "Priority": 55,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Famatech.AdvancedIPScanner",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "advanced-ip-scanner",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Recuva",
+      "Name": "Recuva",
+      "Priority": 57,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Piriform.Recuva",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "recuva",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "WinAeroTweaker",
+      "Name": "WinAero Tweaker",
+      "Priority": 58,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "winaero.tweaker",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "winaero-tweaker",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Office365",
+      "Name": "Microsoft Office 365",
+      "Priority": 22,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Microsoft.Office",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "microsoft-office-deployment",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "PDFXChangeEditor",
+      "Name": "PDF-XChange Editor",
+      "Priority": 23,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "TrackerSoftware.PDF-XChangeEditor",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "pdfxchangeeditor",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "SignalDesktop",
+      "Name": "Signal Desktop",
+      "Priority": 61,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "OpenWhisperSystems.Signal",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "signal",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "DirectUrl",
+          "Identifier": "https://updates.signal.org/desktop/signal-desktop-win-x64-8.12.0.exe",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "WhatsAppDesktop",
+      "Name": "WhatsApp Desktop",
+      "Priority": 64,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "9NKSQGP7F2NH",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Store",
+          "Identifier": "9NKSQGP7F2NH",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "OBSStudio",
+      "Name": "OBS Studio",
+      "Priority": 68,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "OBSProject.OBSStudio",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "obs-studio",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Store",
+          "Identifier": "XPFFH613W8V6LV",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Steam",
+      "Name": "Steam",
+      "Priority": 24,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Valve.Steam",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "steam",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "DirectUrl",
+          "Identifier": "https://cdn.akamai.steamstatic.com/client/installer/SteamSetup.exe",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Discord",
+      "Name": "Discord",
+      "Priority": 25,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Discord.Discord",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "discord",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "DirectUrl",
+          "Identifier": "https://discord.com/api/downloads/distributions/app/installers/latest?channel=stable&platform=win&arch=x64",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "EpicGamesLauncher",
+      "Name": "Epic Games Launcher",
+      "Priority": 75,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "EpicGames.EpicGamesLauncher",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "epicgameslauncher",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "DirectUrl",
+          "Identifier": "https://launcher-public-service-prod06.ol.epicgames.com/launcher/api/installer/download/EpicGamesLauncherInstaller.msi",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "BattleNet",
+      "Name": "Battle.net",
+      "Priority": 78,
+      "Sources": [
+        {
+          "Method": "DirectUrl",
+          "Identifier": "https://downloader.battle.net/download/getInstaller?os=win&installer=Battle.net-Setup.exe",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "VSCode",
+      "Name": "Visual Studio Code",
+      "Priority": 26,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Microsoft.VisualStudioCode",
+          "InstallStatus": "InstalledAndDetected",
+          "InstalledVersion": "1.136.1",
+          "EventDate": "2026-09-08T08:53:55.0730837Z",
+          "Evidence": "catalog-receipts.json#VSCode",
+          "OS": "Microsoft Windows 11 Professionnel",
+          "OSBuild": "26200.8875",
+          "CleanupVerified": false,
+          "SeparateCleanup": {
+            "Signer": "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+            "Method": "Separate signed vendor cleanup",
+            "ExecutablePresent": false,
+            "ExitCode": 0,
+            "At": "2026-09-08T08:56:24.1802729Z"
+          }
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "vscode",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Store",
+          "Identifier": "9NBLGGH4XCZ6",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "InstalledAndDetected"
+    },
+    {
+      "AppId": "MobaXterm",
+      "Name": "MobaXterm",
+      "Priority": 27,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Mobatek.MobaXterm",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "mobaxterm",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Git",
+      "Name": "Git",
+      "Priority": 28,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Git.Git",
+          "InstallStatus": "InstalledAndDetected",
+          "InstalledVersion": "2.55.0",
+          "EventDate": "2026-09-08T08:52:50.5989424Z",
+          "Evidence": "catalog-receipts.json#Git",
+          "OS": "Microsoft Windows 11 Professionnel",
+          "OSBuild": "26200.8875",
+          "CleanupVerified": true,
+          "SeparateCleanup": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "git",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "DirectUrl",
+          "Identifier": "https://github.com/git-for-windows/git/releases/download/v2.43.0.windows.1/Git-2.43.0-64-bit.exe",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "InstalledAndDetected"
+    },
+    {
+      "AppId": "WSL2",
+      "Name": "Windows Subsystem for Linux",
+      "Priority": 86,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Microsoft.WSL",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "wsl2",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "PuTTY",
+      "Name": "PuTTY",
+      "Priority": 89,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "PuTTY.PuTTY",
+          "InstallStatus": "InstalledAndDetected",
+          "InstalledVersion": "Release 0.84 (without embedded help)",
+          "EventDate": "2026-09-08T07:06:13.0548754Z",
+          "Evidence": "catalog-receipts.json#PuTTY",
+          "Cleanup": {
+            "Results": [
+              {
+                "AppId": "PuTTY",
+                "Name": "PuTTY",
+                "Status": "RolledBack",
+                "Retry": false,
+                "CanRollback": false,
+                "Method": "Winget",
+                "Identifier": "PuTTY.PuTTY",
+                "InstalledVersion": "Release 0.84 (without embedded help)",
+                "Message": "Installed via Winget"
+              }
+            ],
+            "InstalledAfterRollback": false
+          },
+          "OS": "Microsoft Windows 11 Professionnel",
+          "OSBuild": "26200.8875",
+          "CleanupVerified": true,
+          "SeparateCleanup": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "putty",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "InstalledAndDetected"
+    },
+    {
+      "AppId": "WinSCP",
+      "Name": "WinSCP",
+      "Priority": 91,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "WinSCP.WinSCP",
+          "InstallStatus": "InstalledAndDetected",
+          "InstalledVersion": "6.5.6",
+          "EventDate": "2026-09-08T07:07:01.3498251Z",
+          "Evidence": "catalog-receipts.json#WinSCP",
+          "Cleanup": {
+            "Results": [
+              {
+                "AppId": "WinSCP",
+                "Name": "WinSCP",
+                "Status": "Succeeded",
+                "Retry": false,
+                "CanRollback": true,
+                "Method": "Winget",
+                "Identifier": "WinSCP.WinSCP",
+                "InstalledVersion": "6.5.6",
+                "Message": "Rollback failed with exit code -1978335107."
+              }
+            ],
+            "InstalledAfterRollback": true
+          },
+          "OS": "Microsoft Windows 11 Professionnel",
+          "OSBuild": "26200.8875",
+          "CleanupVerified": false,
+          "SeparateCleanup": {
+            "ExitCode": 0,
+            "ExecutableStillPresent": false,
+            "At": "2026-09-08T07:18:19.6079532Z",
+            "Method": "Separate signed vendor quiet uninstall",
+            "FreshDetection": {
+              "Version": null,
+              "IsInstalled": false
+            },
+            "FreshDetectionAt": "2026-09-08T08:12:48.0750558Z"
+          }
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "winscp",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "InstalledAndDetected"
+    },
+    {
+      "AppId": "Wireshark",
+      "Name": "Wireshark",
+      "Priority": 93,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "WiresharkFoundation.Wireshark",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "wireshark",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Python3",
+      "Name": "Python 3",
+      "Priority": 96,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Python.Python.3.12",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "python",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Store",
+          "Identifier": "9NCVDN91XZQP",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "NodeJS",
+      "Name": "Node.js",
+      "Priority": 98,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "OpenJS.NodeJS.LTS",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "nodejs-lts",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "DotNetSDK",
+      "Name": ".NET SDK",
+      "Priority": 100,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Microsoft.DotNet.SDK.9",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "dotnet-sdk",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "DirectUrl",
+          "Identifier": "https://aka.ms/dotnet/9.0/dotnet-sdk-win-x64.exe",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "YubiKeyManager",
+      "Name": "YubiKey Manager",
+      "Priority": 103,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Yubico.YubikeyManager",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "yubikey-manager",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "SandboxiePlus",
+      "Name": "Sandboxie Plus",
+      "Priority": 106,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Sandboxie.Plus",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "sandboxie-plus",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "LDPlayer",
+      "Name": "LDPlayer",
+      "Priority": 109,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "XUANZHI.LDPlayer",
+          "InstallStatus": "Unavailable",
+          "InstalledVersion": null,
+          "EventDate": "2026-09-08",
+          "Evidence": "Source freshness check: XUANZHI.LDPlayer not found; no installation attempted."
+        }
+      ],
+      "InstallStatus": "Unavailable"
+    },
+    {
+      "AppId": "pCloudDrive",
+      "Name": "pCloud Drive",
+      "Priority": 110,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "pCloudAG.pCloudDrive",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "pcloud",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "GoogleDrive",
+      "Name": "Google Drive for Desktop",
+      "Priority": 114,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Google.GoogleDrive",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "googledrive",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "IDM",
+      "Name": "Internet Download Manager",
+      "Priority": 127,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Tonec.InternetDownloadManager",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "internet-download-manager",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "ProtonVPN",
+      "Name": "Proton VPN",
+      "Priority": 131,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Proton.ProtonVPN",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "protonvpn",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "ProtonDrive",
+      "Name": "Proton Drive",
+      "Priority": 134,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Proton.ProtonDrive",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "ProtonMailBridge",
+      "Name": "Proton Mail Bridge",
+      "Priority": 136,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Proton.ProtonMailBridge",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "protonmailbridge",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "ProtonPass",
+      "Name": "Proton Pass",
+      "Priority": 140,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Proton.ProtonPass",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Roboform",
+      "Name": "Roboform",
+      "Priority": 142,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "SiberSystems.RoboForm",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "roboform",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "DirectUrl",
+          "Identifier": "https://www.roboform.com/dist/RoboForm-Setup.exe",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "WinRAR",
+      "Name": "WinRAR",
+      "Priority": 144,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "RARLab.WinRAR",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "winrar",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Mp3tag",
+      "Name": "Mp3tag",
+      "Priority": 147,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "FlorianHeidenreich.Mp3tag",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "mp3tag",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "CUESplitter",
+      "Name": "CUE Splitter",
+      "Priority": 150,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "9NBLGGH43MH5",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Store",
+          "Identifier": "9NBLGGH43MH5",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "MediaMonkey",
+      "Name": "MediaMonkey",
+      "Priority": 151,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "VentisMedia.MediaMonkey.2024",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "mediamonkey",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "TVRename",
+      "Name": "TV Rename",
+      "Priority": 153,
+      "Sources": [
+        {
+          "Method": "Chocolatey",
+          "Identifier": "tvrename",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "CrealityPrint",
+      "Name": "Creality Print",
+      "Priority": 167,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Creality.CrealityPrint",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "creality-print",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "UltimakerCura",
+      "Name": "Ultimaker Cura",
+      "Priority": 157,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Ultimaker.Cura",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "cura-new",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "DirectUrl",
+          "Identifier": "https://github.com/Ultimaker/Cura/releases/download/5.11.0/UltiMaker-Cura-5.11.0-win64-X64.exe",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "OperaBrowser",
+      "Name": "Opera",
+      "Priority": 34,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Opera.Opera",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "opera",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Zoom",
+      "Name": "Zoom",
+      "Priority": 66,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Zoom.Zoom",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "zoom",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "MicrosoftTeams",
+      "Name": "Microsoft Teams",
+      "Priority": 69,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Microsoft.Teams",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "microsoft-teams",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Thunderbird",
+      "Name": "Mozilla Thunderbird",
+      "Priority": 72,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Mozilla.Thunderbird",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "thunderbird",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Spotify",
+      "Name": "Spotify",
+      "Priority": 81,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Spotify.Spotify",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "spotify",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Store",
+          "Identifier": "9NCBCSZSJRSB",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "iTunes",
+      "Name": "iTunes",
+      "Priority": 83,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Apple.iTunes",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "itunes",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Store",
+          "Identifier": "9PB2MZ1ZMB1S",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Audacity",
+      "Name": "Audacity",
+      "Priority": 85,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Audacity.Audacity",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "audacity",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "AIMP",
+      "Name": "AIMP",
+      "Priority": 90,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "AIMP.AIMP",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "aimp",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "DirectUrl",
+          "Identifier": "https://aimp.ru/?do=download.file&id=3",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "MusicBee",
+      "Name": "MusicBee",
+      "Priority": 92,
+      "Sources": [
+        {
+          "Method": "Chocolatey",
+          "Identifier": "musicbee",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Store",
+          "Identifier": "9P4CLT2RJ1RS",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "HandBrake",
+      "Name": "HandBrake",
+      "Priority": 94,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "HandBrake.HandBrake",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "handbrake",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "KLiteCodecs",
+      "Name": "K-Lite Codec Pack",
+      "Priority": 97,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "CodecGuide.K-LiteCodecPack.Full",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "k-litecodecpackfull",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "GIMP",
+      "Name": "GIMP",
+      "Priority": 101,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "GIMP.GIMP.3",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "gimp",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Blender",
+      "Name": "Blender",
+      "Priority": 105,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "BlenderFoundation.Blender",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "blender",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Store",
+          "Identifier": "9PP3C07GTVRH",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Inkscape",
+      "Name": "Inkscape",
+      "Priority": 108,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Inkscape.Inkscape",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "inkscape",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "XnView",
+      "Name": "XnView MP",
+      "Priority": 116,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "XnSoft.XnViewMP",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "xnviewmp",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Greenshot",
+      "Name": "Greenshot",
+      "Priority": 120,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Greenshot.Greenshot",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "greenshot",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "LibreOffice",
+      "Name": "LibreOffice",
+      "Priority": 63,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "TheDocumentFoundation.LibreOffice",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "libreoffice-still",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "SumatraPDF",
+      "Name": "SumatraPDF",
+      "Priority": 65,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "SumatraPDF.SumatraPDF",
+          "InstallStatus": "InstalledAndDetected",
+          "InstalledVersion": "3.6.1",
+          "EventDate": "2026-09-08T08:56:26.9438191Z",
+          "Evidence": "catalog-receipts.json#SumatraPDF",
+          "OS": "Microsoft Windows 11 Professionnel",
+          "OSBuild": "26200.8875",
+          "CleanupVerified": false,
+          "SeparateCleanup": {
+            "Signer": "CN=Krzysztof Kowalczyk, O=Krzysztof Kowalczyk, L=Kraków, S=malopolskie, C=PL",
+            "Method": "Separate signed vendor quiet uninstall",
+            "ExecutablePresent": false,
+            "ExitCode": 0,
+            "At": "2026-09-08T08:57:55.1391877Z"
+          }
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "sumatrapdf",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "InstalledAndDetected"
+    },
+    {
+      "AppId": "FoxitReader",
+      "Name": "Foxit PDF Reader",
+      "Priority": 67,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Foxit.FoxitReader",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "foxitreader",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "CutePDF",
+      "Name": "CutePDF Writer",
+      "Priority": 159,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "AcroSoftware.CutePDFWriter",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "cutepdf",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "TeamViewer",
+      "Name": "TeamViewer",
+      "Priority": 44,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "TeamViewer.TeamViewer",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "teamviewer",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "AnyDesk",
+      "Name": "AnyDesk",
+      "Priority": 45,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "AnyDesk.AnyDesk",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "anydesk",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "qBittorrent",
+      "Name": "qBittorrent",
+      "Priority": 124,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "qBittorrent.qBittorrent",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "qbittorrent",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "TeraCopy",
+      "Name": "TeraCopy",
+      "Priority": 128,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "CodeSector.TeraCopy",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "teracopy",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "RevoUninstaller",
+      "Name": "Revo Uninstaller",
+      "Priority": 132,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "RevoUninstaller.RevoUninstaller",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "revo-uninstaller",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "CCleaner",
+      "Name": "CCleaner",
+      "Priority": 135,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Piriform.CCleaner",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "ccleaner",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "OpenShell",
+      "Name": "Open-Shell",
+      "Priority": 139,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Open-Shell.Open-Shell-Menu",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "open-shell",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "ImgBurn",
+      "Name": "ImgBurn",
+      "Priority": 160,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "LIGHTNINGUK.ImgBurn",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "imgburn",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "RealVNC",
+      "Name": "RealVNC Viewer",
+      "Priority": 161,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "RealVNC.VNCViewer",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "vnc-viewer",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "TightVNC",
+      "Name": "TightVNC",
+      "Priority": 162,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "GlavSoft.TightVNC",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "tightvnc",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "GlaryUtilities",
+      "Name": "Glary Utilities",
+      "Priority": 163,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Glarysoft.GlaryUtilities",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "glaryutilities-free",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Dropbox",
+      "Name": "Dropbox",
+      "Priority": 117,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Dropbox.Dropbox",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "dropbox",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "OneDrive",
+      "Name": "Microsoft OneDrive",
+      "Priority": 121,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Microsoft.OneDrive",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "onedrive",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "FileZilla",
+      "Name": "FileZilla",
+      "Priority": 95,
+      "Sources": [
+        {
+          "Method": "Chocolatey",
+          "Identifier": "filezilla",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "WinMerge",
+      "Name": "WinMerge",
+      "Priority": 95,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "WinMerge.WinMerge",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "winmerge",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Cursor",
+      "Name": "Cursor",
+      "Priority": 95,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Anysphere.Cursor",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "OpenAICodex",
+      "Name": "Codex CLI",
+      "Priority": 95,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "OpenAI.Codex",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Store",
+          "Identifier": "9PLM9XGG6VKS",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "ClaudeDesktop",
+      "Name": "Claude Desktop",
+      "Priority": 96,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Anthropic.Claude",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "ClaudeCode",
+      "Name": "Claude Code",
+      "Priority": 97,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Anthropic.ClaudeCode",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "GoogleAntigravity",
+      "Name": "Google Antigravity",
+      "Priority": 98,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Google.Antigravity",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "GoogleAntigravityIDE",
+      "Name": "Google Antigravity IDE",
+      "Priority": 99,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Google.AntigravityIDE",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "GoogleAntigravityCLI",
+      "Name": "Google Antigravity CLI",
+      "Priority": 100,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Google.AntigravityCLI",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Windsurf",
+      "Name": "Windsurf",
+      "Priority": 101,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Codeium.Windsurf",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Ollama",
+      "Name": "Ollama",
+      "Priority": 102,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Ollama.Ollama",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "LMStudio",
+      "Name": "LM Studio",
+      "Priority": 103,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "ElementLabs.LMStudio",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "MicrosoftAIShell",
+      "Name": "AI Shell",
+      "Priority": 104,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Microsoft.AIShell",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Msty",
+      "Name": "Msty",
+      "Priority": 105,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "CloudStack.Msty",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "CherryStudio",
+      "Name": "Cherry Studio",
+      "Priority": 106,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "kangfenmao.CherryStudio",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Poe",
+      "Name": "Poe",
+      "Priority": 107,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Quora.Poe",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Perplexity",
+      "Name": "Perplexity",
+      "Priority": 108,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Perplexity.Perplexity",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "VCRedist",
+      "Name": "Visual C++ Redistributable 2015-2022",
+      "Priority": 4,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Microsoft.VCRedist.2015+.x64",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "vcredist140",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "DirectX",
+      "Name": "DirectX End-User Runtime",
+      "Priority": 2,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Microsoft.DirectX",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "directx",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "DirectUrl",
+          "Identifier": "https://download.microsoft.com/download/1/7/1/1718CCC4-6315-4D8E-9543-8E28A4E18C4C/dxwebsetup.exe",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "AdoptOpenJDK",
+      "Name": "Eclipse Temurin JDK",
+      "Priority": 111,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "EclipseAdoptium.Temurin.21.JDK",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "temurin",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Evernote",
+      "Name": "Evernote",
+      "Priority": 164,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Evernote.Evernote",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "evernote",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "GoogleEarth",
+      "Name": "Google Earth Pro",
+      "Priority": 165,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Google.EarthPro",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "googleearthpro",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "NVDA",
+      "Name": "NVDA Screen Reader",
+      "Priority": 166,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "NVAccess.NVDA",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "nvda",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "KeePass",
+      "Name": "KeePass",
+      "Priority": 54,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "DominikReichl.KeePass",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "keepass",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "WinDirStat",
+      "Name": "WinDirStat",
+      "Priority": 141,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "WinDirStat.WinDirStat",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "windirstat",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Bitwarden",
+      "Name": "Bitwarden",
+      "Priority": 56,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Bitwarden.Bitwarden",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "bitwarden",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Store",
+          "Identifier": "9PJSDV0VPK04",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Slack",
+      "Name": "Slack",
+      "Priority": 74,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "SlackTechnologies.Slack",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "slack",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Store",
+          "Identifier": "9WZDNCRDK3WP",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Telegram",
+      "Name": "Telegram Desktop",
+      "Priority": 77,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Telegram.TelegramDesktop",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "telegram",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Store",
+          "Identifier": "9NZTWSQNTD0S",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Notion",
+      "Name": "Notion",
+      "Priority": 70,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Notion.Notion",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "notion",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Obsidian",
+      "Name": "Obsidian",
+      "Priority": 73,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Obsidian.Obsidian",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "obsidian",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "VirtualBox",
+      "Name": "Oracle VirtualBox",
+      "Priority": 113,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Oracle.VirtualBox",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "virtualbox",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "DockerDesktop",
+      "Name": "Docker Desktop",
+      "Priority": 115,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Docker.DockerDesktop",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "docker-desktop",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Postman",
+      "Name": "Postman",
+      "Priority": 118,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Postman.Postman",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "postman",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "DBeaver",
+      "Name": "DBeaver",
+      "Priority": 122,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "DBeaver.DBeaver.Community",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "dbeaver",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "HeidiSQL",
+      "Name": "HeidiSQL",
+      "Priority": 125,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "HeidiSQL.HeidiSQL",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "heidisql",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Insomnia",
+      "Name": "Insomnia",
+      "Priority": 129,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Insomnia.Insomnia",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "insomnia-rest-api-client",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "DirectUrl",
+          "Identifier": "https://github.com/Kong/insomnia/releases/download/core@12.3.0/Insomnia.Core-12.3.0.exe",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Rufus",
+      "Name": "Rufus",
+      "Priority": 143,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Rufus.Rufus",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "rufus",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Ventoy",
+      "Name": "Ventoy",
+      "Priority": 145,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Ventoy.Ventoy",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "ventoy",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "BalenaEtcher",
+      "Name": "balenaEtcher",
+      "Priority": 148,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Balena.Etcher",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "etcher",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "DirectUrl",
+          "Identifier": "https://github.com/balena-io/etcher/releases/download/v2.1.4/balenaEtcher-2.1.4.Setup.exe",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "DoubleCommander",
+      "Name": "Double Commander",
+      "Priority": 152,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "alexx2000.DoubleCommander",
+          "InstallStatus": "InstalledAndDetected",
+          "InstalledVersion": "1.2.8.0",
+          "EventDate": "2026-09-08T08:59:51.7382316Z",
+          "Evidence": "catalog-receipts.json#DoubleCommander",
+          "OS": "Microsoft Windows 11 Professionnel",
+          "OSBuild": "26200.8875",
+          "CleanupVerified": true,
+          "SeparateCleanup": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "doublecmd",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "InstalledAndDetected"
+    },
+    {
+      "AppId": "Ditto",
+      "Name": "Ditto",
+      "Priority": 154,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Ditto.Ditto",
+          "InstallStatus": "InstalledAndDetected",
+          "InstalledVersion": "3.25.113.0",
+          "EventDate": "2026-09-08T09:00:30.8959616Z",
+          "Evidence": "catalog-receipts.json#Ditto",
+          "OS": "Microsoft Windows 11 Professionnel",
+          "OSBuild": "26200.8875",
+          "CleanupVerified": false,
+          "SeparateCleanup": {
+            "ExecutablePresent": false,
+            "RepairExitCode": 0,
+            "Method": "Separate package repair followed by process stop and exact WinGet uninstall",
+            "At": "2026-09-08T09:10:44.6141229Z",
+            "UninstallExitCode": 0
+          }
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "ditto",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Store",
+          "Identifier": "9NBLGGH3ZBJQ",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "InstalledAndDetected"
+    },
+    {
+      "AppId": "CPUZ",
+      "Name": "CPU-Z",
+      "Priority": 48,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "CPUID.CPU-Z",
+          "InstallStatus": "InstalledAndDetected",
+          "InstalledVersion": "3, 0, 1, 0",
+          "EventDate": "2026-09-08T08:57:57.4592099Z",
+          "Evidence": "catalog-receipts.json#CPUZ",
+          "OS": "Microsoft Windows 11 Professionnel",
+          "OSBuild": "26200.8875",
+          "CleanupVerified": true,
+          "SeparateCleanup": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "cpu-z",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "InstalledAndDetected"
+    },
+    {
+      "AppId": "GPUZ",
+      "Name": "GPU-Z",
+      "Priority": 50,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "TechPowerUp.GPU-Z",
+          "InstallStatus": "InstalledAndDetected",
+          "InstalledVersion": "2.70.0.0",
+          "EventDate": "2026-09-08T08:58:17.6732990Z",
+          "Evidence": "catalog-receipts.json#GPUZ",
+          "OS": "Microsoft Windows 11 Professionnel",
+          "OSBuild": "26200.8875",
+          "CleanupVerified": true,
+          "SeparateCleanup": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "gpu-z",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "InstalledAndDetected"
+    },
+    {
+      "AppId": "HWMonitor",
+      "Name": "HWMonitor",
+      "Priority": 51,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "CPUID.HWMonitor",
+          "InstallStatus": "InstalledAndDetected",
+          "InstalledVersion": "1, 6, 7, 0",
+          "EventDate": "2026-09-08T08:59:00.6727616Z",
+          "Evidence": "catalog-receipts.json#HWMonitor",
+          "OS": "Microsoft Windows 11 Professionnel",
+          "OSBuild": "26200.8875",
+          "CleanupVerified": true,
+          "SeparateCleanup": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "hwmonitor",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "InstalledAndDetected"
+    },
+    {
+      "AppId": "Speccy",
+      "Name": "Speccy",
+      "Priority": 52,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Piriform.Speccy",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "speccy",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "mpv",
+      "Name": "mpv",
+      "Priority": 123,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "mpv.net",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "mpv",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Kodi",
+      "Name": "Kodi",
+      "Priority": 126,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "XBMCFoundation.Kodi",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "kodi",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Store",
+          "Identifier": "9NBLGGH4T892",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Plex",
+      "Name": "Plex",
+      "Priority": 130,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Plex.Plex",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "plex",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Store",
+          "Identifier": "9NBLGGH41WLQ",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "FreeDownloadManager",
+      "Name": "Free Download Manager",
+      "Priority": 155,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "SoftDeluxe.FreeDownloadManager",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "freedownloadmanager",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "DirectUrl",
+          "Identifier": "https://dn3.freedownloadmanager.org/6/latest/fdm_x64_setup.exe",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "ABDownloadManager",
+      "Name": "AB Download Manager",
+      "Priority": 156,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "amir1376.ABDownloadManager",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "ab-download-manager",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "DirectUrl",
+          "Identifier": "https://github.com/amir1376/ab-download-manager/releases/download/v1.8.4/ABDownloadManager_1.8.4_windows_x64.exe",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "NanaZip",
+      "Name": "NanaZip",
+      "Priority": 40,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "M2Team.NanaZip",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "nanazip",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Store",
+          "Identifier": "9N8G7TSCL18R",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "GOGGalaxy",
+      "Name": "GOG Galaxy",
+      "Priority": 80,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "GOG.Galaxy",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "goggalaxy",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "EAApp",
+      "Name": "EA App",
+      "Priority": 82,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "ElectronicArts.EADesktop",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "ea-app",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Playnite",
+      "Name": "Playnite",
+      "Priority": 84,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Playnite.Playnite",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "playnite",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "HeroicLauncher",
+      "Name": "Heroic Games Launcher",
+      "Priority": 87,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "HeroicGamesLauncher.HeroicGamesLauncher",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "heroic-games-launcher",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Streamlabs",
+      "Name": "Streamlabs",
+      "Priority": 71,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Streamlabs.Streamlabs",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "streamlabs-obs",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "PDF24",
+      "Name": "PDF24 Creator",
+      "Priority": 76,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "geeksoftwareGmbH.PDF24Creator",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "pdf24",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "PDFsam",
+      "Name": "PDFsam Basic",
+      "Priority": 79,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "PDFsam.PDFsam",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "pdfsam",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "TranslucentTB",
+      "Name": "TranslucentTB",
+      "Priority": 59,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "CharlesMilette.TranslucentTB",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "translucenttb",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Store",
+          "Identifier": "9PF4KZ2VN4W9",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "LivelyWallpaper",
+      "Name": "Lively Wallpaper",
+      "Priority": 60,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "rocksdanister.LivelyWallpaper",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "lively",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Store",
+          "Identifier": "9NTM2QC6QWS7",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Rainmeter",
+      "Name": "Rainmeter",
+      "Priority": 62,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Rainmeter.Rainmeter",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "rainmeter",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Parsec",
+      "Name": "Parsec",
+      "Priority": 46,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Parsec.Parsec",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "parsec",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "DirectUrl",
+          "Identifier": "https://builds.parsec.app/package/parsec-windows.exe",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Moonlight",
+      "Name": "Moonlight",
+      "Priority": 47,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "MoonlightGameStreamingProject.Moonlight",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "moonlight-qt",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Tabby",
+      "Name": "Tabby",
+      "Priority": 133,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Eugeny.Tabby",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "tabby",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "DirectUrl",
+          "Identifier": "https://github.com/Eugeny/tabby/releases/download/v1.0.230/tabby-1.0.230-setup-x64.exe",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Hyper",
+      "Name": "Hyper",
+      "Priority": 137,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Vercel.Hyper",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "hyper",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "PowerShell7",
+      "Name": "PowerShell 7",
+      "Priority": 3,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Microsoft.PowerShell",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "powershell-core",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Chocolatey",
+      "Name": "Chocolatey",
+      "Priority": 31,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Chocolatey.Chocolatey",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "chocolatey",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "DotNetDesktopRuntime8",
+      "Name": ".NET Desktop Runtime 8",
+      "Priority": 6,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Microsoft.DotNet.DesktopRuntime.8",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "dotnet-8.0-desktopruntime",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "DotNetDesktopRuntime9",
+      "Name": ".NET Desktop Runtime 9",
+      "Priority": 36,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Microsoft.DotNet.DesktopRuntime.9",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "dotnet-9.0-desktopruntime",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "DotNetFramework48",
+      "Name": ".NET Framework 4.8.1",
+      "Priority": 38,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Microsoft.DotNet.Framework.DeveloperPack_4",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "dotnetfx",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "WindowsAppSDK21",
+      "Name": "Windows App SDK Runtime 2.1",
+      "Priority": 37,
+      "Sources": [
+        {
+          "Method": "DirectUrl",
+          "Identifier": "https://aka.ms/windowsappsdk/2.1/2.1.3/windowsappruntimeinstall-x64.exe",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "BleachBit",
+      "Name": "BleachBit",
+      "Priority": 75,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "BleachBit.BleachBit",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "bleachbit",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "FluentCleaner",
+      "Name": "FluentCleaner",
+      "Priority": 76,
+      "Sources": [
+        {
+          "Method": "DirectUrl",
+          "Identifier": "https://github.com/builtbybel/FluentCleaner/releases/download/26.06.04/FluentCleaner-win-x64.zip",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "MicrosoftPCManager",
+      "Name": "Microsoft PC Manager",
+      "Priority": 74,
+      "Sources": [
+        {
+          "Method": "Store",
+          "Identifier": "9PM860492SZD",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Textify",
+      "Name": "Textify",
+      "Priority": 77,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "rammichael.Textify",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "textify",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Capture2Text",
+      "Name": "Capture2Text",
+      "Priority": 78,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "cb4960.Capture2Text",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "capture2text",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "FullEventLogView",
+      "Name": "FullEventLogView",
+      "Priority": 201,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "NirSoft.FullEventLogView",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "LastActivityView",
+      "Name": "LastActivityView",
+      "Priority": 202,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "NirSoft.LastActivityView",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "TurnedOnTimesView",
+      "Name": "TurnedOnTimesView",
+      "Priority": 203,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "NirSoft.TurnedOnTimesView",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "WhatIsHang",
+      "Name": "WhatIsHang",
+      "Priority": 204,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "NirSoft.WhatIsHang",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "WirelessNetworkWatcher",
+      "Name": "Wireless Network Watcher",
+      "Priority": 205,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "NirSoft.WirelessNetworkWatcher",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "WifiInfoView",
+      "Name": "WifiInfoView",
+      "Priority": 206,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "NirSoft.WifiInfoView",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "NetworkInterfacesView",
+      "Name": "NetworkInterfacesView",
+      "Priority": 207,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "NirSoft.NetworkInterfacesView",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "HashMyFiles",
+      "Name": "HashMyFiles",
+      "Priority": 208,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "NirSoft.HashMyFiles",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "USBDeview",
+      "Name": "USBDeview",
+      "Priority": 209,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "NirSoft.USBDeview",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "SearchMyFiles",
+      "Name": "SearchMyFiles",
+      "Priority": 210,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "NirSoft.SearchMyFiles",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "UninstallView",
+      "Name": "UninstallView",
+      "Priority": 211,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "NirSoft.UninstallView",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "ShellExView",
+      "Name": "ShellExView",
+      "Priority": 212,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "NirSoft.ShellExView",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "AzureCLI",
+      "Name": "Azure CLI",
+      "Priority": 45,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Microsoft.AzureCLI",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "azure-cli",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "AzureDataStudio",
+      "Name": "Azure Data Studio",
+      "Priority": 46,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Microsoft.Azure.DataStudio",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "azure-data-studio",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "RemoteDesktopManager",
+      "Name": "Remote Desktop Manager",
+      "Priority": 48,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Devolutions.RemoteDesktopManager",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "rdm",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "mRemoteNG",
+      "Name": "mRemoteNG",
+      "Priority": 49,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "mRemoteNG.mRemoteNG",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "mremoteng",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "Sysinternals",
+      "Name": "Sysinternals Suite",
+      "Priority": 15,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Microsoft.Sysinternals.Suite",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "sysinternals",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "TreeSizeFree",
+      "Name": "TreeSize Free",
+      "Priority": 50,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "JAMSoftware.TreeSize.Free",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "treesizefree",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    },
+    {
+      "AppId": "AdobeAcrobatReader",
+      "Name": "Adobe Acrobat Reader DC",
+      "Priority": 20,
+      "Sources": [
+        {
+          "Method": "Winget",
+          "Identifier": "Adobe.Acrobat.Reader.64-bit",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        },
+        {
+          "Method": "Chocolatey",
+          "Identifier": "adobereader",
+          "InstallStatus": "NotTested",
+          "InstalledVersion": null,
+          "EventDate": null,
+          "Evidence": null
+        }
+      ],
+      "InstallStatus": "NotTested"
+    }
+  ],
+  "CoverageNotice": "Progressive disposable VM lot. Untested sources, unavailable packages and incomplete detection are not certified. A successful installation does not imply successful plan rollback. Separate vendor cleanup is identified explicitly.",
+  "IndependentFinalCleanupEvidence": "catalog-cleanup.json",
+  "TestedApplicationCount": 21,
+  "InstalledAndDetectedCount": 20
+}

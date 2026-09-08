@@ -28,6 +28,9 @@ namespace WinForge.GUI.Models;
 /// </summary>
 public partial class ApplicationModel : ObservableValidator
 {
+    /// <summary>Provides the application label to virtualized row automation peers.</summary>
+    public override string ToString() => Name;
+
     /// <summary>Frozen definition used only while replaying an installation checkpoint.</summary>
     public string? FrozenDefinitionJson { get; set; }
 

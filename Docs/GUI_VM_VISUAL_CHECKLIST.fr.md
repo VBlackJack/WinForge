@@ -4,9 +4,14 @@
 
 ## Périmètre et matrice
 
+La [recette locale du 2026-09-08](Validation/20260908/README.fr.md) a validé les
+40 combinaisons ci-dessous sur les candidats locaux non publiés identifiés par cas. Les parcours
+vocaux NVDA enregistrés sont qualifiés séparément, sans certification globale
+de chaque contrôle ou aide technique.
+
 Contrôler la persistance des thèmes, la lisibilité, le contraste élevé, la réduction des animations, le redimensionnement et les états des actions.
 
-Tester `1366x768` à `100%`, `125%` et `150%`, puis `1920x1080` à `100%` et `125%`. Pour chaque combinaison, vérifier les thèmes clair et sombre, le contraste élevé, ainsi que la réduction des animations activée et désactivée.
+Tester `1366x768` à `100%`, `125%` et `150%`, puis `1920x1080` à `100%` et `125%`. Pour chaque combinaison, vérifier Folio (clair) et Drakul (sombre), le contraste élevé activé et désactivé, ainsi que la réduction des animations activée et désactivée.
 
 ## Démarrage et disposition
 
@@ -22,7 +27,7 @@ Résultat attendu : aucune action importante coupée ou inaccessible, aucun chev
 
 | Page | Vérifications |
 |---|---|
-| Apps | Filtres utilisables à faible largeur, actions d’analyse et de mise à jour accessibles, boutons de progression alignés |
+| Apps | Filtres et actions renvoyés à la ligne à faible largeur, défilement vertical utilisable, analyse et mise à jour accessibles, boutons de progression alignés |
 | Apps | Pause/reprise uniquement pour les lots compatibles ; masquées pendant une mise à jour |
 | Apps | Mise à jour du profil visible après modification de la sélection, distincte de l’enregistrement |
 | Logs | Filtres, effacement et suppression accessibles à `1366x768` et `150%` |

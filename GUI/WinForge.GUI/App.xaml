@@ -430,6 +430,9 @@
             <Thickness x:Key="ButtonIconMarginStandard">0,0,8,0</Thickness>
             <Thickness x:Key="ButtonIconMarginCompact">0,0,6,0</Thickness>
 
+            <!-- Keep application rows reachable in short viewports at high scaling. -->
+            <sys:Double x:Key="ApplicationsMinimumContentHeight">600</sys:Double>
+
             <!-- Shared page and card surfaces -->
             <Style x:Key="PageRootGridStyle" TargetType="Grid">
                 <Setter Property="Margin" Value="{StaticResource PagePadding}"/>

@@ -36,6 +36,7 @@
     <SolidColorBrush x:Key="AccentGreenTextBrush" Color="#50FA7B"/>
     <SolidColorBrush x:Key="AccentOrangeTextBrush" Color="#FFB86C"/>
     <SolidColorBrush x:Key="ManualInstallBadgeBrush" Color="#FFB86C"/>
+    <SolidColorBrush x:Key="BadgeWarningForegroundBrush" Color="#282A36"/>
 
     <!-- Secondary/Muted Icon Colors -->
     <SolidColorBrush x:Key="IconSecondaryBrush" Color="#B3BBD6"/>

@@ -502,6 +502,61 @@ public partial class App : Application
                 SwapIfExists(app, "ControlFillColorDefaultBrush", "HighContrastSurfaceBrush");
                 SwapIfExists(app, "TextFillColorPrimaryBrush", "HighContrastTextPrimaryBrush");
                 SwapIfExists(app, "TextFillColorSecondaryBrush", "HighContrastTextSecondaryBrush");
+                SwapIfExists(app, "TextControlForeground", "HighContrastTextPrimaryBrush");
+                SwapIfExists(app, "TextControlPlaceholderForeground", "HighContrastTextPrimaryBrush");
+                SwapIfExists(app, "TextControlButtonForeground", "HighContrastTextPrimaryBrush");
+                SwapIfExists(app, "ToggleSwitchContentForeground", "HighContrastTextPrimaryBrush");
+                SwapIfExists(app, "ToggleSwitchKnobFillOff", "HighContrastTextPrimaryBrush");
+                SwapIfExists(app, "ToggleSwitchKnobFillOffPointerOver", "HighContrastTextPrimaryBrush");
+                SwapIfExists(app, "ToggleSwitchKnobFillOffPressed", "HighContrastTextPrimaryBrush");
+                SwapIfExists(app, "TextControlBackground", "HighContrastSurfaceBrush");
+                SwapIfExists(app, "TextControlBackgroundPointerOver", "HighContrastSurfaceBrush");
+                SwapIfExists(app, "TextControlBackgroundFocused", "HighContrastSurfaceBrush");
+                SwapIfExists(app, "ToggleSwitchFillOff", "HighContrastSurfaceBrush");
+                SwapIfExists(app, "ToggleSwitchFillOffPointerOver", "HighContrastSurfaceBrush");
+                SwapIfExists(app, "ToggleSwitchFillOffPressed", "HighContrastSurfaceBrush");
+                SwapIfExists(app, "TextControlElevationBorderBrush", "HighContrastBorderBrush");
+                SwapIfExists(app, "ToggleSwitchStrokeOff", "HighContrastBorderBrush");
+                SwapIfExists(app, "ToggleSwitchStrokeOffPointerOver", "HighContrastBorderBrush");
+                SwapIfExists(app, "ToggleSwitchStrokeOffPressed", "HighContrastBorderBrush");
+                SwapIfExists(app, "TextControlFocusedBorderBrush", "HighContrastPrimaryBrush");
+                SwapIfExists(app, "ToggleSwitchFillOn", "HighContrastPrimaryBrush");
+                SwapIfExists(app, "ToggleSwitchFillOnPointerOver", "HighContrastPrimaryBrush");
+                SwapIfExists(app, "ToggleSwitchFillOnPressed", "HighContrastPrimaryBrush");
+                SwapIfExists(app, "ToggleSwitchKnobFillOn", "HighContrastPrimaryForegroundBrush");
+                SwapIfExists(app, "ToggleSwitchKnobFillOnPointerOver", "HighContrastPrimaryForegroundBrush");
+                SwapIfExists(app, "ToggleSwitchKnobFillOnPressed", "HighContrastPrimaryForegroundBrush");
+                SwapIfExists(app, "NavigationViewItemForeground", "HighContrastTextPrimaryBrush");
+                SwapIfExists(app, "NavigationViewItemForegroundPointerOver", "HighContrastTextPrimaryBrush");
+                SwapIfExists(app, "NavigationViewItemBackground", "HighContrastBackgroundBrush");
+                SwapIfExists(app, "NavigationViewItemBackgroundPointerOver", "HighContrastCardBrush");
+                SwapIfExists(app, "NavigationViewItemBackgroundPressed", "HighContrastCardBrush");
+                SwapIfExists(app, "NavigationViewItemBackgroundSelected", "HighContrastCardBrush");
+                SwapIfExists(app, "NavigationViewItemBorderBrush", "HighContrastBackgroundBrush");
+                SwapIfExists(app, "NavigationViewSelectionIndicatorForeground", "HighContrastPrimaryBrush");
+                SwapIfExists(app, "NavigationViewContentBackground", "HighContrastBackgroundBrush");
+                SwapIfExists(app, "NavigationViewContentGridBorderBrush", "HighContrastBorderBrush");
+                SwapIfExists(app, "LeftNavigationViewSeparatorBrush", "HighContrastBorderBrush");
+                SwapIfExists(app, "ButtonForeground", "HighContrastTextPrimaryBrush");
+                SwapIfExists(app, "ButtonForegroundPointerOver", "HighContrastTextPrimaryBrush");
+                SwapIfExists(app, "ButtonForegroundPressed", "HighContrastTextPrimaryBrush");
+                SwapIfExists(app, "ButtonForegroundDisabled", "HighContrastTextDisabledBrush");
+                SwapIfExists(app, "ButtonBackground", "HighContrastSurfaceBrush");
+                SwapIfExists(app, "ButtonBackgroundPointerOver", "HighContrastCardBrush");
+                SwapIfExists(app, "ButtonBackgroundPressed", "HighContrastCardBrush");
+                SwapIfExists(app, "SubtleFillColorSecondaryBrush", "HighContrastCardBrush");
+                SwapIfExists(app, "SubtleFillColorTertiaryBrush", "HighContrastSurfaceBrush");
+                SwapIfExists(app, "ThemeAdaptiveAccentBrush", "HighContrastPrimaryBrush");
+                SwapIfExists(app, "BadgeTextBrush", "HighContrastPrimaryForegroundBrush");
+                SwapIfExists(app, "AccentFillColorDefaultBrush", "HighContrastPrimaryBrush");
+                SwapIfExists(app, "AccentFillColorSecondaryBrush", "HighContrastSecondaryBrush");
+                SwapIfExists(app, "AccentFillColorTertiaryBrush", "HighContrastSecondaryBrush");
+                SwapIfExists(app, "AccentButtonBackground", "HighContrastPrimaryBrush");
+                SwapIfExists(app, "AccentButtonBackgroundPointerOver", "HighContrastSecondaryBrush");
+                SwapIfExists(app, "AccentButtonBackgroundPressed", "HighContrastSecondaryBrush");
+                SwapIfExists(app, "AccentButtonForeground", "HighContrastPrimaryForegroundBrush");
+                SwapIfExists(app, "AccentButtonForegroundPointerOver", "HighContrastPrimaryForegroundBrush");
+                SwapIfExists(app, "AccentButtonForegroundPressed", "HighContrastPrimaryForegroundBrush");
                 SwapIfExists(app, "ControlStrokeColorDefaultBrush", "HighContrastBorderBrush");
                 SwapIfExists(app, "DividerStrokeColorDefaultBrush", "HighContrastBorderLightBrush");
                 SwapIfExists(app, "SubtleDataGridLineBrush", "HighContrastBorderLightBrush");
@@ -529,20 +584,8 @@ public partial class App : Application
                 SwapIfExists(app, "SourceDirectBadgeBorderBrush", "HighContrastBorderBrush");
                 SwapIfExists(app, "SourceDirectBadgeForegroundBrush", "HighContrastTextPrimaryBrush");
 
-                // Canonical button taxonomy -> High Contrast variants.
-                // Each canonical Style is replaced with the matching HighContrast<Name>Style
-                // so explicitly-styled buttons repaint correctly when HC mode is enabled.
-                SwapIfExists(app, "HeroPrimaryButton", "HighContrastHeroPrimaryButtonStyle");
-                SwapIfExists(app, "PrimaryButton", "HighContrastPrimaryButtonStyle");
-                SwapIfExists(app, "SecondaryButton", "HighContrastSecondaryButtonStyle");
-                SwapIfExists(app, "OutlinedButton", "HighContrastOutlinedButtonStyle");
-                SwapIfExists(app, "WarningPrimaryButton", "HighContrastWarningPrimaryButtonStyle");
-                SwapIfExists(app, "DestructiveButton", "HighContrastOutlinedButtonStyle");
-                SwapIfExists(app, "DestructiveSolidButton", "HighContrastDestructiveSolidButtonStyle");
-                SwapIfExists(app, "IconButton", "HighContrastIconButtonStyle");
-                SwapIfExists(app, "StatsCardButton", "HighContrastStatsCardButtonStyle");
-                SwapIfExists(app, "QuickActionButton", "HighContrastQuickActionButtonStyle");
-                SwapIfExists(app, "FavoriteIconButton", "HighContrastFavoriteIconButtonStyle");
+                // Existing button styles consume these semantic brushes. Keep their
+                // identities so disabling high contrast restores the original styles.
             }
             catch (Exception ex)
             {
