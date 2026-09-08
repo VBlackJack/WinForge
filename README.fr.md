@@ -82,4 +82,4 @@ Extrayez et lancez WinForge uniquement si le résultat est **OK**. Sinon, télé
 - [Guide utilisateur](Docs/USER_GUIDE.fr.md) : profils, déploiement et dépannage.
 - [Index de la documentation](Docs/README.fr.md) : administration, PowerShell et développement.
 - [Signaler un problème](https://github.com/VBlackJack/WinForge/issues) : indiquez les versions de WinForge et Windows, l'application et le message d'erreur. Retirez les secrets des journaux partagés.
-- [Contribuer](CONTRIBUTING.md) · [Licence](LICENSE)
+- [Contribuer](CONTRIBUTING.fr.md) · [Licence](LICENSE)
