@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'ParallelDetection.psm1'
-    ModuleVersion = '1.0.0907.3'
+    ModuleVersion = '1.0.0908.1'
     GUID = '2a081b8d-d726-4190-9ae3-b69ff83afb75'
     Author = 'Julien Bombled'
     CompanyName = 'WinForge'
@@ -35,7 +35,7 @@
             Tags = @('WinForge', 'Detection', 'Parallel', 'Performance')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
-            ReleaseNotes = 'WinForge v2026090703'
+            ReleaseNotes = 'WinForge v2026090801'
         }
     }
 }

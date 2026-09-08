@@ -415,6 +415,7 @@
                              <ui:Button Command="{Binding ScanUpdatesCommand}"
                                        Style="{StaticResource PrimaryButton}"
                                        ToolTip="{loc:Loc Dashboard_ScanBtn_Hint}"
+                                       AutomationProperties.Name="{Binding ScanButtonText}"
                                        HorizontalAlignment="Stretch"
                                        IsEnabled="{Binding IsNotScanning}">
                                 <StackPanel Orientation="Horizontal">
@@ -451,6 +452,7 @@
                             <!-- Prerequisites Button -->
                             <ui:Button Command="{Binding NavigateToPrerequisitesCommand}"
                                        Style="{StaticResource QuickActionButton}"
+                                       AutomationProperties.Name="{loc:Loc Nav_Prerequisites}"
                                        ToolTip="{loc:Loc Dashboard_Nav_PrereqsHint}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -477,6 +479,7 @@
                             <!-- Applications Button -->
                             <ui:Button Command="{Binding NavigateToAppsCommand}"
                                        Style="{StaticResource QuickActionButton}"
+                                       AutomationProperties.Name="{loc:Loc Nav_Apps}"
                                        ToolTip="{loc:Loc Dashboard_Nav_AppsHint}"
                                        Margin="0">
                                 <Grid>

@@ -202,12 +202,14 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     /// Current progress in batch operation (number of apps processed).
     /// </summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(BatchProgressAutomationName))]
     private int _batchProgressCurrent;
 
     /// <summary>
     /// Total number of apps in batch operation.
     /// </summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(BatchProgressAutomationName))]
     private int _batchProgressTotal;
 
     /// <summary>
@@ -220,7 +222,13 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     /// Name of the application currently being processed in batch operation.
     /// </summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(BatchProgressAutomationName))]
     private string? _currentBatchAppName;
+
+    /// <summary>Localized application and item count announced by the progress control.</summary>
+    public string BatchProgressAutomationName => string.Join(" ", CurrentBatchAppName,
+        string.Format(CultureInfo.CurrentCulture, Resources.Resources.Progress_BatchProgress,
+            BatchProgressCurrent, BatchProgressTotal)).Trim();
 
     /// <summary>
     /// Whether batch operation is paused.

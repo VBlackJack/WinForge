@@ -17,6 +17,7 @@ function Test-ApplicationInstalled { param($Application) Test-Path "$PSScriptRoo
 function Clear-RegistryAppsCache {}
 function Get-ApplicationsInstallationStatus { param($Applications,[switch]$Refresh)
     $state=@{}
+    if (Test-Path "$PSScriptRoot/../unknown-detection") { return $state }
     foreach($app in $Applications) { $state[$app.AppId]=@{IsInstalled=(Test-ApplicationInstalled $app);Version='1.0'} }
     return $state
 }
@@ -34,6 +35,9 @@ function Install-Application { param($Application,[switch]$ForceUpdate,[switch]$
 '@ | Set-Content "$fixture/Modules/InstallationOrchestrator.psm1"
         @'
 function Invoke-NativeCommandUtf8 { param($FilePath,$ArgumentList)
+    if (($ArgumentList -contains 'First.Id') -and (Test-Path "$PSScriptRoot/../allow-cleanup")) {
+        Remove-Item -LiteralPath "$PSScriptRoot/../First.installed"
+    }
     return @{ExitCode=$(if ($ArgumentList -contains 'First.Id') { 0 } else { 5 })}
 }
 '@ | Set-Content "$fixture/Core/Core.psm1"
@@ -71,6 +75,17 @@ Invoke-DeploymentPlan "$PSScriptRoot/plan.json" -RetryFailed:$Retry -Confirm:$fa
         @(Get-Content "$fixture/calls" | Where-Object { $_ -eq 'First' }).Count | Should -Be 1
         @(Get-Content "$fixture/calls" | Where-Object { $_ -eq 'Second' }).Count | Should -Be 1
         (Read-DeploymentPlan "$fixture/plan.json").State | Should -Be Completed
+        Set-Content "$fixture/unknown-detection" 'unavailable'
+        $unknown=Undo-DeploymentPlan "$fixture/plan.json" -Confirm:$false
+        $unknownRecovery=@(Get-DeploymentRecovery $unknown)
+        ($unknownRecovery | Where-Object AppId -eq First).CanRollback | Should -BeTrue
+        ($unknownRecovery | Where-Object AppId -eq First).Message | Should -Match 'could not be verified'
+        Remove-Item -LiteralPath "$fixture/unknown-detection"
+        $rolled=Undo-DeploymentPlan "$fixture/plan.json" -Confirm:$false
+        $recovery=@(Get-DeploymentRecovery $rolled)
+        ($recovery | Where-Object AppId -eq First).CanRollback | Should -BeTrue
+        ($recovery | Where-Object AppId -eq First).Message | Should -Match 'still finds the application installed'
+        Set-Content "$fixture/allow-cleanup" 'ready'
         $rolled=Undo-DeploymentPlan "$fixture/plan.json" -Confirm:$false
         $recovery=@(Get-DeploymentRecovery $rolled)
         ($recovery | Where-Object AppId -eq First).Status | Should -Be RolledBack

@@ -1,0 +1,91 @@
+{
+  "At": "2026-09-08T11:13:43.7316763Z",
+  "Detection": {
+    "GPUZ": {
+      "IsInstalled": false,
+      "Version": null
+    },
+    "Ditto": {
+      "IsInstalled": false,
+      "Version": null
+    },
+    "WizTree": {
+      "IsInstalled": false,
+      "Version": null
+    },
+    "MPCHC": {
+      "IsInstalled": false,
+      "Version": null
+    },
+    "WinSCP": {
+      "IsInstalled": false,
+      "Version": null
+    },
+    "VLC": {
+      "IsInstalled": false,
+      "Version": null
+    },
+    "CPUZ": {
+      "IsInstalled": false,
+      "Version": null
+    },
+    "NotepadPlusPlus": {
+      "IsInstalled": false,
+      "Version": null
+    },
+    "PuTTY": {
+      "IsInstalled": false,
+      "Version": null
+    },
+    "Git": {
+      "IsInstalled": false,
+      "Version": null
+    },
+    "HWMonitor": {
+      "IsInstalled": false,
+      "Version": null
+    },
+    "ShareX": {
+      "IsInstalled": false,
+      "Version": null
+    },
+    "DoubleCommander": {
+      "IsInstalled": false,
+      "Version": null
+    },
+    "VSCode": {
+      "IsInstalled": false,
+      "Version": null
+    },
+    "Everything": {
+      "IsInstalled": false,
+      "Version": null
+    },
+    "MozillaFirefox": {
+      "IsInstalled": false,
+      "Version": null
+    },
+    "CrystalDiskInfo": {
+      "IsInstalled": false,
+      "Version": null
+    },
+    "KeePassXC": {
+      "IsInstalled": false,
+      "Version": null
+    },
+    "SumatraPDF": {
+      "IsInstalled": false,
+      "Version": null
+    },
+    "7Zip": {
+      "IsInstalled": false,
+      "Version": null
+    },
+    "FastStoneViewer": {
+      "IsInstalled": false,
+      "Version": null
+    }
+  },
+  "Computer": "WINFORGE-LAB",
+  "OSBuild": "26200.9168"
+}

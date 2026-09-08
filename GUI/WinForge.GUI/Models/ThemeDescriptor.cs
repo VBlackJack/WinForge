@@ -27,4 +27,8 @@ public sealed record ThemeDescriptor(
     string Name,
     bool IsDark,
     Uri? ResourceUri,
-    string DisplayKey);
+    string DisplayKey)
+{
+    /// <summary>Provides the localized caption to selection automation peers.</summary>
+    public override string ToString() => Resources.LocalizationProvider.Instance[DisplayKey];
+}

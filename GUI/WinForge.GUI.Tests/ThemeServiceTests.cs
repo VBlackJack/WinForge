@@ -197,6 +197,37 @@ public class ThemeServiceTests
     }
 
     [Fact]
+    public void ApplyPaletteBridgeResources_ReturningToLightTheme_RestoresNavigationColors()
+    {
+        ResourceDictionary resources = new ResourceDictionary
+        {
+            ["BackgroundBrush"] = Brush("#FFFFFF"),
+            ["TextPrimaryBrush"] = Brush("#000000"),
+            ["NavigationViewItemForeground"] = Brush("#FFFFFF"),
+            ["NavigationViewContentBackground"] = Brush("#000000"),
+            ["TextControlForeground"] = Brush("#FFFFFF"),
+            ["ToggleSwitchKnobFillOff"] = Brush("#FFFFFF")
+        };
+        resources.MergedDictionaries.Add(new ResourceDictionary
+        {
+            ["TextControlForeground"] = Brush("#000000"),
+            ["ToggleSwitchKnobFillOff"] = Brush("#000000")
+        });
+
+        ThemeService.ClearPaletteBridgeResources(resources);
+        Assert.False(resources.Contains("NavigationViewItemForeground"));
+        Assert.False(resources.Contains("NavigationViewContentBackground"));
+
+        ThemeService.ApplyPaletteBridgeResources(resources);
+
+        AssertBrush("#000000", resources["NavigationViewItemForeground"]);
+        AssertBrush("#000000", resources["NavigationViewItemForegroundPointerOver"]);
+        AssertBrush("#FFFFFF", resources["NavigationViewContentBackground"]);
+        AssertBrush("#000000", resources["TextControlForeground"]);
+        AssertBrush("#000000", resources["ToggleSwitchKnobFillOff"]);
+    }
+
+    [Fact]
     public void ClearPaletteBridgeResources_RemovesOnlyBridgeTargets()
     {
         ResourceDictionary resources = new ResourceDictionary
@@ -273,6 +304,73 @@ public class ThemeServiceTests
             Assert.Equal(revisionAfterInitialApply, service.ThemeRevision);
             Assert.Equal(1, applyCount);
         });
+    }
+
+    [Theory]
+    [InlineData(ThemeNames.Folio)]
+    [InlineData(ThemeNames.Parchment)]
+    public void ApplyTheme_LightBadges_MeetTextContrastAfterThemeRoundTrip(string theme)
+    {
+        WpfApplicationScope.RunOnStaThread(() =>
+        {
+            using WpfApplicationScope scope = WpfApplicationScope.Create();
+            scope.AddMergedDictionaryMarker("pack://application:,,,/WinForge.GUI;component/Resources/FluentThemeBridge.xaml");
+            ThemeService service = CreateService();
+            service.ApplyTheme(theme);
+            AssertLightBadgeContrast(scope.Application.Resources);
+
+            service.ApplyTheme(ThemeNames.Drakul);
+            AssertBrush("#93C5FD", scope.Application.Resources["SourceWingetBadgeForegroundBrush"]);
+            scope.Application.Resources["SourceWingetBadgeForegroundBrush"] = Brush("#FFFFFF");
+            service.ApplyTheme(theme);
+            AssertLightBadgeContrast(scope.Application.Resources);
+        });
+    }
+
+    private static void AssertLightBadgeContrast(ResourceDictionary resources)
+    {
+        List<(string Foreground, string Background)> pairs =
+        [
+            ("BadgePrimaryForegroundBrush", "PrimaryHueMidBrush"),
+            ("BadgeSecondaryForegroundBrush", "SecondaryHueMidBrush"),
+            ("BadgeWarningForegroundBrush", "ManualInstallBadgeBrush"),
+            ("BadgeWarningForegroundBrush", "RequiredBrush"),
+            ("TextFillColorPrimaryBrush", "ControlFillColorDefaultBrush")
+        ];
+        foreach (string source in new[] { "Winget", "Chocolatey", "Store", "Direct" })
+        {
+            pairs.Insert(0, ($"Source{source}BadgeForegroundBrush", $"Source{source}BadgeBackgroundBrush"));
+        }
+
+        Color canvas = Assert.IsType<SolidColorBrush>(resources["CardBackgroundFillColorDefaultBrush"]).Color;
+        foreach ((string foregroundKey, string backgroundKey) in pairs)
+        {
+            SolidColorBrush foreground = Assert.IsType<SolidColorBrush>(resources[foregroundKey]);
+            SolidColorBrush background = Assert.IsType<SolidColorBrush>(resources[backgroundKey]);
+            Color paintedBackground = CompositeBadgeColor(background, canvas);
+            Color paintedForeground = CompositeBadgeColor(foreground, paintedBackground);
+            double first = BadgeLuminance(paintedForeground);
+            double second = BadgeLuminance(paintedBackground);
+            double ratio = (Math.Max(first, second) + 0.05) / (Math.Min(first, second) + 0.05);
+            Assert.True(ratio >= 4.5, $"{foregroundKey} on {backgroundKey}: {ratio:F3}:1 ({paintedForeground}/{paintedBackground})");
+        }
+    }
+
+    private static Color CompositeBadgeColor(SolidColorBrush brush, Color background)
+    {
+        double alpha = brush.Color.A / 255.0 * brush.Opacity;
+        byte Mix(byte front, byte back) => (byte)Math.Round(front * alpha + back * (1 - alpha));
+        return System.Windows.Media.Color.FromRgb(Mix(brush.Color.R, background.R), Mix(brush.Color.G, background.G), Mix(brush.Color.B, background.B));
+    }
+
+    private static double BadgeLuminance(Color color)
+    {
+        static double Linear(byte channel)
+        {
+            double value = channel / 255.0;
+            return value <= 0.04045 ? value / 12.92 : Math.Pow((value + 0.055) / 1.055, 2.4);
+        }
+        return 0.2126 * Linear(color.R) + 0.7152 * Linear(color.G) + 0.0722 * Linear(color.B);
     }
 
     private static ThemeService CreateService()

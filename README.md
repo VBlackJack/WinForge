@@ -1,80 +1,85 @@
-# WinForge v2026090703
+# WinForge
 
-[Français](README.fr.md)
+[Français](README.fr.md) · [Download](https://github.com/VBlackJack/WinForge/releases/latest) · [User guide](Docs/USER_GUIDE.md)
 
-**Set up a Windows 10/11 PC with reproducible application profiles.**
+**Choose your applications, preview the changes, and set up your Windows PC.**
 
-[![Version](https://img.shields.io/badge/version-2026090703-blue.svg)](CHANGELOG.md)
-[![Windows](https://img.shields.io/badge/Windows-10%20%2F%2011-0078D4.svg)](https://www.microsoft.com/windows)
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+WinForge brings application installation, updates and reusable profiles into one desktop interface. Start with a ready-made profile or select just the applications you need, then follow each operation through its progress and logs.
 
-WinForge automates Windows application installation and updates using JSON profiles. Its WPF interface lets you choose a profile, adjust the selection, scan existing installations, run batch installations, and maintain the application catalog.
+Version **2026090801** · Windows 10/11 · English and French · Apache 2.0
 
-## Quick Start
+## Download and start
 
-1. Download the latest archive from [releases](https://github.com/VBlackJack/WinForge/releases/latest), together with its `.zip.sha256` file.
-2. Verify the archive before extracting it. Replace `XXXXXXXXXX` with the downloaded version:
+1. Open the [latest release](https://github.com/VBlackJack/WinForge/releases/latest).
+2. Under **Assets**, download `WinForge_v2026090801.zip` and its `.zip.sha256` file. Choose the packaged ZIP, rather than GitHub's **Source code** archives.
+3. [Verify the download](#verify-your-download), then extract the entire ZIP into a local folder.
+4. Open that folder and double-click **WinForge.cmd**. Keep the included files together.
+5. Open **Applications** to choose your first installation.
 
-   ```powershell
-   $expected = ((Get-Content .\WinForge_vXXXXXXXXXX.zip.sha256 -Raw).Trim() -split '\s+')[0]
-   $actual = (Get-FileHash .\WinForge_vXXXXXXXXXX.zip -Algorithm SHA256).Hash
-   if ($expected -eq $actual) { 'OK' } else { 'CHECKSUM MISMATCH' }
-   ```
+The packaged GUI includes its .NET runtime; you do not need the .NET SDK. Internet access is required for package downloads. Some operations require administrator permission. Windows 10 21H2 or later, or Windows 11, is required.
 
-3. Extract the archive into a local folder only if the checksum matches.
-4. Run `WinForge.cmd` or `WinForge.GUI.exe`.
-5. Choose a profile, adjust the application selection if needed, and start installation.
+## Your first installation
 
-## Included Profiles
+1. Choose a **Profile**, or select individual applications in the list.
+2. Use **Scan Installed** to refresh what is already on your PC.
+3. Review the checked applications. You can search and filter the list before proceeding.
+4. Open **Preview plan** to review the proposed operations and their limitations.
+5. Click **Install Selected** and follow the progress.
+6. Open **Execution history** to inspect the result. If an operation fails, read its error and logs before retrying the affected applications.
 
-| Profile | Purpose | Contents |
-| --- | --- | --- |
-| `Base` | general setup | browsers, multimedia, system utilities, diagnostics, and security |
-| `Office` | productivity | `Base` + office suite, PDF, collaboration |
-| `Gaming` | gaming | `Office` + game platforms and communication |
-| `Personnel` | advanced workstation | `Gaming` + development tools, cloud, VPN, and personal productivity |
-| `Enterprise` | professional workstation | `Base` + IT tools, security, collaboration, and hardened configuration |
+Start with a small selection if you want to try WinForge before applying a full profile.
 
-Profiles can inherit from one another. An application inherited from a parent profile must be removed from that parent, not from the child.
+## Choose a starting profile
 
-## Features
+| Profile | Best for |
+| --- | --- |
+| **Base** | Everyday browsing, media and system utilities |
+| **Office** | Productivity, documents, PDF and collaboration |
+| **Gaming** | Game platforms and communication |
+| **Personnel** | Development tools and an advanced personal workstation |
+| **Enterprise** | IT tools, security and professional workstations |
 
-- Modern WPF interface with light and dark themes, in English and French.
-- Catalog of 195 applications with Winget, Chocolatey, Microsoft Store, or direct-download sources depending on the entry.
-- Detection of installed applications and available updates.
-- Batch installation, update, and uninstallation with progress, logs, and cooperative cancellation.
-- Application catalog editing from the interface.
-- New profile creation and direct updates to an existing profile from the Applications grid selection.
-- Scheduled deployments from settings.
-- Local PowerShell REST API for advanced automation.
+Profiles can include applications inherited from a parent. Review the complete selection before installing; a profile is a starting point, not a requirement.
 
-## Edit a Profile
+To reuse your selection, click **Save Profile**. To change the selected profile, adjust its checkboxes and click **Update profile**. Inherited applications must be removed from their parent profile. [Learn about profiles](Docs/USER_GUIDE.md#profiles).
 
-1. Open **Applications**.
-2. Select a profile in the **Profile** card.
-3. Check or uncheck applications in the grid.
-4. Click **Update profile** to save the selection to that profile.
+## Everyday tasks
 
-Use **Save Profile** to create a new profile or save a selection under another name.
+| I want to… | Where to start |
+| --- | --- |
+| Check available updates | **Applications → Scan for Updates** |
+| Find an application's installation result | **Applications → Execution history**, then **Logs** for details |
+| Change the theme, language or accessibility options | **Settings** |
+| Add or correct an application definition | **App Catalog** |
+| Automate deployments with PowerShell | [Deployment workbench](Docs/DEPLOYMENT_WORKBENCH.md) |
 
-## Requirements
+## What to expect
 
-- Windows 10 21H2 or later, or Windows 11.
-- Internet access for package sources.
-- Administrator privileges for system operations and some installations.
-- PowerShell is used by the installation modules included with the project.
+- The catalog contains **195 applications**. Sources and installation support vary by application; the entire catalog is not certified.
+- Installation and runtime validation are different. Virtualization applications are outside the runtime coverage of our disposable VM tests. Validate them on suitable physical hardware or a supported nested-virtualization setup.
+- Rollback can remove supported newly installed packages. It does not restore an older application version or Windows configuration.
+- GUI execution receipts and PowerShell deployment plans are separate formats.
+- The [validation report](Docs/Validation/20260908/README.md) records tested display combinations, screen-reader workflows, installation results and known gaps, including VLC version detection and unavailable LDPlayer sources.
 
-## Documentation
+## Upgrading
 
-- [User guide](Docs/USER_GUIDE.md)
-- [Documentation index](Docs/README.md)
-- [Architecture](Docs/ARCHITECTURE.md)
-- [API documentation](Docs/API_DOCUMENTATION.md)
-- [Contribution guide](CONTRIBUTING.md)
-- [Changelog](CHANGELOG.md)
+Close WinForge and extract the new release into a separate folder. Keep your previous folder and custom profiles until you have checked the new version. Read the [changelog](CHANGELOG.md) for changes affecting your workflow.
 
-## Support
+## Verify your download
 
-Report problems and feature requests through [GitHub issues](https://github.com/VBlackJack/WinForge/issues).
+Open PowerShell in the folder containing both downloaded files and run:
 
-**License:** Apache 2.0
+```powershell
+$expected = ((Get-Content .\WinForge_v2026090801.zip.sha256 -Raw).Trim() -split '\s+')[0]
+$actual = (Get-FileHash .\WinForge_v2026090801.zip -Algorithm SHA256).Hash
+if ($expected -eq $actual) { 'OK' } else { 'CHECKSUM MISMATCH' }
+```
+
+Extract and launch only when the result is **OK**. If it does not match, download both files again from the same release.
+
+## Help and documentation
+
+- [User guide](Docs/USER_GUIDE.md): profiles, deployment and troubleshooting.
+- [Documentation index](Docs/README.md): administration, PowerShell and developer references.
+- [Report a problem](https://github.com/VBlackJack/WinForge/issues): include your WinForge version, Windows version, application and error message. Remove secrets from any logs you share.
+- [Contributing](CONTRIBUTING.md) · [License](LICENSE)

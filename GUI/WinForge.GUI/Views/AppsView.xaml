@@ -141,6 +141,8 @@
                             <StackPanel Grid.Row="1" Margin="{StaticResource SectionGap}">
                                 <!-- Result Message -->
                                 <TextBlock Text="{Binding LastDeploymentResult, Converter={StaticResource DeploymentResultToStringConverter}}"
+                                           AutomationProperties.LiveSetting="Polite"
+                                           IsVisibleChanged="LiveRegion_IsVisibleChanged"
                                            FontSize="{StaticResource FontSizeBodyLarge}" FontWeight="Medium"
                                            Margin="{StaticResource BlockGap}"/>
 
@@ -206,7 +208,12 @@
             </Border>
         </Grid>
 
-    <Grid Style="{StaticResource PageRootGridStyle}">
+    <ScrollViewer x:Name="ApplicationsScrollHost"
+                  Margin="{StaticResource PagePadding}"
+                  VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled">
+    <Grid Height="{Binding ViewportHeight, ElementName=ApplicationsScrollHost}"
+          MinHeight="{StaticResource ApplicationsMinimumContentHeight}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -215,6 +222,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
+        <WrapPanel Grid.Row="0">
         <!-- Title -->
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="{StaticResource BlockGap}">
             <ui:SymbolIcon Symbol="Apps24"
@@ -244,6 +252,8 @@
                                ToolTip="{loc:Loc Preflight_Explanation}"
                                AutomationProperties.Name="{loc:Loc Preflight_Title}"
                                Margin="{StaticResource InlineGapSmall}"/>
+        </WrapPanel>
+
         </WrapPanel>
 
         <!-- Profile Selector Card -->
@@ -385,23 +395,15 @@
                 Padding="{StaticResource CardPadding}"
                 Margin="{StaticResource MarginNormalBottom}">
             <Grid>
-                <!-- Filters Section (search + filters + actions on a single dense row) -->
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" MinWidth="180"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
+                <!-- Filters wrap so scan actions remain reachable at high DPI. -->
+                <WrapPanel x:Name="ApplicationsFilterBar">
 
                     <!-- Search Box with Auto-complete -->
                     <controls:SearchBox Grid.Column="0"
                                          Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          SuggestionsSource="{Binding ApplicationNames}"
                                          MinWidth="240"
-                                         HorizontalAlignment="Stretch"
+                                         Width="240"
                                          Margin="0,0,16,0"/>
 
                     <!-- Category ComboBox -->
@@ -441,6 +443,7 @@
 
                     <!-- Scan/Cancel Button (moved from row 1 to compact layout) -->
                     <ui:Button Grid.Column="4"
+                               x:Name="ScanInstalledButton"
                                Command="{Binding ScanCommand}"
                                Style="{StaticResource PrimaryButton}"
                                Content="{loc:Loc Btn_Scan}"
@@ -481,7 +484,7 @@
                                    FontSize="{StaticResource FontSizeCaption}"
                                    VerticalAlignment="Center"/>
                     </StackPanel>
-                </Grid>
+                </WrapPanel>
 
             </Grid>
         </Border>
@@ -493,19 +496,7 @@
                 Padding="{StaticResource MarginMedium}"
                 Margin="{StaticResource MarginSmallBottom}"
                 Visibility="{Binding IsLoading, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+            <WrapPanel x:Name="ApplicationsActionBar">
 
                 <!-- Column Visibility Toggle (Table icon) - DropDownButton with ContextMenu Flyout
                      mirrors AppCatalogView Export button pattern (lines 110-129).
@@ -610,8 +601,8 @@
                                ToolTip="{loc:Loc Apps_SelectionHelpTooltip}"
                                Cursor="Help"/>
 
-                <!-- Centered live counters (replaces empty spacer) -->
-                <StackPanel Grid.Column="7"
+                <!-- Live counters wrap with active filter badges. -->
+                <WrapPanel Grid.Column="7"
                             Orientation="Horizontal"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center">
@@ -700,7 +691,7 @@
                             <Run Text="{Binding ScanTotalCount, Mode=OneWay}"/>
                         </TextBlock>
                     </StackPanel>
-                </StackPanel>
+                </WrapPanel>
 
                 <!-- Group separator -->
                 <Border Grid.Column="8"
@@ -727,9 +718,9 @@
                 <!-- Batch actions group (Uninstall + Install).
                      Always visible - buttons go to disabled visual via ui:Button IsEnabled=False
                      Opacity trigger (App.xaml). User explicitly preferred greyed-out vs hidden. -->
-                <StackPanel Grid.Column="9" Orientation="Horizontal">
-                    <StackPanel.Style>
-                        <Style TargetType="StackPanel">
+                <WrapPanel Grid.Column="9" Orientation="Horizontal">
+                    <WrapPanel.Style>
+                        <Style TargetType="WrapPanel">
                             <Setter Property="Visibility" Value="Visible"/>
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding IsInstalling}" Value="True">
@@ -740,8 +731,9 @@
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
-                    </StackPanel.Style>
+                    </WrapPanel.Style>
                     <ui:Button Command="{Binding UninstallSelectedCommand}"
+                               x:Name="UninstallSelectedButton"
                                Style="{StaticResource SecondaryButton}"
                                Margin="{StaticResource InlineGapSmall}"
                                AutomationProperties.Name="{loc:Loc Apps_UninstallSelected}">
@@ -752,6 +744,7 @@
                     </ui:Button>
 
                     <ui:Button Command="{Binding InstallSelectedCommand}"
+                               x:Name="InstallSelectedButton"
                                Style="{StaticResource PrimaryButton}"
                                ToolTipService.ShowOnDisabled="True"
                                ToolTip="{loc:Loc Preflight_SelectFirst}"
@@ -766,12 +759,12 @@
                             </TextBlock>
                         </StackPanel>
                     </ui:Button>
-                </StackPanel>
+                </WrapPanel>
 
                 <!-- Batch Progress Panel (visible during batch ops, replaces action group) -->
-                <StackPanel Grid.Column="9" Orientation="Horizontal" VerticalAlignment="Center">
-                    <StackPanel.Style>
-                        <Style TargetType="StackPanel">
+                <WrapPanel Grid.Column="9" Orientation="Horizontal" VerticalAlignment="Center">
+                    <WrapPanel.Style>
+                        <Style TargetType="WrapPanel">
                             <Setter Property="Visibility" Value="Collapsed"/>
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding IsInstalling}" Value="True">
@@ -782,7 +775,7 @@
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
-                    </StackPanel.Style>
+                    </WrapPanel.Style>
                     <!-- Operation Type Icon and Label -->
                     <ui:SymbolIcon Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0">
                         <ui:SymbolIcon.Style>
@@ -830,6 +823,10 @@
                                Visibility="{Binding CurrentBatchAppName, Converter={StaticResource NullableToVisibilityConverter}}"/>
                     <!-- Progress Bar -->
                     <ProgressBar Value="{Binding BatchProgressPercent}"
+                                 AutomationProperties.Name="{Binding BatchProgressAutomationName}"
+                                 AutomationProperties.LiveSetting="Polite"
+                                 IsVisibleChanged="LiveRegion_IsVisibleChanged"
+                                 ValueChanged="BatchProgress_ValueChanged"
                                  Width="150"
                                  Height="8"
                                  VerticalAlignment="Center"
@@ -865,8 +862,8 @@
                                AutomationProperties.Name="{loc:Loc A11y_Deployment_Cancel}">
                         <ui:SymbolIcon Symbol="Dismiss24"/>
                     </ui:Button>
-                </StackPanel>
-            </Grid>
+                </WrapPanel>
+            </WrapPanel>
         </Border>
 
         <!-- Applications DataGrid -->
@@ -1111,7 +1108,7 @@
                                                 <TextBlock Text="{loc:Loc Apps_ManualInstall}"
                                                            FontSize="{StaticResource FontSizeMicro}"
                                                            FontWeight="Bold"
-                                                           Foreground="{DynamicResource BadgePrimaryForegroundBrush}"/>
+                                                           Foreground="{DynamicResource BadgeWarningForegroundBrush}"/>
                                             </Border>
                                             <!-- Prerequisite Badge -->
                                             <Border Background="{DynamicResource RequiredBrush}"
@@ -1124,7 +1121,7 @@
                                                 <TextBlock Text="{loc:Loc Apps_Prerequisite}"
                                                            FontSize="{StaticResource FontSizeMicro}"
                                                            FontWeight="Bold"
-                                                           Foreground="{DynamicResource BadgePrimaryForegroundBrush}"/>
+                                                           Foreground="{DynamicResource BadgeWarningForegroundBrush}"/>
                                             </Border>
                                         </StackPanel>
                                         <TextBlock Text="{Binding Description}"
@@ -1284,8 +1281,10 @@
         </Border>
 
         <!-- Error Message with Recovery Options -->
-        <Border Grid.Row="4"
-                Background="{DynamicResource ErrorBackgroundBrush}"
+    </Grid>
+    </ScrollViewer>
+        <Border Panel.ZIndex="50"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                 BorderBrush="{DynamicResource ErrorBorderBrush}"
                 BorderThickness="1"
                 CornerRadius="{StaticResource RadiusMedium}"
@@ -1296,18 +1295,24 @@
                 VerticalAlignment="Center"
                 MaxWidth="500">
             <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,12">
-                    <ui:SymbolIcon Symbol="ErrorCircle24"
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <ui:SymbolIcon Grid.Column="0" Symbol="ErrorCircle24"
                                    Width="24" Height="24"
                                    Foreground="{DynamicResource SystemFillColorCriticalBrush}"
                                    VerticalAlignment="Center"
                                    Margin="{StaticResource InlineGapMedium}"/>
-                    <TextBlock Text="{Binding ErrorMessage}"
+                    <TextBlock Grid.Column="1" Text="{Binding ErrorMessage, NotifyOnTargetUpdated=True}"
+                               AutomationProperties.LiveSetting="Assertive"
+                               TargetUpdated="ErrorText_TargetUpdated"
                                Foreground="{DynamicResource SystemFillColorCriticalBrush}"
                                FontSize="{StaticResource FontSizeBody}"
                                TextWrapping="Wrap"
                                VerticalAlignment="Center"/>
-                </StackPanel>
+                </Grid>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <ui:Button Content="{loc:Loc Common_TryAgain}"
                                Command="{Binding RetryLastOperationCommand}"
@@ -1323,6 +1328,5 @@
                 </StackPanel>
             </StackPanel>
         </Border>
-    </Grid>
     </Grid>
 </UserControl>

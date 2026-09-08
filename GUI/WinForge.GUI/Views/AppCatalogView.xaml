@@ -33,11 +33,7 @@
         <Border Grid.Row="0"
                 Background="{DynamicResource SolidBackgroundFillColorSecondaryBrush}"
                 Padding="24,16">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+            <WrapPanel>
 
                 <StackPanel Orientation="Horizontal">
                     <ui:SymbolIcon Symbol="Database24"
@@ -54,11 +50,7 @@
                 </StackPanel>
 
                 <!-- Actions -->
-                <ScrollViewer Grid.Column="1"
-                              HorizontalScrollBarVisibility="Auto"
-                              VerticalScrollBarVisibility="Disabled"
-                              CanContentScroll="False">
-                <StackPanel Orientation="Horizontal" Margin="16,0,0,0">
+                <WrapPanel Margin="{StaticResource BlockGap}">
                     <!-- Undo/Redo buttons -->
                     <ui:Button
                                Command="{Binding UndoCommand}"
@@ -161,9 +153,8 @@
                                ToolTip="{loc:Loc AppCatalog_Refresh}"
                                AutomationProperties.Name="{loc:Loc AppCatalog_Refresh}"
                                Icon="{ui:SymbolIcon ArrowSync24}"/>
-                </StackPanel>
-                </ScrollViewer>
-            </Grid>
+                </WrapPanel>
+            </WrapPanel>
         </Border>
 
         <!-- Toolbar / Filters -->

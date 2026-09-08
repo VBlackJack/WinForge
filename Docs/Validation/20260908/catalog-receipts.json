@@ -1,0 +1,1131 @@
+{
+  "Release": "v2026090703",
+  "Receipts": [
+    {
+      "AppId": "7Zip",
+      "At": "2026-09-08T07:04:22.9273762Z",
+      "Computer": "WINFORGE-LAB",
+      "OS": "Microsoft Windows 11 Professionnel",
+      "Build": "26200",
+      "Before": {
+        "Version": null,
+        "IsInstalled": false
+      },
+      "After": {
+        "Version": "26.02.00.0",
+        "IsInstalled": true
+      },
+      "Status": "InstalledAndDetected",
+      "Error": null,
+      "Cleanup": {
+        "InstalledAfterRollback": false,
+        "Results": [
+          {
+            "AppId": "7Zip",
+            "Name": "7-Zip",
+            "Status": "RolledBack",
+            "Retry": false,
+            "CanRollback": false,
+            "Method": "Winget",
+            "Identifier": "7zip.7zip",
+            "InstalledVersion": "26.02.00.0",
+            "Message": "Installed via Winget"
+          }
+        ]
+      },
+      "InstallResults": [
+        {
+          "AppId": "7Zip",
+          "StartedAt": "2026-09-08T07:04:30.2485684Z",
+          "CompletedAt": "2026-09-08T07:04:40.8965259Z",
+          "Status": "Succeeded",
+          "WasInstalled": false,
+          "Method": "Winget",
+          "Identifier": "7zip.7zip",
+          "InstalledVersion": "26.02.00.0",
+          "Message": "Installed via Winget"
+        }
+      ],
+      "OSBuild": "26200.8875",
+      "EvidenceId": "7Zip",
+      "RawReceiptSha256": "1210538B521F5C8FA91B895AA286483928C9D47834A1246EEBA240B245274574"
+    },
+    {
+      "AppId": "CPUZ",
+      "At": "2026-09-08T08:57:57.4592099Z",
+      "Computer": "WINFORGE-LAB",
+      "OS": "Microsoft Windows 11 Professionnel",
+      "Build": "26200",
+      "Before": {
+        "Version": null,
+        "IsInstalled": false
+      },
+      "After": {
+        "Version": "3, 0, 1, 0",
+        "IsInstalled": true
+      },
+      "Status": "InstalledAndDetected",
+      "Error": null,
+      "Cleanup": {
+        "Results": [
+          {
+            "AppId": "CPUZ",
+            "Name": "CPU-Z",
+            "Status": "RolledBack",
+            "Retry": false,
+            "CanRollback": false,
+            "Method": "Winget",
+            "Identifier": "CPUID.CPU-Z",
+            "InstalledVersion": "3, 0, 1, 0",
+            "Message": "Installed via Winget"
+          }
+        ],
+        "InstalledAfterRollback": false
+      },
+      "InstallResults": [
+        {
+          "AppId": "CPUZ",
+          "StartedAt": "2026-09-08T08:58:04.2853365Z",
+          "CompletedAt": "2026-09-08T08:58:11.9575024Z",
+          "Status": "Succeeded",
+          "WasInstalled": false,
+          "Method": "Winget",
+          "Identifier": "CPUID.CPU-Z",
+          "InstalledVersion": "3, 0, 1, 0",
+          "Message": "Installed via Winget"
+        }
+      ],
+      "OSBuild": "26200.8875",
+      "EvidenceId": "CPUZ",
+      "RawReceiptSha256": "C9A3BA2C8311A1729AEEAD2CC015702B4AAA2AD5B6A5D4170C5C1A0D0BAAA0DA"
+    },
+    {
+      "AppId": "CrystalDiskInfo",
+      "At": "2026-09-08T08:59:22.6900899Z",
+      "Computer": "WINFORGE-LAB",
+      "OS": "Microsoft Windows 11 Professionnel",
+      "Build": "26200",
+      "Before": {
+        "IsInstalled": false,
+        "Version": null
+      },
+      "After": {
+        "IsInstalled": true,
+        "Version": "9.9.2.0"
+      },
+      "Status": "InstalledAndDetected",
+      "Error": null,
+      "Cleanup": {
+        "Results": [
+          {
+            "AppId": "CrystalDiskInfo",
+            "Name": "CrystalDiskInfo",
+            "Status": "RolledBack",
+            "Retry": false,
+            "CanRollback": false,
+            "Method": "Winget",
+            "Identifier": "CrystalDewWorld.CrystalDiskInfo",
+            "InstalledVersion": "9.9.2.0",
+            "Message": "Installed via Winget"
+          }
+        ],
+        "InstalledAfterRollback": false
+      },
+      "InstallResults": [
+        {
+          "AppId": "CrystalDiskInfo",
+          "StartedAt": "2026-09-08T08:59:29.8769212Z",
+          "CompletedAt": "2026-09-08T08:59:45.0596265Z",
+          "Status": "Succeeded",
+          "WasInstalled": false,
+          "Method": "Winget",
+          "Identifier": "CrystalDewWorld.CrystalDiskInfo",
+          "InstalledVersion": "9.9.2.0",
+          "Message": "Installed via Winget"
+        }
+      ],
+      "OSBuild": "26200.8875",
+      "EvidenceId": "CrystalDiskInfo",
+      "RawReceiptSha256": "35A7EC49DBDA0F96E5959D2A4115BC663EEFCDF5CE6DAFE8163472B270821B81"
+    },
+    {
+      "AppId": "Ditto",
+      "At": "2026-09-08T09:00:30.8959616Z",
+      "Computer": "WINFORGE-LAB",
+      "OS": "Microsoft Windows 11 Professionnel",
+      "Build": "26200",
+      "Before": {
+        "IsInstalled": false,
+        "Version": null
+      },
+      "After": {
+        "IsInstalled": true,
+        "Version": "3.25.113.0"
+      },
+      "Status": "InstalledAndDetected",
+      "Error": null,
+      "Cleanup": {
+        "InstalledAfterRollback": true,
+        "Results": [
+          {
+            "AppId": "Ditto",
+            "Name": "Ditto",
+            "Status": "RolledBack",
+            "Retry": false,
+            "CanRollback": false,
+            "Method": "Winget",
+            "Identifier": "Ditto.Ditto",
+            "InstalledVersion": "3.25.113.0",
+            "Message": "Installed via Winget"
+          }
+        ]
+      },
+      "InstallResults": [
+        {
+          "AppId": "Ditto",
+          "StartedAt": "2026-09-08T09:00:37.6151364Z",
+          "CompletedAt": "2026-09-08T09:00:47.2329066Z",
+          "Status": "Succeeded",
+          "WasInstalled": false,
+          "Method": "Winget",
+          "Identifier": "Ditto.Ditto",
+          "InstalledVersion": "3.25.113.0",
+          "Message": "Installed via Winget"
+        }
+      ],
+      "OSBuild": "26200.8875",
+      "EvidenceId": "Ditto",
+      "RawReceiptSha256": "71B1BDE554B17CB69D4D4FA197C3CD086331A31FBF323D4EF705F87910A1AAEA",
+      "SeparateCleanup": {
+        "ExecutablePresent": false,
+        "RepairExitCode": 0,
+        "Method": "Separate package repair followed by process stop and exact WinGet uninstall",
+        "At": "2026-09-08T09:10:44.6141229Z",
+        "UninstallExitCode": 0
+      }
+    },
+    {
+      "AppId": "DoubleCommander",
+      "At": "2026-09-08T08:59:51.7382316Z",
+      "Computer": "WINFORGE-LAB",
+      "OS": "Microsoft Windows 11 Professionnel",
+      "Build": "26200",
+      "Before": {
+        "Version": null,
+        "IsInstalled": false
+      },
+      "After": {
+        "Version": "1.2.8.0",
+        "IsInstalled": true
+      },
+      "Status": "InstalledAndDetected",
+      "Error": null,
+      "Cleanup": {
+        "Results": [
+          {
+            "AppId": "DoubleCommander",
+            "Name": "Double Commander",
+            "Status": "RolledBack",
+            "Retry": false,
+            "CanRollback": false,
+            "Method": "Winget",
+            "Identifier": "alexx2000.DoubleCommander",
+            "InstalledVersion": "1.2.8.0",
+            "Message": "Installed via Winget"
+          }
+        ],
+        "InstalledAfterRollback": false
+      },
+      "InstallResults": [
+        {
+          "AppId": "DoubleCommander",
+          "StartedAt": "2026-09-08T08:59:58.8393125Z",
+          "CompletedAt": "2026-09-08T09:00:16.8148129Z",
+          "Status": "Succeeded",
+          "WasInstalled": false,
+          "Method": "Winget",
+          "Identifier": "alexx2000.DoubleCommander",
+          "InstalledVersion": "1.2.8.0",
+          "Message": "Installed via Winget"
+        }
+      ],
+      "OSBuild": "26200.8875",
+      "EvidenceId": "DoubleCommander",
+      "RawReceiptSha256": "2F4E8C6A80FC71DA25D473E8DDDFDC0A745C1AFC47BACDFFEE8A1451EF31795D"
+    },
+    {
+      "AppId": "Everything",
+      "At": "2026-09-08T07:04:51.6780101Z",
+      "Computer": "WINFORGE-LAB",
+      "OS": "Microsoft Windows 11 Professionnel",
+      "Build": "26200",
+      "Before": {
+        "IsInstalled": false,
+        "Version": null
+      },
+      "After": {
+        "IsInstalled": true,
+        "Version": "1.4.1.1032"
+      },
+      "Status": "InstalledAndDetected",
+      "Error": null,
+      "Cleanup": {
+        "InstalledAfterRollback": false,
+        "Results": [
+          {
+            "AppId": "Everything",
+            "Name": "Everything",
+            "Status": "RolledBack",
+            "Retry": false,
+            "CanRollback": false,
+            "Method": "Winget",
+            "Identifier": "voidtools.Everything",
+            "InstalledVersion": "1.4.1.1032",
+            "Message": "Installed via Winget"
+          }
+        ]
+      },
+      "InstallResults": [
+        {
+          "AppId": "Everything",
+          "StartedAt": "2026-09-08T07:05:02.6655095Z",
+          "CompletedAt": "2026-09-08T07:05:15.3383861Z",
+          "Status": "Succeeded",
+          "WasInstalled": false,
+          "Method": "Winget",
+          "Identifier": "voidtools.Everything",
+          "InstalledVersion": "1.4.1.1032",
+          "Message": "Installed via Winget"
+        }
+      ],
+      "OSBuild": "26200.8875",
+      "EvidenceId": "Everything",
+      "RawReceiptSha256": "9658C2E27FD22ED273B1D83786C7235FB1566900AF0A2807E5F0D9E806199555"
+    },
+    {
+      "AppId": "FastStoneViewer",
+      "At": "2026-09-08T09:12:22.7744372Z",
+      "Computer": "WINFORGE-LAB",
+      "OS": "Microsoft Windows 11 Professionnel",
+      "Build": "26200",
+      "Before": {
+        "Version": null,
+        "IsInstalled": false
+      },
+      "After": {
+        "Version": "8.5.0.0",
+        "IsInstalled": true
+      },
+      "Status": "InstalledAndDetected",
+      "Error": null,
+      "Cleanup": {
+        "InstalledAfterRollback": true,
+        "Results": [
+          {
+            "AppId": "FastStoneViewer",
+            "Name": "FastStone Image Viewer",
+            "Status": "RolledBack",
+            "Retry": false,
+            "CanRollback": false,
+            "Method": "Winget",
+            "Identifier": "FastStone.Viewer",
+            "InstalledVersion": "8.5.0.0",
+            "Message": "Installed via Winget"
+          }
+        ]
+      },
+      "InstallResults": [
+        {
+          "AppId": "FastStoneViewer",
+          "StartedAt": "2026-09-08T09:12:28.5010079Z",
+          "CompletedAt": "2026-09-08T09:12:41.8071262Z",
+          "Status": "Succeeded",
+          "WasInstalled": false,
+          "Method": "Winget",
+          "Identifier": "FastStone.Viewer",
+          "InstalledVersion": "8.5.0.0",
+          "Message": "Installed via Winget"
+        }
+      ],
+      "OSBuild": "26200.9168",
+      "EvidenceId": "FastStoneViewer",
+      "RawReceiptSha256": "F6954A75928E5E5409E25410A2956DE858F61A6A0ABC925ED7E45B9EEA182ABB"
+    },
+    {
+      "AppId": "MozillaFirefox",
+      "At": "2026-09-08T09:14:36.1956382Z",
+      "Computer": "WINFORGE-LAB",
+      "OS": "Microsoft Windows 11 Professionnel",
+      "Build": "26200",
+      "OSBuild": "26200.9168",
+      "Before": {
+        "IsInstalled": false,
+        "Version": null
+      },
+      "After": {
+        "IsInstalled": true,
+        "Version": "155.0.1 (x64 en-US)"
+      },
+      "Status": "InstalledAndDetected",
+      "Error": null,
+      "Cleanup": {
+        "InstalledAfterRollback": true,
+        "Results": [
+          {
+            "AppId": "MozillaFirefox",
+            "Name": "Mozilla Firefox",
+            "Status": "Succeeded",
+            "Retry": false,
+            "CanRollback": true,
+            "Method": "Winget",
+            "Identifier": "Mozilla.Firefox",
+            "InstalledVersion": "155.0.1 (x64 en-US)",
+            "Message": "Rollback command succeeded, but fresh detection still finds the application installed."
+          }
+        ]
+      },
+      "InstallResults": [
+        {
+          "AppId": "MozillaFirefox",
+          "StartedAt": "2026-09-08T09:14:46.5501917Z",
+          "CompletedAt": "2026-09-08T09:15:20.5165149Z",
+          "Status": "Succeeded",
+          "WasInstalled": false,
+          "Method": "Winget",
+          "Identifier": "Mozilla.Firefox",
+          "InstalledVersion": "155.0.1 (x64 en-US)",
+          "Message": "Installed via Winget"
+        }
+      ],
+      "RepositoryVariant": "v2026090703 with local fresh-detection rollback correction",
+      "EvidenceId": "Firefox-verified",
+      "RawReceiptSha256": "728F78DFD4C5272D09C442F0A663EE88220CC48AE5F0C9233143998DF0633634",
+      "SeparateCleanup": {
+        "ExitCode": 0,
+        "RegistryPresent": false,
+        "Method": "Separate signed vendor cleanup /S",
+        "At": "2026-09-08T09:15:31.8967256Z",
+        "ExecutablePresent": false
+      }
+    },
+    {
+      "AppId": "Git",
+      "At": "2026-09-08T08:52:50.5989424Z",
+      "Computer": "WINFORGE-LAB",
+      "OS": "Microsoft Windows 11 Professionnel",
+      "Build": "26200",
+      "Before": {
+        "IsInstalled": false,
+        "Version": null
+      },
+      "After": {
+        "IsInstalled": true,
+        "Version": "2.55.0"
+      },
+      "Status": "InstalledAndDetected",
+      "Error": null,
+      "Cleanup": {
+        "InstalledAfterRollback": false,
+        "Results": [
+          {
+            "AppId": "Git",
+            "Name": "Git",
+            "Status": "RolledBack",
+            "Retry": false,
+            "CanRollback": false,
+            "Method": "Winget",
+            "Identifier": "Git.Git",
+            "InstalledVersion": "2.55.0",
+            "Message": "Installed via Winget"
+          }
+        ]
+      },
+      "InstallResults": [
+        {
+          "AppId": "Git",
+          "StartedAt": "2026-09-08T08:52:56.8036227Z",
+          "CompletedAt": "2026-09-08T08:53:45.3559682Z",
+          "Status": "Succeeded",
+          "WasInstalled": false,
+          "Method": "Winget",
+          "Identifier": "Git.Git",
+          "InstalledVersion": "2.55.0",
+          "Message": "Installed via Winget"
+        }
+      ],
+      "OSBuild": "26200.8875",
+      "EvidenceId": "Git",
+      "RawReceiptSha256": "4DE5209B7B8C4F6672BA09FB690701D3F48A4091C9E000A5085EF8EF722C8123"
+    },
+    {
+      "AppId": "GPUZ",
+      "At": "2026-09-08T08:58:17.6732990Z",
+      "Computer": "WINFORGE-LAB",
+      "OS": "Microsoft Windows 11 Professionnel",
+      "Build": "26200",
+      "Before": {
+        "IsInstalled": false,
+        "Version": null
+      },
+      "After": {
+        "IsInstalled": true,
+        "Version": "2.70.0.0"
+      },
+      "Status": "InstalledAndDetected",
+      "Error": null,
+      "Cleanup": {
+        "InstalledAfterRollback": false,
+        "Results": [
+          {
+            "AppId": "GPUZ",
+            "Name": "GPU-Z",
+            "Status": "RolledBack",
+            "Retry": false,
+            "CanRollback": false,
+            "Method": "Winget",
+            "Identifier": "TechPowerUp.GPU-Z",
+            "InstalledVersion": "2.70.0.0",
+            "Message": "Installed via Winget"
+          }
+        ]
+      },
+      "InstallResults": [
+        {
+          "AppId": "GPUZ",
+          "StartedAt": "2026-09-08T08:58:24.7511488Z",
+          "CompletedAt": "2026-09-08T08:58:54.4991518Z",
+          "Status": "Succeeded",
+          "WasInstalled": false,
+          "Method": "Winget",
+          "Identifier": "TechPowerUp.GPU-Z",
+          "InstalledVersion": "2.70.0.0",
+          "Message": "Installed via Winget"
+        }
+      ],
+      "OSBuild": "26200.8875",
+      "EvidenceId": "GPUZ",
+      "RawReceiptSha256": "93053971FF36082F7E6D59307D258B16308DB03B52307A222A6201A5445554F9"
+    },
+    {
+      "AppId": "HWMonitor",
+      "At": "2026-09-08T08:59:00.6727616Z",
+      "Computer": "WINFORGE-LAB",
+      "OS": "Microsoft Windows 11 Professionnel",
+      "Build": "26200",
+      "Before": {
+        "Version": null,
+        "IsInstalled": false
+      },
+      "After": {
+        "Version": "1, 6, 7, 0",
+        "IsInstalled": true
+      },
+      "Status": "InstalledAndDetected",
+      "Error": null,
+      "Cleanup": {
+        "InstalledAfterRollback": false,
+        "Results": [
+          {
+            "AppId": "HWMonitor",
+            "Name": "HWMonitor",
+            "Status": "RolledBack",
+            "Retry": false,
+            "CanRollback": false,
+            "Method": "Winget",
+            "Identifier": "CPUID.HWMonitor",
+            "InstalledVersion": "1, 6, 7, 0",
+            "Message": "Installed via Winget"
+          }
+        ]
+      },
+      "InstallResults": [
+        {
+          "AppId": "HWMonitor",
+          "StartedAt": "2026-09-08T08:59:08.5231234Z",
+          "CompletedAt": "2026-09-08T08:59:16.6038326Z",
+          "Status": "Succeeded",
+          "WasInstalled": false,
+          "Method": "Winget",
+          "Identifier": "CPUID.HWMonitor",
+          "InstalledVersion": "1, 6, 7, 0",
+          "Message": "Installed via Winget"
+        }
+      ],
+      "OSBuild": "26200.8875",
+      "EvidenceId": "HWMonitor",
+      "RawReceiptSha256": "A626CBEE08F53F4858F63C5D108EC94B7B822B0EA3B15FEBB2E57A8754B17839"
+    },
+    {
+      "AppId": "KeePassXC",
+      "At": "2026-09-08T08:38:48.2988087Z",
+      "Computer": "WINFORGE-LAB",
+      "OS": "Microsoft Windows 11 Professionnel",
+      "Build": "26200",
+      "Before": {
+        "Version": null,
+        "IsInstalled": false
+      },
+      "After": {
+        "Version": "2.7.12",
+        "IsInstalled": true
+      },
+      "Status": "InstalledAndDetected",
+      "Error": null,
+      "Cleanup": {
+        "InstalledAfterRollback": false,
+        "Results": [
+          {
+            "AppId": "KeePassXC",
+            "Name": "KeePassXC",
+            "Status": "RolledBack",
+            "Retry": false,
+            "CanRollback": false,
+            "Method": "Winget",
+            "Identifier": "KeePassXCTeam.KeePassXC",
+            "InstalledVersion": "2.7.12",
+            "Message": "Installed via Winget"
+          }
+        ]
+      },
+      "InstallResults": [
+        {
+          "AppId": "KeePassXC",
+          "StartedAt": "2026-09-08T08:38:54.3968225Z",
+          "CompletedAt": "2026-09-08T08:39:05.6133951Z",
+          "Status": "Succeeded",
+          "WasInstalled": false,
+          "Method": "Winget",
+          "Identifier": "KeePassXCTeam.KeePassXC",
+          "InstalledVersion": "2.7.12",
+          "Message": "Installed via Winget"
+        }
+      ],
+      "OSBuild": "26200.8875",
+      "EvidenceId": "KeePassXC",
+      "RawReceiptSha256": "673A498CEAC33AF38A0E39B36DA4F7E05FC1AF1936611E0B5F1D351AF1CA64CA"
+    },
+    {
+      "AppId": "MozillaFirefox",
+      "At": "2026-09-08T08:39:10.9628098Z",
+      "Computer": "WINFORGE-LAB",
+      "OS": "Microsoft Windows 11 Professionnel",
+      "Build": "26200",
+      "Before": {
+        "IsInstalled": false,
+        "Version": null
+      },
+      "After": {
+        "IsInstalled": true,
+        "Version": "155.0.1 (x64 en-US)"
+      },
+      "Status": "InstalledAndDetected",
+      "Error": null,
+      "Cleanup": {
+        "InstalledAfterRollback": true,
+        "Results": [
+          {
+            "AppId": "MozillaFirefox",
+            "Name": "Mozilla Firefox",
+            "Status": "RolledBack",
+            "Retry": false,
+            "CanRollback": false,
+            "Method": "Winget",
+            "Identifier": "Mozilla.Firefox",
+            "InstalledVersion": "155.0.1 (x64 en-US)",
+            "Message": "Installed via Winget"
+          }
+        ]
+      },
+      "InstallResults": [
+        {
+          "AppId": "MozillaFirefox",
+          "StartedAt": "2026-09-08T08:39:21.1966296Z",
+          "CompletedAt": "2026-09-08T08:40:01.0720671Z",
+          "Status": "Succeeded",
+          "WasInstalled": false,
+          "Method": "Winget",
+          "Identifier": "Mozilla.Firefox",
+          "InstalledVersion": "155.0.1 (x64 en-US)",
+          "Message": "Installed via Winget"
+        }
+      ],
+      "OSBuild": "26200.8875",
+      "EvidenceId": "MozillaFirefox",
+      "RawReceiptSha256": "DD31003C02B29511D50652B904D595C907EA7679B922FAAB6F6B7E29C2A769D4",
+      "SeparateCleanup": {
+        "At": "2026-09-08T08:51:59.5239433Z",
+        "ExitCode": 0,
+        "Signer": "CN=Mozilla Corporation, OU=Firefox Engineering Operations, O=Mozilla Corporation, L=San Francisco, S=California, C=US",
+        "Method": "Separate signed vendor cleanup /S",
+        "ExecutablePresent": false,
+        "RegistryPresent": false
+      }
+    },
+    {
+      "AppId": "MPCHC",
+      "At": "2026-09-08T09:11:38.1205319Z",
+      "Computer": "WINFORGE-LAB",
+      "OS": "Microsoft Windows 11 Professionnel",
+      "Build": "26200",
+      "Before": {
+        "Version": null,
+        "IsInstalled": false
+      },
+      "After": {
+        "Version": "2.8.1",
+        "IsInstalled": true
+      },
+      "Status": "InstalledAndDetected",
+      "Error": null,
+      "Cleanup": {
+        "Results": [
+          {
+            "AppId": "MPCHC",
+            "Name": "Media Player Classic",
+            "Status": "RolledBack",
+            "Retry": false,
+            "CanRollback": false,
+            "Method": "Winget",
+            "Identifier": "clsid2.mpc-hc",
+            "InstalledVersion": "2.8.1",
+            "Message": "Installed via Winget"
+          }
+        ],
+        "InstalledAfterRollback": false
+      },
+      "InstallResults": [
+        {
+          "AppId": "MPCHC",
+          "StartedAt": "2026-09-08T09:11:44.1121762Z",
+          "CompletedAt": "2026-09-08T09:11:56.1858842Z",
+          "Status": "Succeeded",
+          "WasInstalled": false,
+          "Method": "Winget",
+          "Identifier": "clsid2.mpc-hc",
+          "InstalledVersion": "2.8.1",
+          "Message": "Installed via Winget"
+        }
+      ],
+      "OSBuild": "26200.9168",
+      "EvidenceId": "MPCHC",
+      "RawReceiptSha256": "E23D85DD46D5F39403CB4F65B195BE96B7AFD8BBF9A2A0A495FC35DBC41538DD"
+    },
+    {
+      "AppId": "NotepadPlusPlus",
+      "At": "2026-09-08T07:00:18.7691123Z",
+      "Computer": "WINFORGE-LAB",
+      "OS": "Microsoft Windows 11 Professionnel",
+      "Build": "26200",
+      "Before": {
+        "IsInstalled": false,
+        "Version": null
+      },
+      "After": {
+        "IsInstalled": true,
+        "Version": "8.9.8.0"
+      },
+      "Status": "InstalledAndDetected",
+      "Error": null,
+      "Cleanup": {
+        "Results": [
+          {
+            "AppId": "NotepadPlusPlus",
+            "Name": "Notepad++",
+            "Status": "RolledBack",
+            "Retry": false,
+            "CanRollback": false,
+            "Method": "Winget",
+            "Identifier": "Notepad++.Notepad++",
+            "InstalledVersion": "8.9.8.0",
+            "Message": "Installed via Winget"
+          }
+        ],
+        "InstalledAfterRollback": false
+      },
+      "InstallResults": [
+        {
+          "AppId": "NotepadPlusPlus",
+          "StartedAt": "2026-09-08T07:00:36.8727576Z",
+          "CompletedAt": "2026-09-08T07:00:52.6094358Z",
+          "Status": "Succeeded",
+          "WasInstalled": false,
+          "Method": "Winget",
+          "Identifier": "Notepad++.Notepad++",
+          "InstalledVersion": "8.9.8.0",
+          "Message": "Installed via Winget"
+        }
+      ],
+      "OSBuild": "26200.8875",
+      "EvidenceId": "NotepadPlusPlus-v2",
+      "RawReceiptSha256": "2A85D250F6D9C2A561F93AEC6F25B9FD27F4B74E666427CC9D544B4467A5A89F"
+    },
+    {
+      "AppId": "PuTTY",
+      "At": "2026-09-08T07:06:13.0548754Z",
+      "Computer": "WINFORGE-LAB",
+      "OS": "Microsoft Windows 11 Professionnel",
+      "Build": "26200",
+      "Before": {
+        "IsInstalled": false,
+        "Version": null
+      },
+      "After": {
+        "IsInstalled": true,
+        "Version": "Release 0.84 (without embedded help)"
+      },
+      "Status": "InstalledAndDetected",
+      "Error": null,
+      "Cleanup": {
+        "Results": [
+          {
+            "AppId": "PuTTY",
+            "Name": "PuTTY",
+            "Status": "RolledBack",
+            "Retry": false,
+            "CanRollback": false,
+            "Method": "Winget",
+            "Identifier": "PuTTY.PuTTY",
+            "InstalledVersion": "Release 0.84 (without embedded help)",
+            "Message": "Installed via Winget"
+          }
+        ],
+        "InstalledAfterRollback": false
+      },
+      "InstallResults": [
+        {
+          "AppId": "PuTTY",
+          "StartedAt": "2026-09-08T07:06:32.3694323Z",
+          "CompletedAt": "2026-09-08T07:06:47.1288255Z",
+          "Status": "Succeeded",
+          "WasInstalled": false,
+          "Method": "Winget",
+          "Identifier": "PuTTY.PuTTY",
+          "InstalledVersion": "Release 0.84 (without embedded help)",
+          "Message": "Installed via Winget"
+        }
+      ],
+      "OSBuild": "26200.8875",
+      "EvidenceId": "PuTTY",
+      "RawReceiptSha256": "60C30178499E32AD824AB4A4D438CF8E2C7523DAE52F4F41CFB444D2A167FA8F"
+    },
+    {
+      "AppId": "ShareX",
+      "At": "2026-09-08T09:10:46.6518654Z",
+      "Computer": "WINFORGE-LAB",
+      "OS": "Microsoft Windows 11 Professionnel",
+      "Build": "26200",
+      "Before": {
+        "Version": null,
+        "IsInstalled": false
+      },
+      "After": {
+        "Version": "21.0.0.0",
+        "IsInstalled": true
+      },
+      "Status": "InstalledAndDetected",
+      "Error": null,
+      "Cleanup": {
+        "InstalledAfterRollback": false,
+        "Results": [
+          {
+            "AppId": "ShareX",
+            "Name": "ShareX",
+            "Status": "RolledBack",
+            "Retry": false,
+            "CanRollback": false,
+            "Method": "Winget",
+            "Identifier": "ShareX.ShareX",
+            "InstalledVersion": "21.0.0.0",
+            "Message": "Installed via Winget"
+          }
+        ]
+      },
+      "InstallResults": [
+        {
+          "AppId": "ShareX",
+          "StartedAt": "2026-09-08T09:10:53.8439345Z",
+          "CompletedAt": "2026-09-08T09:11:31.8748309Z",
+          "Status": "Succeeded",
+          "WasInstalled": false,
+          "Method": "Winget",
+          "Identifier": "ShareX.ShareX",
+          "InstalledVersion": "21.0.0.0",
+          "Message": "Installed via Winget"
+        }
+      ],
+      "OSBuild": "26200.9168",
+      "EvidenceId": "ShareX",
+      "RawReceiptSha256": "D1DE7CD57E7670482C0FA4735405B4A3F63A54A8F8FC711225E47E425AB8BFBE"
+    },
+    {
+      "AppId": "SumatraPDF",
+      "At": "2026-09-08T08:56:26.9438191Z",
+      "Computer": "WINFORGE-LAB",
+      "OS": "Microsoft Windows 11 Professionnel",
+      "Build": "26200",
+      "Before": {
+        "Version": null,
+        "IsInstalled": false
+      },
+      "After": {
+        "Version": "3.6.1",
+        "IsInstalled": true
+      },
+      "Status": "InstalledAndDetected",
+      "Error": null,
+      "Cleanup": {
+        "InstalledAfterRollback": true,
+        "Results": [
+          {
+            "AppId": "SumatraPDF",
+            "Name": "SumatraPDF",
+            "Status": "Succeeded",
+            "Retry": false,
+            "CanRollback": true,
+            "Method": "Winget",
+            "Identifier": "SumatraPDF.SumatraPDF",
+            "InstalledVersion": "3.6.1",
+            "Message": "Rollback failed with exit code -1978335107."
+          }
+        ]
+      },
+      "InstallResults": [
+        {
+          "AppId": "SumatraPDF",
+          "StartedAt": "2026-09-08T08:56:34.8995115Z",
+          "CompletedAt": "2026-09-08T08:56:44.9313709Z",
+          "Status": "Succeeded",
+          "WasInstalled": false,
+          "Method": "Winget",
+          "Identifier": "SumatraPDF.SumatraPDF",
+          "InstalledVersion": "3.6.1",
+          "Message": "Installed via Winget"
+        }
+      ],
+      "OSBuild": "26200.8875",
+      "EvidenceId": "SumatraPDF",
+      "RawReceiptSha256": "F1F1E0946C04A05D20EC54125EF14E4E6C8E51437D1593F79D28421BFB613EAD",
+      "SeparateCleanup": {
+        "Signer": "CN=Krzysztof Kowalczyk, O=Krzysztof Kowalczyk, L=Kraków, S=malopolskie, C=PL",
+        "Method": "Separate signed vendor quiet uninstall",
+        "ExecutablePresent": false,
+        "ExitCode": 0,
+        "At": "2026-09-08T08:57:55.1391877Z"
+      }
+    },
+    {
+      "AppId": "VLC",
+      "At": "2026-09-08T08:52:01.8555300Z",
+      "Computer": "WINFORGE-LAB",
+      "OS": "Microsoft Windows 11 Professionnel",
+      "Build": "26200",
+      "Before": {
+        "IsInstalled": false,
+        "Version": null
+      },
+      "After": {
+        "IsInstalled": true,
+        "Version": null
+      },
+      "Status": "DetectionIncomplete",
+      "Error": null,
+      "Cleanup": {
+        "InstalledAfterRollback": false,
+        "Results": [
+          {
+            "AppId": "VLC",
+            "Name": "VLC Media Player",
+            "Status": "RolledBack",
+            "Retry": false,
+            "CanRollback": false,
+            "Method": "Winget",
+            "Identifier": "VideoLAN.VLC",
+            "InstalledVersion": null,
+            "Message": "Installed via Winget"
+          }
+        ]
+      },
+      "InstallResults": [
+        {
+          "AppId": "VLC",
+          "StartedAt": "2026-09-08T08:52:08.4178726Z",
+          "CompletedAt": "2026-09-08T08:52:39.9403612Z",
+          "Status": "Succeeded",
+          "WasInstalled": false,
+          "Method": "Winget",
+          "Identifier": "VideoLAN.VLC",
+          "InstalledVersion": null,
+          "Message": "Installed via Winget"
+        }
+      ],
+      "OSBuild": "26200.8875",
+      "EvidenceId": "VLC",
+      "RawReceiptSha256": "B3A1FC1776181FD0B26AEEDC3412D9098D667EF720DE5E519CAF7F61EC19C5BF"
+    },
+    {
+      "AppId": "VSCode",
+      "At": "2026-09-08T08:53:55.0730837Z",
+      "Computer": "WINFORGE-LAB",
+      "OS": "Microsoft Windows 11 Professionnel",
+      "Build": "26200",
+      "Before": {
+        "Version": null,
+        "IsInstalled": false
+      },
+      "After": {
+        "Version": "1.136.1",
+        "IsInstalled": true
+      },
+      "Status": "InstalledAndDetected",
+      "Error": null,
+      "Cleanup": {
+        "Results": [
+          {
+            "AppId": "VSCode",
+            "Name": "Visual Studio Code",
+            "Status": "Succeeded",
+            "Retry": false,
+            "CanRollback": true,
+            "Method": "Winget",
+            "Identifier": "Microsoft.VisualStudioCode",
+            "InstalledVersion": "1.136.1",
+            "Message": "Rollback failed with exit code -1978335107."
+          }
+        ],
+        "InstalledAfterRollback": true
+      },
+      "InstallResults": [
+        {
+          "AppId": "VSCode",
+          "StartedAt": "2026-09-08T08:54:02.8728051Z",
+          "CompletedAt": "2026-09-08T08:55:13.7043933Z",
+          "Status": "Succeeded",
+          "WasInstalled": false,
+          "Method": "Winget",
+          "Identifier": "Microsoft.VisualStudioCode",
+          "InstalledVersion": "1.136.1",
+          "Message": "Installed via Winget"
+        }
+      ],
+      "OSBuild": "26200.8875",
+      "EvidenceId": "VSCode",
+      "RawReceiptSha256": "81D9F716C223A697370F9F3A67691FAE22F626D03065656BF68974EC1D81D93F",
+      "SeparateCleanup": {
+        "Signer": "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+        "Method": "Separate signed vendor cleanup",
+        "ExecutablePresent": false,
+        "ExitCode": 0,
+        "At": "2026-09-08T08:56:24.1802729Z"
+      }
+    },
+    {
+      "AppId": "WinSCP",
+      "At": "2026-09-08T07:07:01.3498251Z",
+      "Computer": "WINFORGE-LAB",
+      "OS": "Microsoft Windows 11 Professionnel",
+      "Build": "26200",
+      "Before": {
+        "Version": null,
+        "IsInstalled": false
+      },
+      "After": {
+        "Version": "6.5.6",
+        "IsInstalled": true
+      },
+      "Status": "InstalledAndDetected",
+      "Error": null,
+      "Cleanup": {
+        "Results": [
+          {
+            "AppId": "WinSCP",
+            "Name": "WinSCP",
+            "Status": "Succeeded",
+            "Retry": false,
+            "CanRollback": true,
+            "Method": "Winget",
+            "Identifier": "WinSCP.WinSCP",
+            "InstalledVersion": "6.5.6",
+            "Message": "Rollback failed with exit code -1978335107."
+          }
+        ],
+        "InstalledAfterRollback": true
+      },
+      "InstallResults": [
+        {
+          "AppId": "WinSCP",
+          "StartedAt": "2026-09-08T07:07:21.6871001Z",
+          "CompletedAt": "2026-09-08T07:07:59.7878134Z",
+          "Status": "Succeeded",
+          "WasInstalled": false,
+          "Method": "Winget",
+          "Identifier": "WinSCP.WinSCP",
+          "InstalledVersion": "6.5.6",
+          "Message": "Installed via Winget"
+        }
+      ],
+      "OSBuild": "26200.8875",
+      "EvidenceId": "WinSCP",
+      "RawReceiptSha256": "14C193E2550D6E7746B339B08ACEE693BCF8046C47E017676E8F7BA37084402B",
+      "SeparateCleanup": {
+        "ExitCode": 0,
+        "ExecutableStillPresent": false,
+        "At": "2026-09-08T07:18:19.6079532Z",
+        "Method": "Separate signed vendor quiet uninstall",
+        "FreshDetection": {
+          "Version": null,
+          "IsInstalled": false
+        },
+        "FreshDetectionAt": "2026-09-08T08:12:48.0750558Z"
+      }
+    },
+    {
+      "AppId": "WizTree",
+      "At": "2026-09-08T07:05:22.1752016Z",
+      "Computer": "WINFORGE-LAB",
+      "OS": "Microsoft Windows 11 Professionnel",
+      "Build": "26200",
+      "Before": {
+        "Version": null,
+        "IsInstalled": false
+      },
+      "After": {
+        "Version": "4.32.0.0",
+        "IsInstalled": true
+      },
+      "Status": "InstalledAndDetected",
+      "Error": null,
+      "Cleanup": {
+        "InstalledAfterRollback": false,
+        "Results": [
+          {
+            "AppId": "WizTree",
+            "Name": "WizTree",
+            "Status": "RolledBack",
+            "Retry": false,
+            "CanRollback": false,
+            "Method": "Winget",
+            "Identifier": "AntibodySoftware.WizTree",
+            "InstalledVersion": "4.32.0.0",
+            "Message": "Installed via Winget"
+          }
+        ]
+      },
+      "InstallResults": [
+        {
+          "AppId": "WizTree",
+          "StartedAt": "2026-09-08T07:05:31.8398687Z",
+          "CompletedAt": "2026-09-08T07:05:58.0536642Z",
+          "Status": "Succeeded",
+          "WasInstalled": false,
+          "Method": "Winget",
+          "Identifier": "AntibodySoftware.WizTree",
+          "InstalledVersion": "4.32.0.0",
+          "Message": "Installed via Winget"
+        }
+      ],
+      "OSBuild": "26200.8875",
+      "EvidenceId": "WizTree",
+      "RawReceiptSha256": "D2C7E05C685A4E60B5FCE3296159E6A32F8C61DD25D6A150BE8F9172D223DB15"
+    }
+  ]
+}

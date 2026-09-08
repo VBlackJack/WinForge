@@ -267,6 +267,7 @@ function Undo-DeploymentPlan {
         $plan = Read-DeploymentPlan -Path $target
         if ($plan.Machine -ne $env:COMPUTERNAME -or $plan.User -ne [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value) { throw 'Rollback belongs to another machine or account.' }
         Import-Module (Join-Path (Split-Path $PSScriptRoot -Parent) 'Core/Core.psm1') -ErrorAction Stop
+        Import-Module (Join-Path $PSScriptRoot 'ApplicationDetection.psm1') -ErrorAction Stop
         foreach ($entry in @(Get-DeploymentRecovery -Plan $plan | Where-Object CanRollback)) {
             if ($entry.Identifier -notmatch '^[A-Za-z0-9][A-Za-z0-9._+-]*$') { throw 'Unsafe rollback package identifier.' }
             if (-not $PSCmdlet.ShouldProcess("$($entry.Method):$($entry.Identifier)", 'Uninstall newly installed package')) { continue }
@@ -277,7 +278,19 @@ function Undo-DeploymentPlan {
             } else {
                 Invoke-NativeCommandUtf8 -FilePath 'choco' -ArgumentList @('uninstall',$entry.Identifier,'-y','--no-progress')
             }
-            if ($native.ExitCode -eq 0) { $result.Status = 'RolledBack' }
+            if ($native.ExitCode -eq 0) {
+                $item = @($plan.Items | Where-Object AppId -eq $entry.AppId)[0]
+                $observed = Get-ApplicationsInstallationStatus -Applications @($item.Definition) -Refresh
+                $state = $observed[$entry.AppId]
+                if ($null -eq $state -or $null -eq (Get-PlanProperty $state 'IsInstalled')) {
+                    $result.Message = 'Rollback could not be verified by fresh application detection.'
+                } elseif (Get-PlanProperty $state 'IsInstalled') {
+                    $result.Message = 'Rollback command succeeded, but fresh detection still finds the application installed.'
+                } else {
+                    $result.Status = 'RolledBack'
+                    $result.Message = 'Rollback completed; fresh detection confirms the application is absent.'
+                }
+            }
             else { $result.Message = "Rollback failed with exit code $($native.ExitCode)." }
             } catch { $result.Message = 'Rollback failed: ' + $_.Exception.Message }
             Save-DeploymentPlan -Plan $plan -Path $target

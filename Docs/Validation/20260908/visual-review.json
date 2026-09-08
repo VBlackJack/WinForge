@@ -1,0 +1,245 @@
+{
+  "Method": "Direct inspection of the captured Install Selected focus state for each listed case, supplementing the four-control UIA geometry and keyboard checks. Additional representative page captures are linked in the report. This is not a pixel-by-pixel audit of every control.",
+  "Cases": [
+    {
+      "Id": "candidate-1366-768-125-Drakul-HC0-RM0-v10",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "66FA12D768D4FC0C013786E1DFDDE79B2488368F2A82C71B28C140B522B73BAF",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1366-768-125-Drakul-HC0-RM1-v10",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "C1D3EFD72B7CB10D493EABAB4D2D7A5BF51B0FCBB62F6A4D12957D10524CD748",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1366-768-125-Drakul-HC1-RM0-v10",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "5853A7ED39EBF1A95802AF2F6781F2860138CC2E58DF42F8D8179336B63290AA",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1366-768-125-Drakul-HC1-RM1-v10",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "E848CCC0DBC630B0EBC9421D3DC42E79086B01D40D3D3FE4EB20136DE7DB0422",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1366-768-125-Folio-HC0-RM0-v10",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "186E62F400E7B9BD24C7C65822F87B8F0CBB1EF3D331CC1DC9D3C7D484220304",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1366-768-125-Folio-HC0-RM1-v10",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "6C4AB8950ADFCB9D24A040F9E143352E1A6C56F047B86DC1DC8F94E2D83CFE78",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1366-768-125-Folio-HC1-RM0-v10",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "00EDC818A7A346380CDF375D83CE7E8181808DB760DF8ACC1B6A1EA34803AA2D",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1366-768-125-Folio-HC1-RM1-v10",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "3AAE083F102FFE4CB9BCF2F36CD5E33733794CA9C469EEBDE1C65823BB9210A7",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1366-768-100-Drakul-HC0-RM0-v10",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "335D8676CFDF78E1C08DD20D66158E824AE52468EB864E4EEF3FAC5889A4D65B",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1366-768-100-Drakul-HC0-RM1-v10",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "E3409CFAB9DE57BE83C0C2A3EBDB9030D6E8340EC794A895607AF8A76721C0D9",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1366-768-100-Drakul-HC1-RM0-v10",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "57BA5D25F96D46A0DD203FDDA109F6B0BA0433F0330F9D58D61F8F5309B975CB",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1366-768-100-Drakul-HC1-RM1-v10",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "2423A485A50C8AB53922EF61D8CF47D5E623FF8E949C90C32DAA32C21FD10D68",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1366-768-100-Folio-HC0-RM0-v10",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "7405218D443603ED0F4C4B9C0F81D0E772FDB4BB6DC9C453BE1F72E28BD9AAB9",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1366-768-100-Folio-HC0-RM1-v10",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "6A4B224E8A7BC3E3C06026F082BEFA6AF2E3428491A0F3F20AD81CC0658D031D",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1366-768-100-Folio-HC1-RM0-v10",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "C58BD32ECBE39CA960E0C6234E7E3C340EEE3270A87110120AB69D40C9187492",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1366-768-100-Folio-HC1-RM1-v10",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "5A3D6BAF623968E0E76A523905D8F0284806A622AA9EBE646E26812F25117B7C",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1920-1080-125-Drakul-HC0-RM0-v10",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "68232DB2A5627A203D44C22CA9385C5D3800A2BEAB9BFE78032058D21257BAAE",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1920-1080-125-Drakul-HC0-RM1-v10",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "9DB8C28AD80A432F699B4B8A8CC99B33D735601D5F366B3822EC9941D7252DE8",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1920-1080-125-Drakul-HC1-RM0-v10",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "0140C074D3ADE7BB6F30591841357C5D70C3F128F6C7E90A28DB01069AAA996D",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1920-1080-125-Drakul-HC1-RM1-v10",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "ECDA81D265A7CB7DAF3A4507B9D9BE7C70417766F096D0816D72C2DC0DF181BF",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1920-1080-125-Folio-HC0-RM0-v10",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "C8C676C06CB5A63E7C0E57CB137AFCDCCC0697B4F9E86A01EC0B0C70B8E972C3",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1920-1080-125-Folio-HC0-RM1-v10",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "4B75D70ECEB5E5F6E98261EA1BC8F436F705E1805265AE6E11F0B605B80DDCFA",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1920-1080-125-Folio-HC1-RM0-v10",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "C1EB75C2DA4645CED6BE20C9CA82CC44124DBF75A541F25AEB5A7F07C0663EB2",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1920-1080-125-Folio-HC1-RM1-v10",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "30EF9D97DB547F3696F906D9AE27DC982E6B2CF5FAA8DAA933904ABF567935FB",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1920-1080-100-Drakul-HC0-RM0-v10",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "72FBAC9DA1CB6CEED860450A3AE172917278967CCFB7EF2A3ABBA0F69716EBCD",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1920-1080-100-Drakul-HC0-RM1-v10",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "9B53EE52E0EAF2AA8D5D056DC4DCA476E49595D20A0D414F3406D1146B3B2E5C",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1920-1080-100-Drakul-HC1-RM0-v10",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "AF690379E56B9361E2D745F40F5BA6D79EDCC06D6A9E9511ECCE16F05987CEC7",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1920-1080-100-Drakul-HC1-RM1-v10",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "3D45BB96AE0E5375A112B0E9860A4871C8D35420205E4A3583B8456277828350",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1920-1080-100-Folio-HC0-RM0-v10",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "3B2EB84B60DA9E783C17AF46FD0928A85BBDDBE82A3E0DBE364C8BCBD11D0836",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1920-1080-100-Folio-HC0-RM1-v10",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "2FA93FBA72BE0500BA742C241AE0608BF2DC2931768EADF8D96C0101244FE19E",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1920-1080-100-Folio-HC1-RM0-v10",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "4B7230D8BD61D74D7B48022D3F689050582BFDEF850238A9D9B354A0BDCCAEA8",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1920-1080-100-Folio-HC1-RM1-v10",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "BED39EF23919FC9EFAF6E02A91A9466A3CD55A191A2B4D0005FF587762B3E9F2",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1366-768-150-Drakul-HC0-RM0-v11",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "212EE4DB620E9EE3FE7D62BFAC1BAF569D56C44CD50332EE77E93F0CCACF80D6",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1366-768-150-Drakul-HC0-RM1-v11",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "174ED903DC7FA9B1A791BC6FA7EB61F48AA24FCA4C0981D87ED4FD7B1FCD2484",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1366-768-150-Drakul-HC1-RM0-v11",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "C905933CEF35B59B747AD036F0E7A0638201E7D0B947688E71940F156FF63867",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1366-768-150-Drakul-HC1-RM1-v11",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "CF434267C8D61469498D7470105C024D5373CFC4883EB5B3399FC906F80C671F",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1366-768-150-Folio-HC0-RM0-v11",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "09F3DA2814F3DAD4F7FE402BEEDB9A8AFEFE8238667EAFAFA0C0C3915550F898",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1366-768-150-Folio-HC0-RM1-v11",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "94F96EF4387E1B71F84CE5CD76B127A09932215C60921D99A4FDD665A1B90441",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1366-768-150-Folio-HC1-RM0-v11",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "F2FD31FF4182531C3B8C1424AEA154DFABFC50914B0055866BF7F55D016AC53D",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    },
+    {
+      "Id": "candidate-1366-768-150-Folio-HC1-RM1-v11",
+      "Image": "InstallSelectedButton.png",
+      "Sha256": "243A044EB9C6450CF9AE7F86A197C1B5FB472598CB2049696C1B1947016517E7",
+      "Observation": "Install/Uninstall and Scan controls fully visible; foreground and background distinguish enabled actions; focused action not clipped."
+    }
+  ]
+}

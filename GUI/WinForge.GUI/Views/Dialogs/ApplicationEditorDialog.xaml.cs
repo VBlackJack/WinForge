@@ -19,6 +19,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Extensions.DependencyInjection;
+using WinForge.GUI.Helpers;
 using WinForge.GUI.Models;
 using WinForge.GUI.ViewModels;
 using Loc = WinForge.GUI.Resources.Resources;
@@ -48,6 +49,7 @@ public partial class ApplicationEditorDialog : Window
     public ApplicationEditorDialog()
     {
         InitializeComponent();
+        SourceInitialized += (_, _) => WindowPlacementHelper.FitDialogToOwnerWorkArea(this);
 
         _viewModel = App.GetService<ApplicationEditorViewModel>();
         DataContext = _viewModel;

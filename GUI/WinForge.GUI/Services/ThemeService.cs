@@ -102,6 +102,41 @@ public sealed class ThemeService : IThemeService
         "TextFillColorSecondaryBrush",
         "TextFillColorTertiaryBrush",
         "TextFillColorDisabledBrush",
+        "TextControlForeground",
+        "TextControlPlaceholderForeground",
+        "TextControlButtonForeground",
+        "ToggleSwitchContentForeground",
+        "ToggleSwitchKnobFillOff",
+        "ToggleSwitchKnobFillOffPointerOver",
+        "ToggleSwitchKnobFillOffPressed",
+        "TextControlBackground",
+        "TextControlBackgroundPointerOver",
+        "TextControlBackgroundFocused",
+        "ToggleSwitchFillOff",
+        "ToggleSwitchFillOffPointerOver",
+        "ToggleSwitchFillOffPressed",
+        "TextControlElevationBorderBrush",
+        "ToggleSwitchStrokeOff",
+        "ToggleSwitchStrokeOffPointerOver",
+        "ToggleSwitchStrokeOffPressed",
+        "TextControlFocusedBorderBrush",
+        "ToggleSwitchFillOn",
+        "ToggleSwitchFillOnPointerOver",
+        "ToggleSwitchFillOnPressed",
+        "ToggleSwitchKnobFillOn",
+        "ToggleSwitchKnobFillOnPointerOver",
+        "ToggleSwitchKnobFillOnPressed",
+        "NavigationViewItemForeground",
+        "NavigationViewItemForegroundPointerOver",
+        "NavigationViewItemBackground",
+        "NavigationViewItemBackgroundPointerOver",
+        "NavigationViewItemBackgroundPressed",
+        "NavigationViewItemBackgroundSelected",
+        "NavigationViewItemBorderBrush",
+        "NavigationViewSelectionIndicatorForeground",
+        "NavigationViewContentBackground",
+        "NavigationViewContentGridBorderBrush",
+        "LeftNavigationViewSeparatorBrush",
         "TextOnAccentFillColorPrimaryBrush",
         "TextOnAccentFillColorSecondaryBrush",
         "TextOnAccentFillColorDisabledBrush",
@@ -220,6 +255,19 @@ public sealed class ThemeService : IThemeService
         "ValidationSuccessBorderBrush",
         "BadgePrimaryForegroundBrush",
         "BadgeSecondaryForegroundBrush",
+        "BadgeWarningForegroundBrush",
+        "SourceWingetBadgeBackgroundBrush",
+        "SourceWingetBadgeBorderBrush",
+        "SourceWingetBadgeForegroundBrush",
+        "SourceChocolateyBadgeBackgroundBrush",
+        "SourceChocolateyBadgeBorderBrush",
+        "SourceChocolateyBadgeForegroundBrush",
+        "SourceStoreBadgeBackgroundBrush",
+        "SourceStoreBadgeBorderBrush",
+        "SourceStoreBadgeForegroundBrush",
+        "SourceDirectBadgeBackgroundBrush",
+        "SourceDirectBadgeBorderBrush",
+        "SourceDirectBadgeForegroundBrush",
         "PrimaryHueLightForegroundBrush",
         "SecondaryHueLightForegroundBrush",
         "DialogOverlayBackgroundBrush",
@@ -435,6 +483,17 @@ public sealed class ThemeService : IThemeService
         SetBrush(resources, "TextFillColorSecondaryBrush", textSecondary);
         SetBrush(resources, "TextFillColorTertiaryBrush", textSecondary);
         SetBrush(resources, "TextFillColorDisabledBrush", textDisabled);
+        SetBrush(resources, "NavigationViewItemForeground", textPrimary);
+        SetBrush(resources, "NavigationViewItemForegroundPointerOver", textPrimary);
+        SetBrush(resources, "NavigationViewItemBackground", background);
+        SetBrush(resources, "NavigationViewItemBackgroundPointerOver", highlight);
+        SetBrush(resources, "NavigationViewItemBackgroundPressed", highlight);
+        SetBrush(resources, "NavigationViewItemBackgroundSelected", highlight);
+        SetBrush(resources, "NavigationViewItemBorderBrush", background);
+        SetBrush(resources, "NavigationViewSelectionIndicatorForeground", accent);
+        SetBrush(resources, "NavigationViewContentBackground", background);
+        SetBrush(resources, "NavigationViewContentGridBorderBrush", border);
+        SetBrush(resources, "LeftNavigationViewSeparatorBrush", border);
         SetBrush(resources, "TextOnAccentFillColorPrimaryBrush", badgeText);
         SetBrush(resources, "TextOnAccentFillColorSecondaryBrush", badgeText);
         SetBrush(resources, "TextOnAccentFillColorDisabledBrush", textDisabled);
@@ -553,9 +612,11 @@ public sealed class ThemeService : IThemeService
         SetBrush(resources, "ManualInstallBadgeBrush", warning);
         SetBrush(resources, "RequiredBrush", warning);
         SetBrush(resources, "BadgePrimaryForegroundBrush", badgeText);
-        SetBrush(resources, "BadgeSecondaryForegroundBrush", badgeText);
+        SetBrush(resources, "BadgeSecondaryForegroundBrush", ResolveReadableTextBrush(resources, background, info, textPrimary));
+        SetBrush(resources, "BadgeWarningForegroundBrush", ResolveReadableTextBrush(resources, background, warning, textPrimary));
         SetBrush(resources, "PrimaryHueLightForegroundBrush", badgeText);
-        SetBrush(resources, "SecondaryHueLightForegroundBrush", badgeText);
+        SetBrush(resources, "SecondaryHueLightForegroundBrush", ResolveReadableTextBrush(resources, background, info, textPrimary));
+        ApplySourceBadgePalette(resources, RelativeLuminance(background.Color) > 0.5);
         SetBrush(resources, "DialogOverlayBackgroundBrush", overlay);
         SetBrush(resources, "SkeletonBaseBrush", surface);
         SetBrush(resources, "SkeletonHighlightBrush", highlight);
@@ -578,6 +639,23 @@ public sealed class ThemeService : IThemeService
         foreach (string key in PaletteBridgeResourceKeys)
         {
             resources.Remove(key);
+        }
+    }
+
+    private static void ApplySourceBadgePalette(ResourceDictionary resources, bool isLight)
+    {
+        foreach (string source in new[] { "Winget", "Chocolatey", "Store", "Direct" })
+        {
+            foreach (string part in new[] { "Background", "Border", "Foreground" })
+            {
+                string key = $"Source{source}Badge{part}Brush";
+                // Removing the local override restores the shared dark palette.
+                resources.Remove(key);
+                if (isLight && TryFindResource(resources, $"Source{source}Badge{part}LightBrush") is SolidColorBrush lightBrush)
+                {
+                    SetBrush(resources, key, lightBrush);
+                }
+            }
         }
     }
 

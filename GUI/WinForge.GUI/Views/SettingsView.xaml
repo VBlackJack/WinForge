@@ -28,7 +28,7 @@
                     TabStripPlacement="Top">
 
             <!-- Appearance & Language Tab -->
-            <TabItem>
+            <TabItem AutomationProperties.Name="{loc:Loc Settings_Tab_Appearance}">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon Symbol="Color24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
@@ -200,7 +200,7 @@
             </TabItem>
 
             <!-- Performance Tab -->
-            <TabItem>
+            <TabItem AutomationProperties.Name="{loc:Loc Settings_Tab_Performance}">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon Symbol="Gauge24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
@@ -259,7 +259,7 @@
             </TabItem>
 
             <!-- Data Tab -->
-            <TabItem>
+            <TabItem AutomationProperties.Name="{loc:Loc Settings_Tab_Data}">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon Symbol="Database24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
@@ -488,7 +488,7 @@
             </TabItem>
 
             <!-- Scheduled Deployments Tab -->
-            <TabItem>
+            <TabItem AutomationProperties.Name="{loc:Loc Settings_Tab_Scheduled}">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon Symbol="CalendarClock24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
@@ -682,7 +682,7 @@
             </TabItem>
 
             <!-- About Tab -->
-            <TabItem>
+            <TabItem AutomationProperties.Name="{loc:Loc Settings_Tab_About}">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon Symbol="Info24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>

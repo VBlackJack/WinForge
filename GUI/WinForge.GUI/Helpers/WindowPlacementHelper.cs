@@ -113,6 +113,29 @@ internal static class WindowPlacementHelper
         }
     }
 
+    /// <summary>Fits an owned dialog to the owner's monitor before it is displayed.</summary>
+    internal static void FitDialogToOwnerWorkArea(Window dialog)
+    {
+        ArgumentNullException.ThrowIfNull(dialog);
+        Window reference = dialog.Owner ?? dialog;
+        IReadOnlyList<Rect> workAreas = GetMonitorWorkAreas(reference);
+        Rect ownerBounds = new Rect(reference.Left, reference.Top, reference.ActualWidth, reference.ActualHeight);
+        Rect workArea = FindBestIntersectingWorkArea(ownerBounds, workAreas) ?? workAreas[0];
+        WindowPlacementDecision decision = CalculatePlacement(
+            savedPlacement: null,
+            workAreas: [workArea],
+            defaultSize: new Size(dialog.Width, dialog.Height),
+            minimumSize: new Size(dialog.MinWidth, dialog.MinHeight));
+
+        dialog.MinWidth = Math.Min(dialog.MinWidth, decision.Bounds.Width);
+        dialog.MinHeight = Math.Min(dialog.MinHeight, decision.Bounds.Height);
+        dialog.WindowStartupLocation = WindowStartupLocation.Manual;
+        dialog.Left = decision.Bounds.Left;
+        dialog.Top = decision.Bounds.Top;
+        dialog.Width = decision.Bounds.Width;
+        dialog.Height = decision.Bounds.Height;
+    }
+
     internal static WindowPlacementSettings CapturePlacement(Window window)
     {
         ArgumentNullException.ThrowIfNull(window);

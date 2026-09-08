@@ -1,0 +1,77 @@
+[
+  {
+    "Suite": "Final .NET",
+    "File": "Reports\\backlog-20260908\\tests\\badges-after.trx",
+    "Sha256": "CAA6521B3B28291DD397C332593252108284638DE068F6E4CCA5F1804286D95A",
+    "Counters": {
+      "total": "790",
+      "executed": "790",
+      "passed": "790",
+      "failed": "0",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    }
+  },
+  {
+    "Suite": "pester-final.xml",
+    "File": "Reports\\backlog-20260908\\pester-final.xml",
+    "Sha256": "26E9F3A3AD15D208B989CBCE6B77113F2222DDB9C1E0594C51A7F22A6D939E73",
+    "Counters": {
+      "{http://www.w3.org/2001/XMLSchema-instance}noNamespaceSchemaLocation": "nunit_schema_2.5.xsd",
+      "name": "Pester",
+      "total": "2012",
+      "errors": "0",
+      "failures": "0",
+      "not-run": "0",
+      "inconclusive": "0",
+      "ignored": "0",
+      "skipped": "6",
+      "invalid": "0",
+      "date": "2026-09-08",
+      "time": "10:54:50"
+    }
+  },
+  {
+    "Suite": "tests/badges-before.trx",
+    "File": "Reports\\backlog-20260908\\tests\\badges-before.trx",
+    "Sha256": "4C65A939AE940F3CBE15E4ADF206C8C76905F46689883D4DBD0F60991153D968",
+    "Counters": {
+      "total": "2",
+      "executed": "2",
+      "passed": "0",
+      "failed": "2",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    }
+  },
+  {
+    "Suite": "PSScriptAnalyzer",
+    "Files": 160,
+    "Errors": 0,
+    "Warnings": 9,
+    "ModifiedPowerShellFileFindings": 0,
+    "WarningScope": "Unchanged files",
+    "File": "Reports\\backlog-20260908\\analyzer-final.log",
+    "Sha256": "812F6476ED7E167C2A32C18991AF8B0EBF80AEA6020DAE8A968D09529B483DD8"
+  }
+]

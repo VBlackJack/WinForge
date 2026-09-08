@@ -23,4 +23,8 @@ namespace WinForge.GUI.Models;
 /// <param name="DisplayKey">Resource key in <c>Resources.resx</c> for the localized display name.</param>
 public sealed record AccentTintDescriptor(
     string Name,
-    string DisplayKey);
+    string DisplayKey)
+{
+    /// <summary>Provides the localized caption to selection automation peers.</summary>
+    public override string ToString() => Resources.LocalizationProvider.Instance[DisplayKey];
+}

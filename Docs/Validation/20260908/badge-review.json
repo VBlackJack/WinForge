@@ -1,0 +1,65 @@
+{
+  "Method": "Direct inspection of one application screenshot per case; source-defined ratios and real ThemeService regression tests provide the complete four-source contrast check.",
+  "Cases": [
+    {
+      "Id": "badges-1366-768-100-Folio-HC0-RM0-v1",
+      "Image": "NavApplications.png",
+      "Sha256": "77ADC0353A4244E527E1428BC30B52DBAF31FF04CB70E91D1D6BCCA608330FB1",
+      "Observation": "Light source badge backgrounds and dark text observed; prerequisite badge uses readable warning foreground."
+    },
+    {
+      "Id": "badges-1366-768-100-Parchment-HC0-RM0-v1",
+      "Image": "NavApplications.png",
+      "Sha256": "09E8010C301B39861F32E0887F92A2DA7AEFCB79327658913A786962157D2845",
+      "Observation": "Light source badge backgrounds and dark text observed; prerequisite badge uses readable warning foreground."
+    },
+    {
+      "Id": "badges-1366-768-125-Folio-HC0-RM0-v1",
+      "Image": "NavApplications-maximized.png",
+      "Sha256": "66CC4927DFEA9AE9D7A04A93AFD689CA25D525DE59AB02C796E901D39310B01A",
+      "Observation": "Light source badge backgrounds and dark text observed; prerequisite badge uses readable warning foreground."
+    },
+    {
+      "Id": "badges-1366-768-125-Parchment-HC0-RM0-v1",
+      "Image": "NavApplications-maximized.png",
+      "Sha256": "F162EE27238824B281DFA6F8ECD973EA724073023A196AC25458507A8886CA0F",
+      "Observation": "Light source badge backgrounds and dark text observed; prerequisite badge uses readable warning foreground."
+    },
+    {
+      "Id": "badges-1366-768-150-Folio-HC0-RM0-v1",
+      "Image": "NavApplications-maximized.png",
+      "Sha256": "9B7308C9513EEB052715528F7EDBA6FA639ADC7FEA59DBC0B24E8D00FE1C9F0E",
+      "Observation": "Light background and dark source badge text observed. At 150% the source column requires horizontal scrolling; this capture alone does not visually certify every source badge."
+    },
+    {
+      "Id": "badges-1366-768-150-Parchment-HC0-RM0-v1",
+      "Image": "NavApplications-maximized.png",
+      "Sha256": "207E063D1587670F73FCEE4593EDF021CD650EE0A4CDAC49A7B90952E2E0D063",
+      "Observation": "Light background and dark source badge text observed. At 150% the source column requires horizontal scrolling; this capture alone does not visually certify every source badge."
+    },
+    {
+      "Id": "badges-1920-1080-100-Folio-HC0-RM0-v1",
+      "Image": "NavApplications.png",
+      "Sha256": "81C6C39BBC0C70CE0C030D1834C644090EE4057D0DCFEE6E28F636BFA231C3E4",
+      "Observation": "Light source badge backgrounds and dark text observed; prerequisite badge uses readable warning foreground."
+    },
+    {
+      "Id": "badges-1920-1080-100-Parchment-HC0-RM0-v1",
+      "Image": "NavApplications.png",
+      "Sha256": "72635A68061D306426D9FEECCC2DC9A2F0DDF4E7E657BB62892521AC9BC66BAA",
+      "Observation": "Light source badge backgrounds and dark text observed; prerequisite badge uses readable warning foreground."
+    },
+    {
+      "Id": "badges-1920-1080-125-Folio-HC0-RM0-v1",
+      "Image": "NavApplications.png",
+      "Sha256": "9722DB248F5BAFC38C16C8D9FF2655E1E0B42C76B6FE456493B5F122D6917BCC",
+      "Observation": "Light source badge backgrounds and dark text observed; prerequisite badge uses readable warning foreground."
+    },
+    {
+      "Id": "badges-1920-1080-125-Parchment-HC0-RM0-v1",
+      "Image": "NavApplications.png",
+      "Sha256": "3C208BAD730C0EB13797646004A82E7625EF80B23F793F90213F4626F2CC1C55",
+      "Observation": "Light source badge backgrounds and dark text observed; prerequisite badge uses readable warning foreground."
+    }
+  ]
+}
