@@ -50,7 +50,7 @@ public partial class AppsView : UserControl
 
     private void BatchProgress_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
-        if (sender is ProgressBar progress && e.NewValue != e.OldValue)
+        if (sender is ProgressBar progress)
         {
             QueueLiveRegion(progress, bringIntoView: false);
         }
