@@ -6,6 +6,8 @@ This acceptance campaign follows published release `v2026090703`
 (`84cbc5d1d78698a750132499afd3c1033d49940d`). GUI corrections and the rollback
 verification correction are local changes, not a new published release.
 
+Delivery note: the fixes from this campaign are included in `v2026090801`. Unpublished-candidate references below describe the executables at measurement time; their hashes and history remain unchanged.
+
 ## Evidence and scope
 
 - [Catalog matrix](catalog-installations.json): all 195 release entries, with a
@@ -111,3 +113,10 @@ trial applications are absent in the final independent check. The Windows update
 acceptance audio device and portable tools/evidence remain in this disposable VM.
 PowerShell analysis: 160 files, zero errors, nine warnings in unchanged files;
 no findings in either modified PowerShell file.
+
+
+## Virtualization applications and VM acceptance
+
+The 2026-09-08 VMware campaign does not validate operation of a hypervisor or emulator requiring hardware virtualization inside the guest. Installing and detecting a package does not prove that its engine can start. This environment boundary alone is not a WinForge defect.
+
+Runtime acceptance requires suitable physical hardware or a nested-virtualization configuration explicitly supported by the vendor. No nested-virtualization change or new trial of these applications was performed for this release. See [Microsoft's requirements for nested Hyper-V](https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/enable-nested-virtualization). Historical installation statuses remain unchanged; this exclusion does not imply success.

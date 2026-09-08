@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'WinForgeExceptions.psm1'
-    ModuleVersion = '1.0.0907.3'
+    ModuleVersion = '1.0.0908.1'
     GUID = '2fd61c27-0cec-40f3-822e-89d81a3aaa0a'
     Author = 'Julien Bombled'
     CompanyName = 'WinForge'
@@ -35,7 +35,7 @@
             Tags = @('WinForge', 'Core', 'Exceptions', 'ErrorHandling')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
-            ReleaseNotes = 'WinForge v2026090703'
+            ReleaseNotes = 'WinForge v2026090801'
         }
     }
 }

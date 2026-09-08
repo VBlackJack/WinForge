@@ -1,4 +1,12 @@
-# Validation de la version 2026090703
+# Validation de release : 2026090801
+
+Les corrections de lisibilité, DPI, annonces vocales et vérification du retour arrière sont incluses dans cette version. La [recette du 2026-09-08](Validation/20260908/README.fr.md) conserve les identités des candidats et les résultats exacts : 40 combinaisons visuelles, 10 contrôles ciblés des thèmes clairs et parcours NVDA enregistrés. La suite locale sur la version finale compte 790 tests .NET réussis ; la campagne PowerShell précédente compte 2 006 réussis et six ignorés. La CI réexécute ses contrôles sur les révisions de livraison.
+
+Le premier lot catalogue est clos avec 21 essais et 20 versions détectées. La détection VLC reste incomplète ; les 195 applications et leurs sources alternatives ne sont pas entièrement certifiées. Le fonctionnement des applications de virtualisation est hors de la recette VM, comme précisé ci-dessous.
+
+Les sections suivantes conservent les preuves de la release précédente et leurs dates. Leurs mentions de main et de candidat non publié décrivent cet état historique.
+
+## Référence historique : v2026090703
 
 [English](RELEASE_VALIDATION.md)
 
@@ -46,3 +54,10 @@ le paquet publié du candidat non publié.
 - L'interruption du processus ne rend pas les installateurs tiers transactionnels ;
   leur procédure de réparation peut rester nécessaire.
 - Les tâches SYSTEM nécessitent PowerShell 7 installé pour toute la machine.
+
+
+## Applications de virtualisation et recette en VM
+
+La campagne VMware du 2026-09-08 ne valide pas le fonctionnement d'un hyperviseur ou d'un émulateur nécessitant la virtualisation matérielle à l'intérieur de l'invité. Un paquet installé et détecté ne prouve pas que son moteur peut démarrer. Cette limite d'environnement ne constitue pas à elle seule un défaut WinForge.
+
+Une recette fonctionnelle demande du matériel physique adapté ou une configuration de virtualisation imbriquée explicitement prise en charge par l'éditeur. Aucun changement de virtualisation imbriquée ni nouvel essai de ces applications n'a été réalisé pour cette release. Voir les [conditions Microsoft pour Hyper-V imbriqué](https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/enable-nested-virtualization). Les statuts d'installation historiques sont conservés ; aucun succès n'est déduit de cette exclusion.

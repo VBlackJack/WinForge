@@ -4,6 +4,22 @@
 
 Note: the framework version source of truth is `Config/version.json`. Launchers and GUI read this value dynamically.
 
+## [2026090801] - 2026-09-08
+
+### Fixed
+
+- Improve Folio/Parchment badge readability and restore colors after theme or high-contrast changes.
+- Keep critical actions accessible at 150% scaling and fit the editor and recovery buttons within the work area.
+- Give NVDA meaningful item names and announce progress and errors.
+- Verify that an application is actually absent before reporting a successful rollback.
+
+### Changed
+
+- Organize the READMEs around downloading, first installation, profiles and everyday tasks.
+- Document 40 visual combinations, 10 light-theme checks and qualified NVDA workflows.
+- Publish the first catalog lot evidence: 21 trials, 20 detected versions, incomplete VLC detection; no certification of all 195 applications.
+- Separate virtualization application installation from runtime operation, which is outside the acceptance VM's coverage.
+
 ## [2026090703] - 2026-09-07
 
 ### Added

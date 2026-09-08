@@ -5,7 +5,7 @@
 ## Périmètre et matrice
 
 La [recette locale du 2026-09-08](Validation/20260908/README.fr.md) a validé les
-40 combinaisons ci-dessous sur les candidats locaux non publiés identifiés par cas. Les parcours
+40 combinaisons ci-dessous sur les candidats locaux identifiés par cas, avant leur livraison dans v2026090801. Les parcours
 vocaux NVDA enregistrés sont qualifiés séparément, sans certification globale
 de chaque contrôle ou aide technique.
 

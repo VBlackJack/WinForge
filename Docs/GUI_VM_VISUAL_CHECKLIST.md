@@ -6,7 +6,7 @@
 
 Manual visual/accessibility validation for the current WinForge GUI.
 The [local 2026-09-08 acceptance](Validation/20260908/README.md) passed the 40
-combinations below against the unpublished local candidates identified per case. Recorded NVDA
+combinations below against the local candidates identified per case, before delivery in v2026090801. Recorded NVDA
 speech workflows are qualified separately, without certifying every control or
 assistive technology.
 

@@ -4,6 +4,22 @@
 
 La version de référence est définie dans `Config/version.json`. Ce document présente les changements en français. Les anciennes versions sont résumées ; leurs détails et mesures d’origine restent consultables dans l’historique Git.
 
+## [2026090801] - 2026-09-08
+
+### Corrigé
+
+- Améliorer la lisibilité des badges Folio/Parchment et restaurer les couleurs après un changement de thème ou de contraste élevé.
+- Garder les actions critiques accessibles à 150 % et placer l'éditeur et les boutons de récupération dans la zone de travail.
+- Donner des noms compréhensibles aux éléments prononcés par NVDA et annoncer la progression et les erreurs.
+- Vérifier l'absence réelle d'une application avant de déclarer son retour arrière réussi.
+
+### Modifié
+
+- Réorganiser les README autour du téléchargement, de la première installation, des profils et des usages courants.
+- Documenter les 40 combinaisons visuelles, les 10 contrôles de thèmes clairs et les parcours NVDA qualifiés.
+- Publier les preuves du premier lot catalogue : 21 essais, 20 versions détectées, détection VLC incomplète ; pas de certification des 195 applications.
+- Distinguer l'installation d'une application de virtualisation de son fonctionnement, hors du périmètre de la VM de recette.
+
 ## [2026090703] - 2026-09-07
 
 ### Ajouts

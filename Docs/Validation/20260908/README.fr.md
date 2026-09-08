@@ -6,6 +6,8 @@ Cette campagne suit la release publiée `v2026090703`
 (`84cbc5d1d78698a750132499afd3c1033d49940d`). Les corrections GUI et celle de la
 vérification du retour arrière sont locales, sans nouvelle release publiée.
 
+Note de livraison : les correctifs de cette campagne sont inclus dans `v2026090801`. Les mentions de candidat non publié ci-dessous décrivent les exécutables au moment des mesures ; leurs empreintes et leur historique restent inchangés.
+
 ## Preuves et périmètre
 
 - [Matrice catalogue](catalog-installations.json) : les 195 entrées de la release,
@@ -116,3 +118,10 @@ contrôle indépendant. La mise à jour Windows, le périphérique audio de rece
 et les outils/preuves portables sont conservés dans cette VM jetable.
 Analyse PowerShell : 160 fichiers, zéro erreur, neuf avertissements dans des
 fichiers inchangés ; aucun signalement dans les deux fichiers PowerShell modifiés.
+
+
+## Applications de virtualisation et recette en VM
+
+La campagne VMware du 2026-09-08 ne valide pas le fonctionnement d'un hyperviseur ou d'un émulateur nécessitant la virtualisation matérielle à l'intérieur de l'invité. Un paquet installé et détecté ne prouve pas que son moteur peut démarrer. Cette limite d'environnement ne constitue pas à elle seule un défaut WinForge.
+
+Une recette fonctionnelle demande du matériel physique adapté ou une configuration de virtualisation imbriquée explicitement prise en charge par l'éditeur. Aucun changement de virtualisation imbriquée ni nouvel essai de ces applications n'a été réalisé pour cette release. Voir les [conditions Microsoft pour Hyper-V imbriqué](https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/enable-nested-virtualization). Les statuts d'installation historiques sont conservés ; aucun succès n'est déduit de cette exclusion.

@@ -1,4 +1,12 @@
-# Release validation: 2026090703
+# Release validation: 2026090801
+
+Readability, DPI, spoken-label and rollback-verification fixes are included in this version. The [2026-09-08 acceptance](Validation/20260908/README.md) preserves candidate identities and exact results: 40 visual combinations, 10 focused light-theme checks and recorded NVDA workflows. The final-version local suite passed 790 .NET tests; the preceding PowerShell campaign passed 2,006 with six skips. CI reruns its gates against delivery revisions.
+
+The first catalog lot is closed with 21 trials and 20 detected versions. VLC detection remains incomplete; all 195 applications and alternate sources are not certified. Virtualization application runtime is outside VM acceptance, as detailed below.
+
+The following sections preserve the previous release evidence and dates. Their references to main and an unpublished candidate describe that historical state.
+
+## Historical baseline: v2026090703
 
 [Français](RELEASE_VALIDATION.fr.md)
 
@@ -48,3 +56,10 @@ validation. It distinguishes the published package from the unpublished candidat
   transactional; their own repair procedures may still be required.
 - SYSTEM scheduling requires a machine-wide PowerShell 7 installation. User MSIX
   registration alone is insufficient for the scheduled execution contract.
+
+
+## Virtualization applications and VM acceptance
+
+The 2026-09-08 VMware campaign does not validate operation of a hypervisor or emulator requiring hardware virtualization inside the guest. Installing and detecting a package does not prove that its engine can start. This environment boundary alone is not a WinForge defect.
+
+Runtime acceptance requires suitable physical hardware or a nested-virtualization configuration explicitly supported by the vendor. No nested-virtualization change or new trial of these applications was performed for this release. See [Microsoft's requirements for nested Hyper-V](https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/enable-nested-virtualization). Historical installation statuses remain unchanged; this exclusion does not imply success.

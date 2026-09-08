@@ -2,7 +2,7 @@
 
 [English](USER_GUIDE.md)
 
-Version actuelle du framework : `2026090703`.
+Version actuelle du framework : `2026090801`.
 
 ## Démarrage rapide
 
@@ -79,3 +79,10 @@ Le rollback automatique prend en charge Winget et Chocolatey. Les autres méthod
 ## Préparation et reprise des déploiements
 
 Voir [les aperçus, l'historique et l'atelier PowerShell](DEPLOYMENT_WORKBENCH.fr.md).
+
+
+## Applications de virtualisation et recette en VM
+
+La campagne VMware du 2026-09-08 ne valide pas le fonctionnement d'un hyperviseur ou d'un émulateur nécessitant la virtualisation matérielle à l'intérieur de l'invité. Un paquet installé et détecté ne prouve pas que son moteur peut démarrer. Cette limite d'environnement ne constitue pas à elle seule un défaut WinForge.
+
+Une recette fonctionnelle demande du matériel physique adapté ou une configuration de virtualisation imbriquée explicitement prise en charge par l'éditeur. Aucun changement de virtualisation imbriquée ni nouvel essai de ces applications n'a été réalisé pour cette release. Voir les [conditions Microsoft pour Hyper-V imbriqué](https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/enable-nested-virtualization). Les statuts d'installation historiques sont conservés ; aucun succès n'est déduit de cette exclusion.

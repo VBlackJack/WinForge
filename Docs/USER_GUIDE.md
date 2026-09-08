@@ -18,7 +18,7 @@ limitations under the License.
 
 [Français](USER_GUIDE.fr.md)
 
-Current framework display version: `2026090703`.
+Current framework display version: `2026090801`.
 
 ## Quick Start
 1. Extract the release archive.
@@ -93,3 +93,10 @@ Automatic rollback supports Winget and Chocolatey. Other installation methods re
 ## Deployment preparation and recovery
 
 See [deployment previews, execution history and the PowerShell workbench](DEPLOYMENT_WORKBENCH.md).
+
+
+## Virtualization applications and VM acceptance
+
+The 2026-09-08 VMware campaign does not validate operation of a hypervisor or emulator requiring hardware virtualization inside the guest. Installing and detecting a package does not prove that its engine can start. This environment boundary alone is not a WinForge defect.
+
+Runtime acceptance requires suitable physical hardware or a nested-virtualization configuration explicitly supported by the vendor. No nested-virtualization change or new trial of these applications was performed for this release. See [Microsoft's requirements for nested Hyper-V](https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/enable-nested-virtualization). Historical installation statuses remain unchanged; this exclusion does not imply success.
